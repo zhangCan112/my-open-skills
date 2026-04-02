@@ -18,10 +18,6 @@ cp -r writing-skills ~/.claude/skills/
 cp -r evolving-skill-rules ~/.claude/skills/
 ```
 
-## 致谢
-
-Skills 来源于 [superpowers](https://github.com/stevensacks/superpowers) 项目。
-
 ## 许可证
 
 MIT License
