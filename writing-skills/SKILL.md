@@ -316,6 +316,21 @@ See graphviz-conventions.dot for graphviz style rules.
 ./render-graphs.js ../some-skill --combine # All diagrams in one SVG
 ```
 
+### Diagram Format Selection
+
+**Graphviz (`.dot`):** Use for decision flowcharts within skills — process flows, "when to use A vs B" decisions, gated workflows.
+
+**PlantUML (`.puml`):** Use for component dependency diagrams and architecture diagrams in reports and cross-skill documentation — showing how skills relate, depend on, or interact with each other.
+
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+[skill-a] --> [skill-b] : provides config
+@enduml
+```
+
+PlantUML is preferred for dependency/architecture diagrams because it produces clearer component relationship visualizations than graphviz for this use case.
+
 ## Code Examples
 
 **One excellent example beats many mediocre ones**
