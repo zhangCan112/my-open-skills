@@ -1,6 +1,6 @@
 ---
 name: evolving-skill-rules
-description: Use when a skill fails on a specific case and you need to extract a generalized rule from the failure, rather than patching for the specific case. Triggers include skill producing wrong output, missing edge case handling, ambiguous rule interpretation, or developer feedback that a skill behaved incorrectly on a concrete example.
+description: Use ONLY when the user explicitly requests a skill retrospective, failure analysis, or rule evolution for a SKILL.md file. Do NOT auto-trigger from general coding errors, bug reports, or incorrect outputs — this skill is for evolving skill rules, not for fixing code bugs.
 ---
 
 # Evolving Skill Rules
@@ -16,6 +16,8 @@ This skill guides you through a four-phase gated workflow to diagnose failures, 
 **Violating the letter of this process is violating the spirit of skill evolution.**
 
 ## When to Use
+
+> **Important:** This skill should ONLY be invoked when the user explicitly asks to review/evolve a skill's rules (复盘skill). General bug reports and code corrections do NOT trigger this skill.
 
 - A skill produced incorrect output on a specific input
 - A skill missed an edge case that seems obvious in hindsight

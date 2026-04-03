@@ -1,6 +1,6 @@
 ---
 name: splitting-skills
-description: Use when needing to decompose a large complex skill, structured knowledge, or tree-like knowledge structure into multiple independent, reusable, and collaborative Agent Skills. Triggers include a single skill file exceeding reasonable size, difficulty maintaining a monolithic skill, need to reuse parts of a skill independently, or multi-agent coordination requiring clear task boundaries.
+description: Use ONLY when the user explicitly requests to split or decompose a skill into multiple independent Agent Skills. Do NOT auto-trigger from general refactoring, code organization, or file management tasks.
 ---
 
 # Splitting Skills
@@ -14,6 +14,8 @@ This skill guides you through a four-phase gated workflow to decompose large, co
 **Violating the letter of this process is violating the spirit of skill splitting.**
 
 ## When to Use
+
+> **Important:** This skill should ONLY be invoked when the user explicitly asks to split/decompose a skill (切分skill). General refactoring and code organization tasks do NOT trigger this skill.
 
 - A single skill file has grown too large or complex to maintain efficiently
 - Parts of a skill could be reused independently in other contexts
