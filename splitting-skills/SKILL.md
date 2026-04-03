@@ -1,6 +1,6 @@
 ---
 name: splitting-skills
-description: Use ONLY when the user explicitly requests to split or decompose a skill into multiple independent Agent Skills. Do NOT auto-trigger from general refactoring, code organization, or file management tasks.
+description: Use when the user explicitly asks to split, decompose, or break down a skill (SKILL.md) into smaller independent skills. Applies in ALL contexts — planning, brainstorming, or execution. Triggers on phrases like "split this skill", "decompose this skill", "break down this skill", "切分skill". Do NOT auto-trigger from general refactoring, code organization, or file management tasks unrelated to Agent Skills.
 ---
 
 # Splitting Skills
