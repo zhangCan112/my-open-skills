@@ -194,10 +194,10 @@ Ask the developer to:
 **Step 1 — Initialize Git (if needed):**
 
 ```bash
-bash <path-to-this-skill>/scripts/init-skill-repo.sh <skill-directory>
+bash <this-skill's-directory>/scripts/init-skill-repo.sh <skill-directory>
 ```
 
-Script location: `skills/superpowers/evolving-skill-rules/scripts/init-skill-repo.sh` (resolve relative to your skills root).
+`<this-skill's-directory>` = the directory containing this SKILL.md file. The script is at `scripts/init-skill-repo.sh` relative to that directory.
 
 This script:
 

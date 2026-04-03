@@ -44,7 +44,7 @@ Every split must be preceded by Phase 1 (structure analysis). Skipping analysis 
 
 ## Dependencies
 
-**Requires:** None
+**Requires:** writing-skills
 **Required by:** None
 
 ## The Four Phases
