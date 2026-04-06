@@ -1,6 +1,6 @@
 ---
 name: splitting-skills
-description: Use when the user explicitly asks to split, decompose, or break down a skill (SKILL.md) into smaller independent skills. Applies in ALL contexts — planning, brainstorming, or execution. Triggers on phrases like "split this skill", "decompose this skill", "break down this skill", "切分skill". Do NOT auto-trigger from general refactoring, code organization, or file management tasks unrelated to Agent Skills.
+description: Use when a skill (SKILL.md) needs to be split or decomposed into smaller independent skills. Triggers include a skill file exceeding reasonable size, difficulty maintaining a monolithic skill, need to reuse parts independently, or multi-agent coordination requiring clear task boundaries. Applies in ALL contexts — planning, brainstorming, or execution. Not for general refactoring or code organization — this skill splits Agent Skills, not code.
 ---
 
 # Splitting Skills
@@ -15,7 +15,7 @@ This skill guides you through a four-phase gated workflow to decompose large, co
 
 ## When to Use
 
-> **Important:** This skill should ONLY be invoked when the user explicitly asks to split/decompose a skill (切分skill). General refactoring and code organization tasks do NOT trigger this skill.
+> **Important:** This skill is for splitting Agent Skills (SKILL.md files), not for general refactoring or code organization. Applies in all contexts including planning and execution.
 
 - A single skill file has grown too large or complex to maintain efficiently
 - Parts of a skill could be reused independently in other contexts
