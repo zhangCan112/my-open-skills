@@ -10,7 +10,8 @@ A generic Skill template for code dependency migration. Through a user-maintaine
 
 ```
 dependency-migrator/
-  SKILL.md                         # Skill body: four-step workflow
+  SKILL.md                         # Skill body: five-step workflow
+  README.md                        # Maintenance guide for human contributors
   scripts/
     load_patterns.py               # Read all pattern.md files, XML-wrapped merged output
     load_solutions.py              # Read solution.md by rule name, XML-wrapped merged output
@@ -33,15 +34,17 @@ dependency-migrator/
 digraph migrator_flow {
     "Step 1: Load Patterns" [shape=box];
     "Step 2: Scan & Match" [shape=box];
-    "Step 3: User Confirms" [shape=diamond];
-    "Step 4: Load Solutions & Execute" [shape=box];
+    "Step 3: Auto-verify" [shape=box];
+    "Step 4: User Confirms" [shape=diamond];
+    "Step 5: Execute" [shape=box];
     "Done" [shape=doublecircle];
 
     "Step 1: Load Patterns" -> "Step 2: Scan & Match";
-    "Step 2: Scan & Match" -> "Step 3: User Confirms";
-    "Step 3: User Confirms" -> "Step 2: Scan & Match" [label="adjust/reject"];
-    "Step 3: User Confirms" -> "Step 4: Load Solutions & Execute" [label="confirm"];
-    "Step 4: Load Solutions & Execute" -> "Done";
+    "Step 2: Scan & Match" -> "Step 3: Auto-verify";
+    "Step 3: Auto-verify" -> "Step 4: User Confirms";
+    "Step 4: User Confirms" -> "Step 2: Scan & Match" [label="adjust/reject"];
+    "Step 4: User Confirms" -> "Step 5: Execute" [label="confirm"];
+    "Step 5: Execute" -> "Done";
 }
 ```
 
@@ -63,29 +66,38 @@ Directories starting with `_` (e.g., `_example`) are skipped.
 
 ### Step 2: Scan & Match
 
-AI scans code in the current context using all pattern descriptions as matching criteria. For each match, reports:
+AI scans code in the current context using all pattern descriptions as matching criteria. For each match, collects:
 
 - File location
 - Matched code snippet
 - Matched rule name
 
-### Step 3: User Confirms
+If no matches found, workflow ends here.
 
-User reviews match results. Can:
+### Step 3: Auto-verify
+
+For each match from Step 2, AI automatically loads the corresponding solution to cross-validate:
+
+1. Call `python3 scripts/load_solutions.py <rule-name>...` with all matched rule names
+2. Read each solution content. If a solution references code files, read them on demand
+3. Cross-validate: use the solution's description to verify the match is accurate and the solution actually applies to the matched code
+4. Discard false positives — only retain matches that pass validation
+
+This step catches mismatches before they reach the user. If all matches are discarded, report that clearly.
+
+### Step 4: User Confirms
+
+User reviews verified matches (including proposed solution summary). Can:
 
 - Confirm to proceed
 - Skip a match
 - Request scope adjustment
 
-### Step 4: Load Solutions & Execute
+### Step 5: Execute
 
-For confirmed matches:
+For confirmed matches, execute replacements. Solutions were already loaded in Step 3. Subagent dispatch is optional, not enforced.
 
-1. Call `python3 scripts/load_solutions.py <rule-name>...` to load corresponding solutions
-2. If solution.md references code example files (e.g., `examples/before.swift`), read them on demand
-3. Execute replacements — subagent dispatch is optional, not enforced
-
-`load_solutions.py` output format:
+`load_solutions.py` output format (used in Step 3):
 
 ```xml
 <solution name="rule-name-a">

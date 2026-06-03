@@ -13,21 +13,23 @@ description: {{SKILL_DESCRIPTION}}
 
 {{WHEN_TO_USE}}
 
-## The Four-Step Workflow
+## The Five-Step Workflow
 
 ```dot
 digraph migrator_flow {
     "Step 1: Load Patterns" [shape=box];
     "Step 2: Scan & Match" [shape=box];
-    "Step 3: User Confirms" [shape=diamond];
-    "Step 4: Load Solutions & Execute" [shape=box];
+    "Step 3: Auto-verify" [shape=box];
+    "Step 4: User Confirms" [shape=diamond];
+    "Step 5: Execute" [shape=box];
     "Done" [shape=doublecircle];
 
     "Step 1: Load Patterns" -> "Step 2: Scan & Match";
-    "Step 2: Scan & Match" -> "Step 3: User Confirms";
-    "Step 3: User Confirms" -> "Step 2: Scan & Match" [label="adjust/reject"];
-    "Step 3: User Confirms" -> "Step 4: Load Solutions & Execute" [label="confirm"];
-    "Step 4: Load Solutions & Execute" -> "Done";
+    "Step 2: Scan & Match" -> "Step 3: Auto-verify";
+    "Step 3: Auto-verify" -> "Step 4: User Confirms";
+    "Step 4: User Confirms" -> "Step 2: Scan & Match" [label="adjust/reject"];
+    "Step 4: User Confirms" -> "Step 5: Execute" [label="confirm"];
+    "Step 5: Execute" -> "Done";
 }
 ```
 
@@ -47,7 +49,7 @@ Do NOT skip this step. The script output is the authoritative source of all matc
 
 ### Step 2: Scan & Match
 
-Using all pattern descriptions from Step 1, scan code in the current context. For each match found, report:
+Using all pattern descriptions from Step 1, scan code in the current context. For each match found, collect:
 
 - **File location** — which file contains the match
 - **Code snippet** — the specific code that matched
@@ -55,65 +57,49 @@ Using all pattern descriptions from Step 1, scan code in the current context. Fo
 
 Be thorough. Read all relevant files in the target scope. Do not stop at the first match — find every instance.
 
-If no matches are found for any pattern, report that clearly.
+If no matches are found for any pattern, report that clearly — the workflow ends here.
 
-### Step 3: User Confirms
+### Step 3: Auto-verify
 
-Present all match results to the user in a structured list. The user can:
+For each match from Step 2, automatically load the corresponding solution to cross-validate the match:
+
+1. Call `python3 scripts/load_solutions.py <rule-name>...` with all matched rule names
+2. Read each solution content. If a solution references code files (e.g., `examples/before.ext`), read them on demand
+3. Cross-validate: use the solution's description to verify the match is accurate and the solution actually applies to the matched code
+4. **Discard false positives** — only retain matches that pass validation
+
+The goal is to catch mismatches before they reach the user. If all matches are discarded, report that clearly and suggest adjusting the rules or scope.
+
+Do NOT skip this step. It is not optional — raw pattern matching alone is too loose; the solution context is needed to confirm applicability.
+
+### Step 4: User Confirms
+
+Present all verified matches to the user in a structured list, including:
+
+- File location
+- Matched code snippet
+- Applicable rule name
+- Proposed solution summary
+
+The user can:
 
 - **Confirm** — proceed with replacement
 - **Skip** — exclude a specific match
-- **Adjust** — refine the matching scope
+- **Adjust** — refine the matching scope or modify the proposed approach
 
-Do NOT proceed to Step 4 without user confirmation. Even if only one match is found, wait for explicit approval.
+Do NOT proceed to Step 5 without user confirmation. Even if only one match is found, wait for explicit approval.
 
-### Step 4: Load Solutions & Execute
+### Step 5: Execute
 
-For confirmed matches:
-
-1. Call `python3 scripts/load_solutions.py <rule-name>...` with confirmed rule names to load corresponding solutions
-2. Read solution content. If solution references code files (e.g., `examples/before.ext`), read them on demand when the context requires it
-3. Execute replacements. Subagent dispatch is optional — choose based on the number and complexity of replacements
+For confirmed matches, execute replacements. Subagent dispatch is optional — choose based on the number and complexity of replacements. Solutions were already loaded in Step 3, so no script calls are needed here.
 
 After execution, report what was changed.
-
-## Adding New Rules
-
-Run `python3 scripts/create_rule.py <rule-name>` from the skill directory. This creates:
-
-```
-rules/<rule-name>/
-  pattern.md       ← from template
-  solution.md      ← from template
-```
-
-Edit both files. Optionally add `examples/` directory with code reference files.
-
-No changes to SKILL.md or scripts are needed.
-
-## Rules Directory Structure
-
-```
-rules/
-  _example/              ← skipped by load_patterns.py
-    pattern.md
-    solution.md
-    examples/
-      before.example
-      after.example
-  your-rule-name/        ← add as many as needed
-    pattern.md
-    solution.md
-    examples/            ← optional
-      ...
-```
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
 | Skipping Step 1 and manually reading patterns | Always use load_patterns.py script |
-| Proceeding to Step 4 without user confirmation | Always wait for explicit approval |
+| Skipping Step 3 and presenting raw matches to user | Always auto-verify with solutions first |
+| Proceeding to Step 5 without user confirmation | Always wait for explicit approval |
 | Not reading all files in target scope | Be thorough, find every instance |
-| Modifying SKILL.md when adding rules | Only add directories under rules/ |
-| Writing solution content inline in pattern.md | Keep pattern and solution separate |
