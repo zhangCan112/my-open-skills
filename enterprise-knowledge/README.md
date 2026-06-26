@@ -9,6 +9,7 @@ A generic Skill for querying enterprise internal code and framework knowledge. T
 ```
 enterprise-knowledge/
   SKILL.md                         # Skill workflows (AI reads this)
+  add-mode.md                      # Detailed Add Mode workflow (loaded on demand)
   README.md                        # This file (human maintainers read this)
   scripts/
     load_index.py                  # Recursively load all trigger.md, XML-wrapped output
@@ -27,7 +28,7 @@ enterprise-knowledge/
 ## Two Modes
 
 - **Query Mode** — Recall/apply internal knowledge. Workflow: load index → identify relevance (scan code and/or match query) → load & verify details → respond.
-- **Add Mode** — Record new knowledge via guided interview. Workflow: dedup-check → locate → scaffold → interview trigger → interview detail → quality-check → confirm.
+- **Add Mode** — Record new knowledge via guided interview. Workflow: dedup-check → locate → scaffold → interview trigger → interview detail → quality-check → confirm. Detailed steps live in `add-mode.md` (loaded on demand by SKILL.md).
 
 See `SKILL.md` for the full workflows.
 

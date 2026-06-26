@@ -92,71 +92,13 @@ This skill **presents and advises**. It does not edit code. If changes are warra
 
 ## Add Mode
 
-```dot
-digraph add_flow {
-    "Step 1: Dedup-check" [shape=box];
-    "Step 2: Locate" [shape=box];
-    "Step 3: Scaffold" [shape=box];
-    "Step 4: Interview trigger.md" [shape=box];
-    "Step 5: Interview detail.md" [shape=box];
-    "Step 6: Quality-check" [shape=box];
-    "Step 7: Confirm" [shape=doublecircle];
+When the user wants to record or add new internal knowledge, follow the guided authoring workflow:
 
-    "Step 1: Dedup-check" -> "Step 2: Locate";
-    "Step 2: Locate" -> "Step 3: Scaffold";
-    "Step 3: Scaffold" -> "Step 4: Interview trigger.md";
-    "Step 4: Interview trigger.md" -> "Step 5: Interview detail.md";
-    "Step 5: Interview detail.md" -> "Step 6: Quality-check";
-    "Step 6: Quality-check" -> "Step 7: Confirm";
-}
+```
+dedup-check -> locate -> scaffold -> interview trigger -> interview detail -> quality-check -> confirm
 ```
 
-### Step 1: Dedup-check
-
-Call `python scripts/load_index.py` and review existing triggers. If similar knowledge already exists, ask the user whether to extend an existing entry or create a new one.
-
-### Step 2: Locate
-
-Determine what the knowledge is and which category it belongs to (existing category or a new one under `knowledge/`).
-
-### Step 3: Scaffold
-
-Run `python scripts/create_entry.py <category>/<entry-name>` to generate `trigger.md` and `detail.md` from templates.
-
-### Step 4: Interview trigger.md (item-by-item)
-
-Interview the user one item at a time and write `trigger.md`:
-- **Applicable scenarios:** which APIs/classes/methods/keywords signal relevance? Be specific.
-- **Queries hit:** which questions should this entry answer?
-- **Exclusion conditions:** what should NOT be matched?
-- **Notes:** confusable points (similar APIs to distinguish).
-
-Ask one question at a time. Write concrete content, not placeholders.
-
-### Step 5: Interview detail.md (item-by-item)
-
-Interview the user one item at a time and write `detail.md`:
-- **Overview:** what is this and why it matters (1-2 sentences).
-- **Usage / conventions:** the correct way to use it.
-- **Code examples:** correct (and optionally incorrect) usage; may go under `examples/`.
-- **Common pitfalls:** what is easy to get wrong.
-- **References:** links or related entries.
-
-Ask one question at a time. Capture real examples from the user.
-
-### Step 6: Quality-check
-
-Before finishing, verify:
-- Trigger is **specific** (not vague like "applies to X").
-- Detail is **complete** (overview + usage + at least one example).
-- Examples are **accurate** and consistent with the trigger.
-- Trigger and detail **agree** (the match conditions actually lead to this detail).
-
-Fix gaps inline.
-
-### Step 7: Confirm
-
-Show the user the generated `trigger.md` and `detail.md`. Let them review and request adjustments.
+**The full Add Mode workflow lives in `add-mode.md`. Load that file when entering Add Mode.** It is intentionally kept out of this file so the primary Query workflow stays lean. Do not execute Add Mode from memory — read `add-mode.md` first.
 
 ## Common Mistakes
 
@@ -165,6 +107,5 @@ Show the user the generated `trigger.md` and `detail.md`. Let them review and re
 | Skipping Step 1 (Query) and answering from memory | Always run load_index.py first |
 | Skipping Step 3 (Query) and presenting unverified matches | Always load details and cross-validate |
 | Fabricating knowledge not in the library | Only answer from loaded entries; if absent, say so |
-| In Add Mode, writing placeholders instead of real content | Interview the user; capture concrete specifics |
-| In Add Mode, creating vague triggers ("applies to auth") | Demand specific APIs/keywords/queries |
+| Entering Add Mode without reading add-mode.md | Load add-mode.md first; do not run Add Mode from memory |
 | Editing SKILL.md or scripts to add knowledge | Only add directories under knowledge/ |
