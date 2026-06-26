@@ -10,6 +10,7 @@ A personal collection of AI Agent Skills.
 | [evolving-skill-rules](./evolving-skill-rules/) | Extract generalizable rules from skill failure cases | [SKILL.md](./evolving-skill-rules/SKILL.md) |
 | [splitting-skills](./splitting-skills/) | Decompose large skills or structured knowledge into multiple independent, reusable Agent Skills | [SKILL.md](./splitting-skills/SKILL.md) |
 | [dependency-migrator](./dependency-migrator/) | Template for code dependency/API migration via a user-maintained rule library (pattern + solution) | [README](./dependency-migrator/README.md) |
+| [enterprise-knowledge](./enterprise-knowledge/) | Queryable knowledge base for enterprise internal code & frameworks, with a guided authoring mode for adding knowledge (trigger + detail) | [README](./enterprise-knowledge/README.md) |
 
 ## Plugins
 
@@ -26,6 +27,7 @@ cp -r writing-skills ~/.claude/skills/
 cp -r evolving-skill-rules ~/.claude/skills/
 cp -r splitting-skills ~/.claude/skills/
 cp -r dependency-migrator ~/.claude/skills/
+cp -r enterprise-knowledge ~/.claude/skills/
 ```
 
 ## License

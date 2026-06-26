@@ -1,0 +1,3 @@
+// Correct usage of {{INTERNAL_FRAMEWORK}}
+// Prefer the standard helper over raw framework calls.
+{{HELPER}}.{{METHOD}}({{ARGS}});
