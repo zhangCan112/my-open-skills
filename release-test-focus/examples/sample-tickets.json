@@ -1,0 +1,11 @@
+{
+  "meta": { "version": "v2.4.0", "baseline": "v2.3.2", "window": "2026-07-01" },
+  "tickets": [
+    { "id": "ENG-1024", "title": "New payment flow", "description": "Reimplement the checkout/payment main flow", "type": "Story", "priority": "blocker", "source": "main", "focus": "Happy-path checkout / error fallback / concurrent orders" },
+    { "id": "ENG-1031", "title": "Order amount calculation error", "description": "Fix rounding error with multiple currencies", "type": "Defect", "priority": "major", "source": "main", "focus": "Boundaries: 0 / negative / multi-currency rounding" },
+    { "id": "ENG-1015", "title": "Profile avatar cropping", "description": "Add avatar cropping on the profile page", "type": "Story", "priority": "minor", "source": "main", "focus": "Crop ratios / upload-failure retry" },
+    { "id": "LIB-221", "title": "Upgrade auth-sdk to 2.0", "description": "Upgrade auth-sdk, includes a breaking change to the token refresh API", "type": "Defect", "priority": "critical", "source": "dependency", "library": "auth-sdk", "version_from": "1.8", "version_to": "2.0", "focus": "Regression: login / SSO / token refresh / logout full chain" },
+    { "id": "LIB-233", "title": "Upgrade http-client", "description": "Upgrade http-client to 3.3, retry strategy tuned", "type": "Story", "priority": "major", "source": "dependency", "library": "http-client", "version_from": "3.2", "version_to": "3.3", "focus": "Regression: retry / timeout / circuit-breaker behavior" },
+    { "id": "LIB-240", "title": "Upgrade logger", "description": "Upgrade logger to 1.0", "type": "Story", "priority": "trivial", "source": "dependency", "library": "logger", "version_from": "0.9", "version_to": "1.0", "focus": "Regression: log output format" }
+  ]
+}
