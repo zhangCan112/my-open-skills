@@ -12,6 +12,7 @@
 | [dependency-migrator](./dependency-migrator/) | 依赖迁移模板 — 通过用户维护的规则库（pattern + solution）进行代码依赖/API 迁移 | [README](./dependency-migrator/README.md) |
 | [enterprise-knowledge](./enterprise-knowledge/) | 企业知识库 — 查询企业内部代码与框架知识，并带引导式添加模式录入新知识（trigger + detail） | [README](./enterprise-knowledge/README.md) |
 | [release-test-focus](./release-test-focus/) | 发布测试简报 — 把主项目与依赖库的 ticket 汇编成面向测试的简报（必测重点 + 回归范围） | [README](./release-test-focus/README.md) |
+| [designing-workflows](./designing-workflows/) | 工作流编排 — 把"用 AI 做某事"的目标编排成可复用、分层的 workflow playbook（能力盘点驱动、以终为始） | [SKILL.md](./designing-workflows/SKILL.md) |
 
 ## Plugins
 
@@ -30,6 +31,7 @@ cp -r splitting-skills ~/.claude/skills/
 cp -r dependency-migrator ~/.claude/skills/
 cp -r enterprise-knowledge ~/.claude/skills/
 cp -r release-test-focus ~/.claude/skills/
+cp -r designing-workflows ~/.claude/skills/
 ```
 
 ## 许可证
