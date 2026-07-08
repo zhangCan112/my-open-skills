@@ -1,6 +1,9 @@
 ---
 name: skill-architect
 description: Use when creating a new Agent Skill (deciding which structural pattern to use, or scaffolding from a template), OR when refactoring/reviewing a messy SKILL.md into a clean modular architecture. Triggers on "设计/写一个 skill", "这个 skill 该用什么结构/模式", "重构/优化这个 skill", "skill 太乱/太长/屎山", "which skill pattern". Do NOT use for: general code refactoring; improving skill content quality (use writing-skills); or splitting one large skill into multiple separate skills (use splitting-skills).
+metadata:
+  pattern: pipeline
+  steps: "5"
 ---
 
 # skill-architect

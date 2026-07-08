@@ -17,6 +17,12 @@ Phase 4 加载。既是"屎山诊断"清单，也是重构后的验收清单。
 | 该用 Pipeline 却顺序乱 | 把步骤重排为顺序 + 门 |
 | 该单步却套了流水线 | 删多余编排，回归最简 |
 | frontmatter 缺 name 或 description | 补全；name 仅字母数字连字符；description ≤1024 字符 |
+| frontmatter 没挂 `metadata: pattern` + 定义性轴线 | 补上（pattern + 该模式的特征维度字段：domain / output-format / severity-levels / interaction / steps） |
+| description 摘要了"做什么"而非只写触发 | 删掉 "Apply best practices" 类描述，只留"Use when…"触发条件（CSO 铁律） |
+| Pipeline 的门全是用户确认 | 按步骤性质分人检门 / 自检门；客观能判对错的用自检门（加载 checklist 自查 + 步内修） |
+| Tool Wrapper 评审只挑错不表扬 | 评审协议补一条"同时表扬遵循最佳实践的代码" |
+| Generator 没把"每 section 必出"当 MUST | 提到正文最显眼处喊出来 |
+| Reviewer 的 checklist 是扁平规则表 | 改成"类别 × 严重度"二维结构 |
 
 ## 自检协议
 
