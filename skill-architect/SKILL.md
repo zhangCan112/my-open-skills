@@ -48,10 +48,8 @@ description: Use when creating a new Agent Skill (deciding which structural patt
 | Skill | 解决什么 | 产物 |
 |---|---|---|
 | `writing-skills` | 内容**质量** | 同一个 skill，写得更好 |
-| `splitting-skills` | 太**大**→拆 | **多个** skill |
 | `skill-architect` | **结构模式** + 渐进披露 + 屎山→模块化 | **一个** skill，架构清爽 |
 
-本 skill 始终产出**单个** skill，只改其内部架构；产**多个**是 splitting-skills 的事。
 
 ## 模式速查（决策树，每次都要用）
 
