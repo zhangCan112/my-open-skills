@@ -1,6 +1,9 @@
 ---
 name: designing-workflows
-description: Use when the user wants to use AI to accomplish a multi-step goal and needs to turn it into a reusable workflow playbook. Triggers on requests like "design a workflow", "how should I use AI to do X", or any goal that clearly needs orchestrating multiple skills/tools across phases. Do NOT use for single-step tasks or software feature design.
+description: Use when the user wants to use AI to accomplish a multi-step goal and needs to turn it into a reusable workflow playbook. Triggers on "设计一个 workflow", "怎么用 AI 做 X", "design a workflow", "how should I use AI to do X", or any goal that clearly needs orchestrating multiple skills/tools across phases. Do NOT use for single-step tasks or software feature design.
+metadata:
+  pattern: pipeline
+  steps: "7"
 ---
 
 # Designing Workflows
@@ -82,7 +85,7 @@ description: Use when the user wants to use AI to accomplish a multi-step goal a
 
 这条是铁律的延伸：**设计期不准跳过 gate 一次性产出**——那会把缺口和误判推到运行期，让用户每次跑都来填坑，违背"可复用"。运行期 gate 能机检就机检，只在真正需要人判断处留人检。
 
-## 六阶段流程
+## 七阶段流程（Phase 0–6，带门控）
 
 ```dot
 digraph designing_workflows {
@@ -151,16 +154,7 @@ digraph designing_workflows {
 - 输入是什么、产出是什么
 - 是否需要 gate
 
-**编排模式选择**（默认从最简开始）：
-
-| 模式 | 适用 | 复杂度 |
-|---|---|---|
-| 单次 LLM 调用 | 能一步搞定 | 最低（先考虑） |
-| Prompt 链 | 可干净拆成固定子步骤 | 低 |
-| 路由 | 输入可分类、各类适合不同处理 | 中 |
-| 并行（分区/投票） | 子任务独立可并行 / 需多视角 | 中 |
-| Orchestrator-workers | 子任务无法预知、需动态分派 | 高 |
-| Evaluator-optimizer | 有明确评价标准、迭代有收益 | 高 |
+**编排模式选择**（默认从最简开始，证明有收益才加复杂度）：六种模式 × 适用场景 × 复杂度对照见 `references/orchestration-patterns.md`（Phase 3 按需加载）。
 
 **门：** 用户确认阶段/步骤结构，才进入 Phase 4。
 
@@ -179,19 +173,9 @@ digraph designing_workflows {
 
 ### Phase 6：产出 + 自检
 
-按 **Definition of Done** 逐条验：
+按 **Definition of Done** 逐条验（清单见 `references/playbook-dod-checklist.md`，Phase 6 按需加载）：
 
 > 任意的 agent 拿到这份 playbook，能**按 phase 逐步正确执行**——每个 phase 只加载它那一个 step 文件，**中途不需要再回来问设计问题**。
-
-自检清单：
-
-| 检查 | 通过条件 |
-|---|---|
-| 盲跑可行 | 不缺输入、不缺能力引用、不缺判定标准 |
-| 分层正确 | 规模超阈值的一定拆成目录，不是平铺单文件 |
-| 能力真实 | 每步引用的能力都在 Phase 2 能力池内 |
-| 分类正确 | 没把 tool 该做的标成 skill，或反之 |
-| 没过度编排 | 没有该单步却套多 agent 的情况 |
 
 不通过 → 回 Phase 4 修正，不交付。
 
