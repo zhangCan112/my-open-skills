@@ -15,8 +15,6 @@ This skill guides you through a four-phase gated workflow to decompose large, co
 
 ## When to Use
 
-> **Important:** This skill should ONLY be invoked when the user explicitly asks to split/decompose a skill (切分skill). General refactoring and code organization tasks do NOT trigger this skill.
-
 - A single skill file has grown too large or complex to maintain efficiently
 - Parts of a skill could be reused independently in other contexts
 - Multi-agent coordination requires clear task boundaries
@@ -47,7 +45,6 @@ Every split must be preceded by Phase 1 (structure analysis). Skipping analysis 
 ## Dependencies
 
 **Requires:** writing-skills
-**Required by:** None
 
 ## The Four Phases
 
@@ -72,7 +69,7 @@ digraph splitting_phases {
 }
 ```
 
-Each phase MUST complete before proceeding. You cannot skip phases. Gates require explicit user confirmation.
+Each phase MUST complete before proceeding. Gates require explicit user confirmation.
 
 ---
 
@@ -82,82 +79,14 @@ Each phase MUST complete before proceeding. You cannot skip phases. Gates requir
 
 Parse the input into a node tree with resource awareness, identifying nodes, their attributes, and dependencies.
 
-### Input Types
-
-| Input Type | Detection Signals | Processing |
-|------------|-------------------|------------|
-| **SKILL.md file** | YAML frontmatter, markdown heading hierarchy | Decompose by heading levels into node tree |
-| **Arbitrary structured knowledge** | Indentation levels, numbered lists, XML/JSON trees, mind map text | Parse by structural markers into node tree |
-
-### Input Scope — Resource Aware
-
-Handle the complete resource tree, not just the main file:
-
-1. **Identify input scope:**
-   - Main file (SKILL.md or other primary document)
-   - Referenced files (markdown reference docs, scripts, templates)
-   - External dependencies (other skills, tool chain requirements)
-
-2. **Build complete resource tree:**
-
-   ```
-   main-skill/
-   ├── SKILL.md            ← Main document
-   ├── reference.md        ← Referenced documentation
-   ├── scripts/
-   │   └── tool.sh         ← Referenced script
-   └── examples/
-       └── demo.md         ← Example file
-   ```
-
-### Parsing Process
+### Core Steps
 
 1. **Read complete input content** including all referenced resources
-2. **Identify structural markers:** markdown headings, indentation levels, numbering (1. 1.1 1.1.1), XML/JSON hierarchy
-3. **Build node tree:** each identifiable semantic unit (section, module, functional block) as a node
-4. **Annotate each node:**
-   - **Node type:** concept / process / rule / reference / tool / script
-   - **Size:** line count or token estimate
-   - **Dependencies:** inter-node references, prerequisites
-   - **Independence score:** 0-1 (see calculation below)
-   - **Associated resources:** external files referenced by or referencing this node
+2. **Build a resource-aware node tree:** each semantic unit (section, module, functional block) becomes a node, annotated with type, size, dependencies, independence score, and associated resources
+3. **Assess structure health:** detect early-exit conditions (too small / already optimal / no structure / circular deps) and recommend NOT splitting if triggered
+4. **Handle circular dependencies** when detected (break via shared abstraction, else present options)
 
-### Independence Score
-
-Computed as average of three components:
-
-- **Reference autonomy** (0-1): How few references this node makes to other nodes (0 = heavy references outward, 1 = self-contained)
-- **Incoming coupling** (0-1): How few other nodes reference this node (0 = referenced by many, 1 = isolated)
-- **Semantic completeness** (0-1): Whether this node contains a complete concept/process (0 = fragment, 1 = complete unit)
-
-Thresholds:
-- **>0.7:** Highly independent — strong candidate for Element strategy
-- **0.4-0.7:** Moderately coupled — needs dependency-aware strategy (Process or Hierarchy)
-- **<0.4:** Heavily coupled — splitting may require significant dependency management
-
-### Early Exit Criteria
-
-If analysis shows any of these conditions, recommend NOT splitting and explain why:
-
-| Condition | Signal | Recommendation |
-|-----------|--------|----------------|
-| Too small | Total nodes < 3 or total content < 50 lines | "Input is too small to benefit from splitting" |
-| Already optimal | All nodes have independence score > 0.8 and structure is flat | "Input is already well-structured as a single skill" |
-| No structure detected | Cannot identify hierarchy, process, or independent elements | "Input lacks discernible structure for splitting" |
-| Unresolvable circular deps | All nodes form a single dependency cycle with no entry point | "Input has circular dependencies that prevent clean splitting" |
-
-If an early exit is triggered, present the finding and stop. User may override with explicit instruction to proceed anyway.
-
-### Circular Dependency Handling
-
-If circular dependencies are detected:
-
-1. Identify the minimal cycle set
-2. Attempt to break cycles by finding shared abstractions that can be extracted into a separate skill
-3. If cycles cannot be broken, present options to the user:
-   - Extract shared portion into a new utility skill
-   - Merge the cyclic nodes into a single skill
-   - Proceed with documented circular dependencies (not recommended)
+> **Detailed reference (load when executing Phase 1):** `references/analysis-details.md` — Input Types, Input Scope (resource tree), Parsing Process, Independence Score formula + thresholds, Early Exit Criteria, Circular Dependency Handling.
 
 ### Output to User
 
@@ -185,7 +114,7 @@ Select the splitting strategy and granularity level based on Phase 1 analysis.
 | **Element** | Input contains multiple independent concerns/functions | Responsibility boundaries; each domain becomes one skill |
 | **Nine-Grid** | Input is a complex system needing multi-dimensional decomposition | Two orthogonal dimensions (e.g., complexity × stage) into a matrix |
 
-**REQUIRED:** See `strategies.md` in this skill's directory for detailed descriptions, examples, and granularity controls for each strategy.
+> **Detailed reference (load when comparing strategies):** `references/strategies.md` — full descriptions, worked examples, and granularity controls for each strategy.
 
 ### Auto-Recommendation Logic
 
@@ -227,9 +156,7 @@ Execute the split and generate standards-compliant SKILL.md files with associate
 
 1. **Group nodes by selected strategy** to form sub-skill boundaries
 2. **Allocate resources** with conflict resolution (see below)
-3. **Generate standard SKILL.md for each sub-skill**, following `templates/skill-output-template.md`:
-   - YAML frontmatter (name + description, description starts with "Use when...")
-   - Overview, When to Use, Dependencies, Core Pattern, Quick Reference, Implementation, Common Mistakes
+3. **Generate standard SKILL.md for each sub-skill**, following `assets/templates/skill-output-template.md`
 4. **Generate sub-skill directory structure**
 
 ### Resource Conflict Resolution
@@ -272,41 +199,9 @@ original-skill-split/
 
 ### Split Report
 
-Generate `splitting-report.md` in the output root containing:
+Generate `splitting-report.md` in the output root with summary, generated-skills table, dependency graph (PlantUML), and coverage check.
 
-```markdown
-# Skill Splitting Report
-
-## Summary
-- **Source:** [input file/structure]
-- **Strategy:** [strategy used]
-- **Granularity:** [fine/medium/coarse]
-- **Result:** [N] skills generated
-
-## Generated Skills
-| Skill | Type | Description | Dependencies | Associated Files |
-|-------|------|-------------|--------------|------------------|
-
-## Dependency Graph
-[PlantUML diagram showing inter-skill dependencies]
-
-## Coverage Check
-- Original nodes: [N]
-- Covered by splits: [N]
-- Orphaned: [list]
-- Redundant overlaps: [list]
-```
-
-Use PlantUML for the dependency graph:
-
-```plantuml
-@startuml
-skinparam componentStyle rectangle
-[skill-a] --> [skill-b] : provides config
-[skill-a] --> [skill-c] : shared utilities
-[skill-b] --> [skill-c] : data format
-@enduml
-```
+> **Generator template (load when producing the report):** `assets/templates/split-report-template.md` — report markdown body + PlantUML dependency-graph example.
 
 ---
 
@@ -316,25 +211,13 @@ skinparam componentStyle rectangle
 
 Validate completeness, independence, and standards compliance of all generated skills.
 
-### Verification Checklist
+### Core Steps
 
-| Check | Description | Pass Condition |
-|-------|-------------|----------------|
-| **Coverage** | Every node from original input is assigned to a sub-skill | No orphaned nodes |
-| **Independence** | Each sub-skill can be understood and used independently | No unresolved internal references |
-| **Standards Compliance** | Each SKILL.md follows writing-skills conventions | Frontmatter correct, structure complete |
-| **Dependency Completeness** | All cross-skill references have corresponding declarations | Requires/Required by forms a closed loop |
-| **No Redundancy** | No unnecessary content duplication | Duplicated lines between generated SKILL.md files < 5% |
-| **Resource Attribution** | Referenced files/scripts correctly allocated | No dangling references |
-| **Testability Reminder** | Each generated skill is a candidate for TDD validation | Remind user to test per writing-skills Iron Law |
+1. **Run the verification checklist** against every generated skill
+2. **Apply testing guidance** — remind the user testing is their responsibility; suggest starting with leaf skills; flag high-dependency skills
+3. **Report** pass/fail per check with specific issues and fix suggestions
 
-### Testing Guidance
-
-Generated skills are NOT automatically tested — testing is the user's responsibility. Phase 4 MUST:
-
-1. **Remind the user** that each generated skill should be tested following the `writing-skills` TDD process (RED-GREEN-REFACTOR with pressure scenarios)
-2. **Suggest priority order:** start with leaf skills (no `Requires`) since they have no downstream dependencies
-3. **Flag skills** most likely to need testing attention — skills with high dependency counts or complex resource allocations
+> **Detailed reference (load when executing Phase 4):** `references/verification-checklist.md` — full 7-check verification table + testing guidance.
 
 ### Output
 
