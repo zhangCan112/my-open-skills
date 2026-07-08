@@ -13,6 +13,7 @@ A personal collection of AI Agent Skills.
 | [enterprise-knowledge](./enterprise-knowledge/) | Queryable knowledge base for enterprise internal code & frameworks, with a guided authoring mode for adding knowledge (trigger + detail) | [README](./enterprise-knowledge/README.md) |
 | [release-test-focus](./release-test-focus/) | Compile a release's main-project and dependency tickets into a tester-facing brief (must-test priorities + regression scope) | [README](./release-test-focus/README.md) |
 | [designing-workflows](./designing-workflows/) | Turn an AI goal into a reusable, layered workflow playbook (capability-inventory-driven, begin-with-the-end-in-mind) | [SKILL.md](./designing-workflows/SKILL.md) |
+| [skill-architect](./skill-architect/) | Pick the right structural pattern for a skill, scaffold from a template, or refactor a messy SKILL.md into a modular architecture | [SKILL.md](./skill-architect/SKILL.md) |
 
 ## Plugins
 
@@ -32,6 +33,7 @@ cp -r dependency-migrator ~/.claude/skills/
 cp -r enterprise-knowledge ~/.claude/skills/
 cp -r release-test-focus ~/.claude/skills/
 cp -r designing-workflows ~/.claude/skills/
+cp -r skill-architect ~/.claude/skills/
 ```
 
 ## License

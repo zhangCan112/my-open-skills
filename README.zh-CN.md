@@ -13,6 +13,7 @@
 | [enterprise-knowledge](./enterprise-knowledge/) | 企业知识库 — 查询企业内部代码与框架知识，并带引导式添加模式录入新知识（trigger + detail） | [README](./enterprise-knowledge/README.md) |
 | [release-test-focus](./release-test-focus/) | 发布测试简报 — 把主项目与依赖库的 ticket 汇编成面向测试的简报（必测重点 + 回归范围） | [README](./release-test-focus/README.md) |
 | [designing-workflows](./designing-workflows/) | 工作流编排 — 把"用 AI 做某事"的目标编排成可复用、分层的 workflow playbook（能力盘点驱动、以终为始） | [SKILL.md](./designing-workflows/SKILL.md) |
+| [skill-architect](./skill-architect/) | Skill 架构师 — 为 skill 选择正确的结构模式、按模板出脚手架，或把屎山 SKILL.md 重构成模块化架构 | [SKILL.md](./skill-architect/SKILL.md) |
 
 ## Plugins
 
@@ -32,6 +33,7 @@ cp -r dependency-migrator ~/.claude/skills/
 cp -r enterprise-knowledge ~/.claude/skills/
 cp -r release-test-focus ~/.claude/skills/
 cp -r designing-workflows ~/.claude/skills/
+cp -r skill-architect ~/.claude/skills/
 ```
 
 ## 许可证
