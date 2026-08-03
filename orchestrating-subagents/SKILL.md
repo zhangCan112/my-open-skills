@@ -28,7 +28,7 @@ This skill works by **grounded grilling**. It does not fire questions cold. It f
 - A single agent that doesn't need delegation — just write the prompt
 - Scaffolding an opencode skill (`SKILL.md` + `references/`) → use `skill-architect`
 - Producing a workflow playbook (`flow.md` + `steps/`) → use `designing-workflows`
-- A job a single LLM call can do — over-orchestration is the top failure mode here
+- A job a single LLM call can do, or anything that fails the simpler-first gate (enumerable steps, no isolation benefit, one-off) — over-orchestration is the top failure mode; run `references/agent-vs-alternative.md` first
 
 > The two sibling skills above (`skill-architect`, `designing-workflows`) are **repo-local** — they exist in this repository but won't be installed on the GitHub Copilot host where this skill runs. Treat them as orientation only.
 
@@ -90,11 +90,14 @@ Each phase must complete before the next. Gates require **explicit** user confir
 
 ### Phase 0 — Read & classify input
 
-Read the input fully. Classify it as one of:
+Load `references/agent-vs-alternative.md` and run the **simpler-first gate**: if a single call, a prompt file, a workflow playbook, or a single custom agent would serve better (steps enumerable, no context-isolation benefit, one-off), say so and stop — do not produce `.agent.md` files.
+
+If the gate passes, read the input fully. Classify it as one of:
 
 - **(a) Goal/task description** — "build a feature builder that plans + implements + reviews"
 - **(b) Existing single-agent prompt** — a monolithic instruction to be split into coordinator + workers
 - **(c) Existing workflow document** — phases to map onto workers
+- **(d) Something else** — resolve scope with the user before proceeding (may still exit via the gate)
 
 For (b): identify what the single agent does and which parts could be delegated to isolated context. For (c): map each existing phase to a candidate worker. **Do not explore the codebase unless the user explicitly asks.** No questions yet — only understanding.
 
@@ -132,7 +135,7 @@ Load `assets/frontmatter-spec.md` and the templates (`assets/coordinator.agent.m
 
 | Phase | Output | Gate |
 |---|---|---|
-| 0 Read & classify | input type (a/b/c) + understanding | — |
+| 0 Read & classify | simpler-first gate result + input type (a/b/c/d) + understanding | — |
 | 1 Grounded discovery | tentative design + gap list | — |
 | 2 Grounded grilling | confirmed worker decomposition | **user confirms workers** |
 | 3 Produce & self-check | coordinator + worker `.agent.md`, DoD passed | user reviews output |

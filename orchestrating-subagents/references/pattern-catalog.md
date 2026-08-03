@@ -162,6 +162,9 @@ You process a list of items by dividing and conquering:
 
 ## Decision tree — picking a pattern
 
+First run the **upstream gate** (`references/agent-vs-alternative.md`):
+a script, prompt file, skill, workflow playbook, or single custom agent would serve better → **STOP** — do not orchestrate. Only pick a pattern if `.agent.md` isolation genuinely helps.
+
 ```
 Is the work a staged pipeline with different tools per stage?  → Pattern 1 (Coordinator+Worker)
 Is it review/analysis wanting independent lenses?              → Pattern 2 (Multi-perspective)

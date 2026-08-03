@@ -64,5 +64,7 @@
 - [ ] A user who wasn't in the grilling could drop these files into `.github/agents/` (workspace) or `~/.copilot/agents/` (personal) and describe the team's purpose in one sentence
 - [ ] You did not add a worker "just in case" — every worker has a distinct, named capability
 - [ ] The simplest viable pattern was chosen; you can justify each worker's existence
+- [ ] The upstream gate (`references/agent-vs-alternative.md`) was applied: you can justify why `.agent.md` orchestration beats a script / prompt file / skill / workflow playbook / single custom agent for this input
+- [ ] Transparency held: the coordinator's planning/delegation steps are explicit, not hidden; tools are minimal and documented (ACI — invest as much in the agent's tool interface as in a human UI)
 
 If any box is unchecked → return to Phase 3, fix, re-run this list. Do not deliver a partial pass.

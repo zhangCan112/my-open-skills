@@ -18,7 +18,7 @@ This is intentional: the skill is an interactive, grounded grilling procedure, n
 
 Give it a task, an existing single-agent prompt, or a workflow document. It:
 
-1. Reads and classifies the input
+1. Reads and classifies the input, running the **simpler-first gate** first (is a script / prompt file / workflow / single agent the better answer? if so, it says so and stops)
 2. Loads the orchestration-pattern knowledge and forms a tentative design
 3. Interviews you **one question at a time**, each with a recommended answer (grounded grilling)
 4. Produces a coordinator `.agent.md` + one `.agent.md` per worker, then self-checks against a DoD checklist
@@ -34,6 +34,8 @@ It will **not** write files until you confirm the worker decomposition — that'
 ## When NOT to use
 
 - One LLM call would do it — over-orchestration is the top failure mode
+- The work is enumerable in advance / workflow-shaped → a prompt file or `designing-workflows` playbook fits better
+- One-off task with no isolation benefit or amortization
 - You want an opencode skill scaffold → use `skill-architect`
 - You want a runtime workflow playbook → use `designing-workflows`
 
@@ -50,6 +52,7 @@ orchestrating-subagents/
 ├── SKILL.md                       # thin orchestrator (always read)
 ├── README.md                      # this file
 ├── references/
+│   ├── agent-vs-alternative.md    # upstream gate: orchestrate or not? (Phase 0)
 │   ├── pattern-catalog.md         # patterns + decision tree (Phase 1)
 │   ├── discovery-guide.md         # grounded grilling agenda (Phase 1–2)
 │   ├── copilot-models.md          # GitHub Copilot model catalog for `model:` (Phase 2 D4 / 3)

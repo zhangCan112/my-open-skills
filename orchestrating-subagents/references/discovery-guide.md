@@ -20,6 +20,8 @@ Grounded grilling = read first, form a hypothesis, then interview one question a
 ### D1 — Pattern selection
 **Resolve first — everything downstream depends on it.**
 
+> Run the upstream gate (`references/agent-vs-alternative.md`) before this table: if a script / prompt file / skill / workflow playbook / single custom agent would serve better, stop and recommend that instead — do not grill for a pattern.
+
 | Signal in the input | Pattern |
 |---|---|
 | Staged pipeline, different tools per stage, build/refactor | Pattern 1 — Coordinator+Worker |
@@ -29,7 +31,7 @@ Grounded grilling = read first, form a hypothesis, then interview one question a
 | Only one stage needs isolated context | V1 — Research-then-implement |
 | N parallel analyses → action plan (not review) | V2 — Parallel fan-out |
 | N alternative solutions researched in isolation → compare → recommend | V2 — Explore multiple solutions |
-| None of the above / one call would do | **NONE — do not orchestrate** |
+| None of the above / one call would do / steps enumerable | **NONE — do not orchestrate** |
 
 **Ambiguity to grill:** if the input could be Pattern 1 *or* Pattern 2 (e.g. "review and then fix"), ask which axis matters more — staged iteration (→ P1) or perspective independence (→ P2). Recommend based on whether iteration is real.
 
