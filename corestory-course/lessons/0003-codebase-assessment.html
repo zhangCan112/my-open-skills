@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 03 · 阶段一：Codebase Assessment</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0002-playbook-landscape.html">← Lesson 02</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 03 · 现代化阶段一</p>
+    <h1>Codebase Assessment（代码库现代化就绪度评估）</h1>
+    <p class="subtitle">每场现代化都从同一个问题开始：到底在跟什么东西打交道？</p>
+  </header>
+
+  <h2>为什么需要系统化评估</h2>
+  <p>用人脑走查几份源码 + 架构师访谈，得到的是"大家<em>以为</em>系统长什么样"的快照。<strong>部落知识只能覆盖常改动的 20%</strong>——剩下 80%（每月跑一次的批处理、没人记得的集成点、七个服务悄悄依赖的公共模块）藏在系统性排查之前。CoreStory 摄取并语义理解<em>整个</em>代码库，给你一个能对着全系统（不是抽样）回答具体架构问题的 <strong>Expert</strong>。<sup><a href="https://docs.corestory.ai/playbooks/modernization/codebase-assessment">来源</a></sup></p>
+
+  <h2>关键原则：Expert before Navigator</h2>
+  <p>先问"这套系统<em>应该</em>怎么工作"（设计架构、数据流、集成模型），再去找"哪里出问题"。这个架构基线让偏差、捷径、耦合热点、技术债都更容易现形。</p>
+
+  <h2>六步工作流</h2>
+  <ol>
+    <li><strong>Setup &amp; Orientation</strong> — <code>list_projects</code> 确认目标；<code>get_project_prd</code>/<code>get_project_techspec</code> 取架构语境；建名为 <code>[Assessment] 系统名 - Modernization Readiness</code> 的对话线程。</li>
+    <li><strong>Architecture Mapping</strong> — 组件清查、通信模式、数据存储、入口点，以及（对大型机）非代码工件：<strong>JCL、copybook、CICS、VSAM、排序工具控制语句、系统出口、存储过程</strong>。扫描架构：
+      <pre><code>send_message: "提供此系统的主要组件、服务与模块完整清单。对每个组件，说明用途、技术栈、近似规模。按逻辑域或边界上下文分组。"</code></pre>
+    </li>
+    <li><strong>Dependency Analysis</strong> — 内部耦合、共享数据存储、外部依赖、集成点脆弱性。这一步直接喂给阶段四。
+      <div><pre><code>"哪些组件共享数据库表或数据存储？列出每个共享资源的所有读写组件。是否有跨组件边界的外键？"</code></pre></div>
+    </li>
+    <li><strong>Tech Debt &amp; Risk</strong> — 技术债、安全隐患、合规缺口、测试性、运维复杂度。每项都要严重度 + 爆炸半径，且<strong>一定带文件路径</strong>。</li>
+    <li><strong>Readiness Scoring</strong> — 每个组件 1–5 分（5=马上能改，1=完全不行），并建议 7 Rs 策略——<strong>按组件，不是全系统一刀切</strong>（53% 企业走混合策略）。</li>
+    <li><strong>Report Generation</strong> — 综合成 Modernization Readiness Report；对话改名 <code>RESOLVED - [Assessment]...</code>。</li>
+  </ol>
+
+  <h2>评分标尺</h2>
+  <table>
+    <tr><th>分数</th><th>含义</th></tr>
+    <tr><td>5</td><td>可以直接现代化（低耦合、好测试覆盖、清晰边界）</td></tr>
+    <tr><td>4</td><td>小准备即可（解一些耦合、补一些测试）</td></tr>
+    <tr><td>3</td><td>需中量准备（共享数据存储、中度耦合、测试有限）</td></tr>
+    <tr><td>2</td><td>需大量准备（深度耦合、无测试、与多组件共享状态）</td></tr>
+    <tr><td>1</td><td>未就绪（极端耦合、无测试、文档化不足、合规阻碍）</td></tr>
+  </table>
+
+  <div class="callout gate">
+    <span class="ctitle">HITL 门禁</span>
+    报告须经技术领导审阅作 <strong>Go/No-Go</strong> 决定后才进入阶段二/三。没批准的评估会一路放大错误——不可跳过。
+  </div>
+
+  <h2>最重要的产出：Modernization Readiness Report</h2>
+  <p>固定结构：Executive Summary（就绪度、组件数、策略分布、Top 3–5 findings）→ Architecture Map → Dependency Graph → Tech Debt Inventory（TD-001...）→ Risk Register（RR-001...）→ Component Readiness Scores → Recommended Modernization Sequence → Prerequisites &amp; Blockers。全部带文件级证据。</p>
+
+  <h2>最佳实践速记</h2>
+  <ul>
+    <li><strong>先看合成规范再提问</strong>：用 TechSpec 词汇让查询更具体。</li>
+    <li><strong>每组件都评估</strong>，哪怕你以为你了解它——惊喜总在系统化之后。</li>
+    <li><strong>别漏非代码工件</strong>：大型机会省掉 30–50% 的范围。</li>
+    <li><strong>永远要文件路径</strong>；<strong>低测试覆盖是阻塞项不是脚注</strong>（没基线就没有"正确"定义）。</li>
+    <li><strong>诚实地打分——Retain 是合理的结局</strong>，好评估同样靠"阻止不必要现代化"省钱。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="ready">
+    <p class="q">组件得 2 分（需大量准备）是什么状况？</p>
+    <button class="opt">低耦合、测试齐备</button>
+    <button class="opt" data-correct="true">深度耦合、无测试覆盖</button>
+    <button class="opt">正好可以立刻迁移</button>
+    <button class="opt">属于纯退役候选组件</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="noncode">
+    <p class="q">大型机评估中最容易被低估的是什么？</p>
+    <button class="opt">前端组件代码量</button>
+    <button class="opt" data-correct="true">JCL 等非代码工件</button>
+    <button class="opt">测试框架的选择</button>
+    <button class="opt">移动端适配难度</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/modernization/codebase-assessment">官方 Codebase Assessment playbook</a> ——含所有一键可复制的 send_message 查询、六步工作流、评分模板 + 完整报告模板。学完此课请通读该页的 "Prompting Patterns Reference" 表。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0002-playbook-landscape.html">← Lesson 02</a>
+    <a href="0004-business-rules-extraction.html">下一课：阶段二 Business Rules Extraction →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想让我帮你把报告模板换成你自己代码库的名字跑一遍？随时回来问。
+  </div>
+
+</div>
+</body>
+</html>

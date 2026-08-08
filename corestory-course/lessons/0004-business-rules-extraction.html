@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 04 · 阶段二：Business Rules Extraction</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0003-codebase-assessment.html">← Lesson 03</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 04 · 现代化阶段二</p>
+    <h1>Business Rules Extraction（业务规则提取）</h1>
+    <p class="subtitle">提取、编目并验证代码里隐藏的业务规则——这是"正确"的定义，阶段六就靠它验证。</p>
+  </header>
+
+  <h2>为什么这条规则清单如此重要</h2>
+  <p>阶段二产出的 <strong>Business Rules Inventory</strong> 就是整个现代化的<strong>行为契约</strong>：阶段六验证的"正确"就是这份清单。如果一条规则没进清单，它就不会被验证。同样道理，它也能用于：不熟悉代码库的上手、重构/迁移/重写前准备、合规审计、构建 AI Agent 上下文、解决模块间行为冲突。<sup><a href="https://docs.corestory.ai/playbooks/business-rules-extraction">来源</a></sup></p>
+
+  <h2>指导原则：Expert before Code</h2>
+  <p>先向 CoreStory 问"应该有哪些规则、它们在哪里"，再落地下代码核对。CoreStory 能浮出隐式约定、跨层交互、未曾写入文档的不变量。</p>
+
+  <h2>六阶段提取流程（重点）</h2>
+  <ol>
+    <li><strong>Setup &amp; Scoping</strong> — 选项目、查旧对话、建持久对话 <code>Business Rules Extraction — &lt;scope&gt;</code>。范围从单个模块起步。</li>
+    <li><strong>Architectural Survey（Expert）</strong> — 摸清业务逻辑分布在哪层（service/validation/auth/data/API/config），再按层提问：
+      <pre><code>"业务逻辑在此代码库哪里实现——服务层、中间件、数据库约束还是分层都有？给我一张各架构层执行哪些规则类型的图。"</code></pre>
+    </li>
+    <li><strong>Deep Extraction（Expert + Navigator）</strong> — 按类目深挖：验证规则、授权规则、状态迁移、计算/定价、验收标准（AC）、不变量、隐式规则、端到端工作流。<strong>具体性问题原则</strong>：特定于域的精确问题（"密码策略、邮箱校验、基于角色的访问控制"）远胜于笼统的"业务规则有哪些"。</li>
+    <li><strong>4A Code Verification</strong> — 走本地代码核对每条规则（各框架的约束写法：Java @UniqueConstraint、Django unique=True、Node Zod/Joi 等），跨三方交叉引用 PRD 意图 vs CoreStory 架构视图 vs 代码真值，冲突标 <code>[CONFLICT]</code>。</li>
+    <li><strong>4B Enforcement Verification</strong> — 证明规则<em>真的在运行时被强制</em>：找到"强制执行点"（拒绝非法输入的那一行，不是字段声明处）、违规时发生什么、范围描述是否准确。结果：Confirmed / Corrected / Downgraded / Removed。</li>
+    <li><strong>4C Flow-Trace Discovery</strong> — 从用户入口端到端追踪流程，抓出规则分解法漏掉的行为（输入被忽略/覆盖、签名与行为不符、被悄悄吞掉的错误）。</li>
+    <li><strong>Documentation + Conversation Capture</strong> — 合成 BR-XXX 清单；改名 <code>RESOLVED - Business Rules Extraction...</code>。</li>
+  </ol>
+
+  <h2>产出结构：BR-XXX 清单条目字段</h2>
+  <p>Domain、Description、Type（Validation/Authorization/State Transition/Calculation/Constraint/Workflow/Configuration）、Claim Type（Workflow/Constraint/Validation/Default/Calculation/Authorization）、Enforcement Layer、Enforcement Point、Level、Source Files（path.ext 行号）、Rule Logic、Acceptance Criteria、Invariants、Edge Cases、Related Rules、Confidence、Discovery Method。</p>
+
+  <div class="callout">
+    <span class="ctitle">验证矩阵的关键</span>
+    下表是 4B 的产出：<code>BR-ID | Claim Type | Enforcement Point | Violation Behavior | Scope | Level | Status</code>。声明了但没强制执行的规则进 <strong>Appendix A：Declared But Not Enforced</strong>（对现代化决定仍然重要）。
+  </div>
+
+  <h2>Confidence Protocol（置信度协议）</h2>
+  <table>
+    <tr><th>状态</th><th>含义</th><th>动作</th></tr>
+    <tr><td>Verified</td><td>规格 + SME 确认 + 有测试</td><td>照原样迁移</td></tr>
+    <tr><td>High-confidence</td><td>规格 + 代码证据清晰</td><td>风险高或涉财务/合规才需 SME 复核</td></tr>
+    <tr><td>Hypothesized</td><td>有迹象但含糊</td><td><strong>迁移前必须调查</strong></td></tr>
+    <tr><td>Contradicted</td><td>CoreStory 说 X，SME/测试说 Y</td><td>调查：是代码对、SME 假设过时，还是 CoreStory 解读错了？</td></tr>
+  </table>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="enforce">
+    <p class="q">"强制执行点"指的是什么？</p>
+    <button class="opt">字段声明所在的行</button>
+    <button class="opt" data-correct="true">拒绝非法输入运行时的行</button>
+    <button class="opt">需求文档中的规则段</button>
+    <button class="opt">代码仓库提交记录</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="confidence">
+    <p class="q">CoreStory 说规则 X 存在但测试证明路线不可达，算什么？</p>
+    <button class="opt">Verified 已验证</button>
+    <button class="opt">Hypothesized 猜测中</button>
+    <button class="opt" data-correct="true">Contradicted 有矛盾</button>
+    <button class="opt">High-confidence 高置信</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/business-rules-extraction">官方 Business Rules Extraction playbook</a> —— 含全部可按阶段复制的 send_message 查询、BR-XXX 完整模板、验证矩阵表格。此前可先读 <a href="https://docs.corestory.ai/playbooks/modernization/codebase-assessment">评估 playbook</a> 保持上下文连贯。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0003-codebase-assessment.html">← Lesson 03</a>
+    <a href="0005-target-architecture.html">下一课：阶段三 Target Architecture →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 不确定"强制验证"如何在你项目的框架（Spring/Django/Node）下做？把框架告诉老师。
+  </div>
+
+</div>
+</body>
+</html>

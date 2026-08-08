@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 09 · 阶段六：Behavioral Verification</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0008-monolith-to-microservices.html">← Lesson 08</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 09 · 现代化阶段六</p>
+    <h1>Behavioral Verification（行为验证）</h1>
+    <p class="subtitle">证明"新代码确实做着旧代码做过的事"——现代化项目的成败就在这一步。</p>
+  </header>
+
+  <h2>开篇的悖论</h2>
+  <p>现代化失败不是因为团队读不懂旧代码，而是因为<strong>无法证明新代码与旧代码行为一致</strong>。而 "not every behavior should be preserved——有些是 bug" 这个判断本身需要人。因此阶段六的核心动作：以阶段二 <strong>Business Rules Inventory</strong> 为行为契约，逐规则验证，而不是对着一堆含 bug 的旧代码逐行对比。<sup><a href="https://docs.corestory.ai/playbooks/modernization/behavioral-verification">来源</a></sup></p>
+
+  <h2>五步内部流程（阶段六的内部步骤）</h2>
+  <ol>
+    <li><strong>Setup</strong> — 从 <code>RESOLVED - [Business]</code> 对话取规则清单；为 <code>[Verification] 系统名 - 组件名</code> 建验证线程；把清单收窄为"本组件适用的规则"（直接实现 / 作为工作流一部分 / 依赖它 / 跨切面）。</li>
+    <li><strong>Rule-by-Rule Verification</strong> — 逐条规则追溯到现代化实现（找到文件/函数/行区间，判定直接 vs 分散、直接 vs 间接执行），比较<strong>行为语义</strong>（输入条件、逻辑、副作用、错误处理、输出），分类为 <strong>Equivalent / Improved / Different / Missing</strong>。对含糊/带 bug 的旧规则，问"这行为是有意的吗？保留 bug 还是修掉？"默认保守：无批核就保留旧行为。</li>
+    <li><strong>Edge Case &amp; Invariant Testing</strong> — 边界条件（null/空、极值、并发、时区/闰年、货币舍入与浮点、状态边界）在新旧各测一遍；验证系统不变量被保留；再测<strong>隐式行为</strong>（默认值、顺序保证、时机/重试/限速、审计轨迹、错误消息格式）——"隐形回归"的来源。</li>
+    <li><strong>Integration Point Verification</strong> — 对比 API 契约（端点、方法、请求/响应格式、HTTP 码、分页/排序/过滤、认证要求）与数据格式/编码（字符集、日期、数值精度、null 处理、序列化）；分析下游消费者受影响与 Coexist 中 facade 如何翻译。即使新增可选字段也标出。</li>
+    <li><strong>Equivalence Report</strong> — 汇总为 Behavioral Equivalence Report；改名 <code>RESOLVED - [Verification]...</code>。</li>
+  </ol>
+
+  <h2>四层验证策略</h2>
+  <table>
+    <tr><th>层级</th><th>是否需要运行</th><th>方法示例</th></tr>
+    <tr><td>Tier 1 静态</td><td>否</td><td>规则追踪、不变量检查、数据流对比、边界用例生成。CoreStory 最强项（同时理解两个代码库）。</td></tr>
+    <tr><td>Tier 2 动态</td><td>是</td><td>刻画测试（Golden Master）、契约测试</td></tr>
+    <tr><td>Tier 3 生产级</td><td>需要类生产环境</td><td>影子流量测试、记录回放（record-replay）</td></tr>
+    <tr><td>Tier 4 数据迁移</td><td>若涉及迁移</td><td>行数、校验和、语义校验、参照完整性</td></tr>
+  </table>
+
+  <div class="callout">
+    <span class="ctitle">刻画测试 / 金标（Characterization Testing）</span>
+    由 Michael Feathers《Working Effectively With Legacy Code》提出：对旧系统抓取一套全面输入的输出作为"金标"，现代化实现必须逐一对齐——旧系统的行为<em>就是</em>规范。工具：ApprovalTests 等。
+  </div>
+
+  <div class="callout gate">
+    <span class="ctitle">HITL 门禁：等价签字</span>
+    报告须经领域专家或工程负责人确认（规则全等价、差异可接受、缺规则已处理）后才允许<strong>退役旧组件 / 进入 Eliminate</strong>。等价报告：Ready for Eliminate / Needs Remediation / Needs Domain Expert Review 三态之一。
+  </div>
+
+  <h2>报告骨架</h2>
+  <p>Summary（范围内规则计数 + 各状态）→ Rule-by-Rule Verification（Rule ID | 旧位置 | 新位置 | 状态 | 备注）→ Behavioral Differences（分类：Intended improvement / Acceptable deviation / Regression）→ Missing Rules → Edge Case Findings → Integration Point Verification → Invariants Verified → Recommendation + 签字清单。</p>
+
+  <h2>最佳实践</h2>
+  <ul>
+    <li><strong>对着清单验证，不是逐行旧代码</strong>——后者包含 bug、workaround、死代码。</li>
+    <li><strong>先分类再修</strong>：不是每个差异都是 bug（改进/退化要分开，只有 regression 才修）。</li>
+    <li>涉及含糊规则要请<strong>领域专家</strong>；别跳过集成点验证；隐式行为要测（清单里看不到）。</li>
+    <li>按功能区<b>分批验证</b>；让验证把置信度从 Hypothesized 升级到 High-confidence / Verified。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="tier">
+    <p class="q">不需运行代码、靠规则追踪与不变量检查的是哪一层？</p>
+    <button class="opt" data-correct="true">Tier 1 静态验证</button>
+    <button class="opt">Tier 2 动态验证</button>
+    <button class="opt">Tier 3 生产级验证</button>
+    <button class="opt">Tier 4 数据迁移验证</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="preserve">
+    <p class="q">发现旧实现有一个 bug，新实现"修好了它"——这是什么？</p>
+    <button class="opt" data-correct="true">Intended improvement 有意改进</button>
+    <button class="opt">Regression 回归</button>
+    <button class="opt">Missing rule 缺规则</button>
+    <button class="opt">Implicit behavior 隐式行为</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/modernization/behavioral-verification">官方 Behavioral Verification playbook</a> ——含五步全流程、四层验证表、等价报告完整模板。想深挖刻画测试理论可读 Feathers《Working Effectively With Legacy Code》。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0008-monolith-to-microservices.html">← Lesson 08</a>
+    <a href="0010-feature-implementation.html">下一课：Feature Implementation →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想知道 Golden Master 具体怎么在你的语言里搭？问老师要一份最小可跑示例。
+  </div>
+
+</div>
+</body>
+</html>

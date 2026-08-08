@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 16 · Using CoreStory with Jira</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0015-ma-technical-due-diligence.html">← Lesson 15</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 16 · 集成</p>
+    <h1>Using CoreStory with Jira</h1>
+    <p class="subtitle">把 Jira 当收发包层、CoreStory 当代码智能层、Agent 当协调者——四种日常工作流解放你的 sprint。</p>
+  </header>
+
+  <h2>三方编排模型</h2>
+  <table>
+    <tr><th>构件</th><th>角色</th></tr>
+    <tr><td>Jira MCP Server</td><td>收/发：读 ticket、回评论、建 issue、转状态</td></tr>
+    <tr><td>CoreStory MCP Server</td><td>代码智能：架构、相关文件、模式与依赖</td></tr>
+    <tr><td>AI Coding Agent</td><td>协调者：从 Jira 拉、问 CoreStory、实现、写回 Jira</td></tr>
+  </table>
+  <p>典型流程：<strong>Jira ticket → CoreStory 分析 → 实现 → 回写 Jira</strong>。注意：CoreStory 没有原生 Jira 插件，集成完全走 MCP。<sup><a href="https://docs.corestory.ai/playbooks/using-corestory-with-jira">来源</a></sup></p>
+
+  <h2>四种工作流</h2>
+  <h3>Workflow 1 · 解析工单（核心）</h3>
+  <pre><code>"Fetch Jira ticket PROJ-1234 and resolve it using CoreStory for code intelligence."</code></pre>
+  <p>拉 ticket（概要/描述/AC/优先级/标签/link）→ 建 CoreStory 对话 → 查架构 → TDD 实现 → 回写实现摘要 + 文件清单 + 测试结果 → 转状态（如 In Progress → In Review）。含可选定制：跟帖 root-cause、文件改动、测试结果，然后转 "In Review"。</p>
+
+  <h3>Workflow 2 · 丰富 ticket（只读，练手用）</h3>
+  <pre><code>Read Jira ticket PROJ-5678 and use CoreStory to add implementation context.
+I want to know: which files are involved, what patterns to follow,
+and what the acceptance criteria should be.</code></pre>
+  <p>Agent 回帖结构化分析：Affected Files / Recommended Pattern / Suggested Acceptance Criteria / Estimated Complexity。<strong>批量版</strong>：一次给 3 张 ticket 各加分析。</p>
+
+  <h3>Workflow 3 · 起草新 ticket</h3>
+  <pre><code>Use CoreStory to analyze the authentication module in my project.
+If you find any gaps in test coverage, security concerns, or tech debt
+issues, create Jira tickets for each in the PROJ project.</code></pre>
+  <p>让 Agent 查模块，把可行动项（缺测试、安全缺口、代码质量问题、文档缺口）转成结构化的新 ticket（可指定类型 / 打标签 / 分配 sprint）。</p>
+
+  <h3>Workflow 4 · 分诊与估时（sprint 规划利器）</h3>
+  <pre><code>Read these Jira tickets and give me an implementation assessment for each:
+PROJ-100, PROJ-101, PROJ-102, PROJ-103</code></pre>
+  <p>每个 ticket：拉详情 → 查 CoreStory（文件、复杂度、依赖、测试覆盖）→ 输出评估（复杂度 S/M/L/XL、影响文件、风险、建议路径）。可汇总成表：ticket ID | 摘要 | 复杂度 | 关键风险 | 建议 sprint。</p>
+
+  <h2>Jira MCP 配置（两选一）</h2>
+  <ul>
+    <li><strong>Option A · Atlassian Rovo MCP（推荐，Jira Cloud）</strong>：云托管，OAuth 2.1，支持 Jira/Confluence/Compass。端点 <code>https://mcp.atlassian.com/v1/mcp</code>（本地代理用 <code>npx mcp-remote@latest ...</code>）。</li>
+    <li><strong>Option B · 社区服务器</strong>：<code>mcp-atlassian</code>（Python，Cloud + Server/DC）或 <code>@mcp-devtools/jira</code>（Node，Jira 专注）。用 Jira API token（id.atlassian.com 生成）。</li>
+  </ul>
+
+  <div class="callout gate">
+    <span class="ctitle">权限即边界</span>
+    Agent 只能看到/修改你账号能访问的；Rovo 需组织管理员放行 AI 工具连接。转状态只在你允许的 workflow 转换范围内。商店善用——先做只读 workflow 2，建立信任再上自动解析。
+  </div>
+
+  <h2>最佳实践</h2>
+  <ul>
+    <li><strong>每处理一个 ticket 单独开一个实现会话</strong>；批量只用于 enrichment / triage / 起草。</li>
+    <li>打统一标签（如 <code>corestory-assisted</code>）追踪 AI 处理的工单。</li>
+    <li>CoreStory 与 Jira 说法冲突时：架构以 <strong>CoreStory</strong> 为准，需求/AC 以 <strong>Jira</strong> 为准。</li>
+    <li>ticket 描述本身要高质量（质量进 → 质量出）。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="flow">
+    <p class="q">哪个工作流最适合先建立信任、只读不写？</p>
+    <button class="opt" data-correct="true">Workflow 2 丰富描述</button>
+    <button class="opt">Workflow 1 解析工单</button>
+    <button class="opt">Workflow 3 起草工单</button>
+    <button class="opt">Workflow 4 批量分诊</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="mcp">
+    <p class="q">Jira MCP 集成预置下，推荐用哪条路径？</p>
+    <button class="opt" data-correct="true">Atlassian Rovo 官方服务器</button>
+    <button class="opt">从头手动敲 REST API</button>
+    <button class="opt">临时脚本批量导出 CSV</button>
+    <button class="opt">无 MCP 靠复制粘贴</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/using-corestory-with-jira">官方 Using CoreStory with Jira playbook</a> ——含四种工作流的完整脚本、Rovo/社区两条配置路径、各 harness（Claude Code/Cursor/Copilot/Windsurf/Devin）配置块。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0015-ma-technical-due-diligence.html">← Lesson 15</a>
+    <a href="0017-spec-kit-companion.html">下一课：Spec Kit Companion →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想让我枚举在 Claude Code 里配 Rovo + CoreStory 双 MCP 的具体命令？直接问。
+  </div>
+
+</div>
+</body>
+</html>

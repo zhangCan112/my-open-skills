@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 18 · 从 Playbook 到 Agent 技能</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0017-spec-kit-companion.html">← Lesson 17</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 18 · 收尾（课程的第二个目标）</p>
+    <h1>从 Playbook 到 Agent 技能</h1>
+    <p class="subtitle">本课的承诺：把前 17 课的方法论沉淀成能装进你的 Agent 配置（SKILL.md / AGENTS.md / MCP 工具）的可复用技能。</p>
+  </header>
+
+  <h2>课程两个目标回顾</h2>
+  <ul>
+    <li><strong>目标 1</strong>：把 playbook 应用到你的真实工程工作。</li>
+    <li><strong>目标 2</strong>：把方法论沉淀为可复用的 Agent 技能（SKILL.md / AGENTS.md）。— <em>本课完成。</em></li>
+  </ul>
+
+  <h2>什么是"技能文件"（Agent skills）</h2>
+  <p>技能是给 Agent 的独立知识包：一个 <code>SKILL.md</code> 前端（何时该用、核心规则），加必要的参考文件。核心艺术在"<strong>定义触发信号</strong>"——① 任务匹配什么样的工作、② 怎么判定任务完成。装进 harness（Claude Code / Cursor / Gemini CLI / opencode 等）后，Agent 在正确的时机自动加载它。<sup><a href="https://docs.corestory.ai/playbooks">来源</a></sup></p>
+
+  <h2>CoreStory 的现成技能资产</h2>
+  <p>docs.corestory.ai 每个 playbook 页都附带两种可安装技能包——这是捷径：<br>→ <strong>Extreme</strong>（严格遵循具体）与 <strong>Lite</strong>（轻量快速）技能。<br /> → 装进各 harness 的说明：Claude Code（放入 <code>~/.claude/skills/</code>）、Cursor（<code>~/.cursor/rules/</code>）、CLI 调用、AGENTS.md 引用。</p>
+
+  <h2>把"课程"沉淀成"技能"的练习（三步法）</h2>
+  <ol>
+    <li><strong>浓缩</strong>——挑一课（如"阶段一 Codebase Assessment"），把它压缩成"触发条件 + 关键步骤 + 停止条件"，去掉解释只留指令。</li>
+    <li><strong>装进 harness</strong>——放到你的 skills 目录，或写进 AGENTS.md，然后用你的 Agent 试跑一遍真实任务。</li>
+    <li><strong>迭代</strong>——技能不该一成不变：失败案例 → 提炼规则（参看 Evolving Skill 思路）；成功就固化，失败就改触发条件。</li>
+  </ol>
+
+  <h2>总结：课程主线</h2>
+  <div class="callout">
+    <span class="ctitle">六阶段现代化（0003–0009）+ AI 开发（0010–0012）+ 测试（0013–0014）+ 集成高级（0015–0017）</span>
+    你现在拥有了用 CoreStory 的整个工作世界观：<strong>先理解（Expert）→ 再定位（Navigator）→ 再验证（Verifier）</strong>，每一步都有人的门禁。把方法论落地为技能，是你把这门课转到"你自己的工程"的最后一步。
+  </div>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="trigger">
+    <p class="q">编写技能文件时，最重要的设计点是？</p>
+    <button class="opt">写最详细的每一步骤</button>
+    <button class="opt" data-correct="true">明确定义触发时机</button>
+    <button class="opt">只复制维基百科段落</button>
+    <button class="opt">不提及失败处理</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="package">
+    <p class="q">CoreStory playbook 附带的两种技能资产是？</p>
+    <button class="opt" data-correct="true">Extreme 与 Lite</button>
+    <button class="opt">Strict 与 Batch</button>
+    <button class="opt">Copy 与 Paste</button>
+    <button class="opt">Fast 与 Slow</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p>回到 <a href="https://docs.corestory.ai/playbooks">Playbooks 首页</a>——每个 playbook 页的"skills"段落都有可下载的 SKILL.md；<a href="https://docs.corestory.ai/llms.txt">llms.txt</a> 可通览全部页面链接。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0017-spec-kit-companion.html">← Lesson 17</a>
+    <a href="../index.html">返回课程首页</a>
+  </div>
+
+  <div class="ask-teacher">
+    🎓 十八课学完了？回去主页把有问题的一课翻出来问老师。对课程内容或把这个教程改成 skill 有任何偏好，直接说。
+  </div>
+
+</div>
+</body>
+</html>

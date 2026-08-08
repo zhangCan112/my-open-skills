@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoreStory Playbooks 完整学习教程 · 首页</title>
+<link rel="stylesheet" href="assets/lesson.css">
+<style>
+  .course-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.2rem 0; }
+  @media (max-width: 640px) { .course-grid { grid-template-columns: 1fr; } }
+  .course-card {
+    display: block;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .course-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .course-card .num { color: var(--gold); font-size: .78rem; font-weight: 700; letter-spacing: .06em; }
+  .course-card h3 { margin: .2rem 0 .4rem; font-size: 1.02rem; font-family: var(--serif); }
+  .course-card p { margin: 0; font-size: .84rem; color: var(--muted); }
+  .home-note { font-size: .88rem; color: var(--muted); }
+  .module-head { font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin: 1.8rem 0 .5rem; }
+  .original { background: var(--blue); color: #fff; border-radius: 8px; padding: .9rem 1.2rem; margin: 1.5rem 0; font-size: .95rem; }
+  .original a { color: var(--gold); font-weight: 600; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="masthead">
+    <p class="kicker">CoreStory Playbooks · 完整学习教程</p>
+    <h1>基于代码智能的工程 Playbooks</h1>
+    <p class="subtitle">针对"软件团队反复卡住的工作"的结构化端到端工作流——遗留系统现代化、陌生代码库开发、测试生成等。</p>
+  </header>
+
+  <div class="original">
+    📖 <strong>原始文档地址</strong>（所有课程内容的一手来源）：
+    <br><a href="https://docs.corestory.ai/playbooks">https://docs.corestory.ai/playbooks</a>
+    <br><small style="color:#cfe0f0">文档索引（机器可读全页链接）：<a href="https://docs.corestory.ai/llms.txt" style="color:var(--gold)">docs.corestory.ai/llms.txt</a></small>
+  </div>
+
+  <p><strong>这门课怎么学：</strong>共 <strong>18 课</strong>，每课是一个能几分钟完成的独立 HTML 页面，按编号从 0001 到 0018 顺序学习。每课都指向一个真实的 playbook 页面（原文即最高质量一手资料），并带一个即时反馈的小测验——强化 <em>存储强度（长期记忆）</em> 而非短期流畅感。学完一课后，把课中的步骤用到你自己的代码库上，胜过只看不练。</p>
+
+  <p class="safe-card">💡 本课程服务于两个目标：<strong>(1)</strong> 在你的真实工程工作中直接应用这些 playbook；<strong>(2)</strong> 把这些方法论沉淀为可复用的 Agent 技能（SKILL.md / AGENTS.md）。每课都会同时提示你两者的练习。</p>
+
+  <div class="module-head">第一模块 · 平台与地图</div>
+  <div class="course-grid">
+    <a class="course-card" href="lessons/0001-corestory-foundations.html">
+      <span class="num">LESSON 01</span>
+      <h3>CoreStory 平台与核心交互范式</h3>
+      <p>MCP 配置、8 个工具、Expert / Navigator / Verifier 三角色、对话生命周期。</p>
+    </a>
+    <a class="course-card" href="lessons/0002-playbook-landscape.html">
+      <span class="num">LESSON 02</span>
+      <h3>Playbook 全景图</h3>
+      <p>四大类、六阶段现代化框架、何时该用哪个 playbook 的地图。</p>
+    </a>
+  </div>
+
+  <div class="module-head">第二模块 · 现代化与迁移（六阶段）</div>
+  <div class="course-grid">
+    <a class="course-card" href="lessons/0003-codebase-assessment.html">
+      <span class="num">LESSON 03</span>
+      <h3>阶段一：Codebase Assessment</h3>
+      <p>现代化就绪度评估、六步工作流、1–5 分评分与报告。</p>
+    </a>
+    <a class="course-card" href="lessons/0004-business-rules-extraction.html">
+      <span class="num">LESSON 04</span>
+      <h3>阶段二：Business Rules Extraction</h3>
+      <p>业务规则清单 BR-XXX、验证矩阵、Confidence Protocol。</p>
+    </a>
+    <a class="course-card" href="lessons/0005-target-architecture.html">
+      <span class="num">LESSON 05</span>
+      <h3>阶段三：Target Architecture & Strategy</h3>
+      <p>7 Rs 策略、行为标签、Architectural Decision Record。</p>
+    </a>
+    <a class="course-card" href="lessons/0006-decomposition-sequencing.html">
+      <span class="num">LESSON 06</span>
+      <h3>阶段四：Decomposition & Sequencing</h3>
+      <p>工作包、依赖图、Transform → Coexist → Eliminate、Jira 落地。</p>
+    </a>
+    <a class="course-card" href="lessons/0007-spec-driven-development.html">
+      <span class="num">LESSON 07</span>
+      <h3>阶段五：Spec-Driven Development</h3>
+      <p>六相位、delta spec、invariants-first、pre-mortem 验证。</p>
+    </a>
+    <a class="course-card" href="lessons/0008-monolith-to-microservices.html">
+      <span class="num">LESSON 08</span>
+      <h3>阶段五·变体：Monolith to Microservices</h3>
+      <p>服务边界、数据库拆分、Strangler Fig、Saga 与 outbox。</p>
+    </a>
+    <a class="course-card" href="lessons/0009-behavioral-verification.html">
+      <span class="num">LESSON 09</span>
+      <h3>阶段六：Behavioral Verification</h3>
+      <p>行为等价证明、四层验证、Behavioral Equivalence Report。</p>
+    </a>
+  </div>
+
+  <div class="module-head">第三模块 · AI 辅助开发</div>
+  <div class="course-grid">
+    <a class="course-card" href="lessons/0010-feature-implementation.html">
+      <span class="num">LESSON 10</span>
+      <h3>Feature Implementation</h3>
+      <p>六相位功能实现：需求摄取 → 架构理解 → Test-First → 交付。</p>
+    </a>
+    <a class="course-card" href="lessons/0011-agentic-bug-resolution.html">
+      <span class="num">LESSON 11</span>
+      <h3>Agentic Bug Resolution</h3>
+      <p>先写失败测试的根因调查法——理解设计意图再动手 &nbsp;fix。</p>
+    </a>
+    <a class="course-card" href="lessons/0012-feature-gap-analysis.html">
+      <span class="num">LESSON 12</span>
+      <h3>Feature Gap Analysis</h3>
+      <p>七个类别的差距分析，产出现状/缺口/实施计划。</p>
+    </a>
+  </div>
+
+  <div class="module-head">第四模块 · 测试与验证</div>
+  <div class="course-grid">
+    <a class="course-card" href="lessons/0013-spec-driven-test-generation.html">
+      <span class="num">LESSON 13</span>
+      <h3>Spec-Driven Test Generation（总纲）</h3>
+      <p>行为测试 vs 代码镜像测试的核心哲学。</p>
+    </a>
+    <a class="course-card" href="lessons/0014-behavioral-and-e2e-tests.html">
+      <span class="num">LESSON 14</span>
+      <h3>Behavioral 覆盖 + E2E 测试生成</h3>
+      <p>从行为清单生成 10–30 个单测，5–15 个旅程级 E2E。</p>
+    </a>
+  </div>
+
+  <div class="module-head">第五模块 · 集成与高级主题</div>
+  <div class="course-grid">
+    <a class="course-card" href="lessons/0015-ma-technical-due-diligence.html">
+      <span class="num">LESSON 15</span>
+      <h3>M&amp;A Technical Due Diligence</h3>
+      <p>并购技术尽调的四大风险域与快速审计。</p>
+    </a>
+    <a class="course-card" href="lessons/0016-using-corestory-with-jira.html">
+      <span class="num">LESSON 16</span>
+      <h3>Using CoreStory with Jira</h3>
+      <p>Jira MCP + CoreStory + Agent 三方编排的四种工作流。</p>
+    </a>
+    <a class="course-card" href="lessons/0017-spec-kit-companion.html">
+      <span class="num">LESSON 17</span>
+      <h3>Spec Kit Companion</h3>
+      <p>与 GitHub Spec Kit 的逐个命令整合映射。</p>
+    </a>
+  </div>
+
+  <div class="module-head">第六模块 · 技能沉淀（面向你的仓库）</div>
+  <div class="course-grid">
+    <a class="course-card" href="lessons/0018-from-playbook-to-agent-skill.html">
+      <span class="num">LESSON 18</span>
+      <h3>从 Playbook 到 Agent 技能</h3>
+      <p>SKILL.md / AGENTS.md / 各 harness 安装表，把方法论转成可复用技能。</p>
+    </a>
+  </div>
+
+  <hr>
+
+  <h2>配套参考文档</h2>
+  <p><a href="reference/glossary.html">📖 术语表 / Glossary</a> —— 本课程的"术语宪法"，学任何一课之前先把它过一遍，讲课时我会始终沿用。</p>
+
+  <h2>学习地图（为什么是这个顺序）</h2>
+  <ol>
+    <li><strong>0001–0002</strong> 先建立平台心智模型与会用描述词汇，这是所有后续课的前提。</li>
+    <li><strong>0003–0009</strong> 按现代化六阶段线性推进，每一课既是独立 playbook 又是链条上的一个环。</li>
+    <li><strong>0010–0012</strong> 单个 playbook 的 AI 开发（不是六阶段整体，是独立可用）。</li>
+    <li><strong>0013–0014</strong> 测试生成姊妹篇，从行为规格出发。</li>
+    <li><strong>0015–0017</strong> 高级/集成主题（尽调、Jira、Spec Kit）。</li>
+    <li><strong>0018</strong> 收尾：把方法论沉淀成技能（你的第二个目标落地）。</li>
+  </ol>
+
+  <hr>
+
+  <div class="ask-teacher">
+    ❓ 学完任一课后，随时回来问你的 <strong>老师（本 Agent）</strong>——任何不清楚的命令、术语、下一步该学什么都行。本课程是一对一学习（会话制），会记录你的进度与偏好。
+  </div>
+
+</div>
+</body>
+</html>

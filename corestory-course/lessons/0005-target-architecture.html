@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 05 · 阶段三：Target Architecture &amp; Strategy</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0004-business-rules-extraction.html">← Lesson 04</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 05 · 现代化阶段三</p>
+    <h1>Target Architecture &amp; Strategy Selection（目标架构与策略选择）</h1>
+    <p class="subtitle">整个现代化工作流中<strong>最依赖人的阶段</strong>：AI 揭示系统"是什么"；人决定它"应当变成什么"。</p>
+  </header>
+
+  <h2>为什么这阶段不能交给 AI</h2>
+  <p>架构决策是<strong>组织承诺</strong>——决定团队结构、招聘、厂商合同、时间表、预算、合规姿态、技能需求。这不是 AI 该做的决定，无论分析多好。CoreStory 在此作为 Expert（解释行为、找自然边界、量化差距）和 Navigator（指向决定边界处的代码模式/数据流）。<sup><a href="https://docs.corestory.ai/playbooks/modernization/target-architecture">来源</a></sup></p>
+
+  <h2>五步工作流</h2>
+  <ol>
+    <li><strong>Input Review</strong> — 载入阶段一评估 + 阶段二规则清单；建 <code>[Architecture] 系统名 - Strategy &amp; Target Architecture</code> 对话。</li>
+    <li><strong>Strategy Exploration（发散）</strong> — 探测可用的现代化模式：
+      <pre><code>"基于当前架构，哪些组件是服务抽取的自然候选？哪些是天然的服务边界？每个服务要带走哪些数据和逻辑？"</code></pre>
+      对每个组件评估全部 7 Rs 的可行性（工作量/风险/依赖/回报周期）。</li>
+    <li><strong>Target Architecture Definition（收敛）</strong> — 定义服务边界、通信模式、数据架构、跨切面关注点（认证、日志、配置、容错、API 版本），并做 <strong>行为标签</strong>。</li>
+    <li><strong>Risk &amp; Effort Estimation</strong> — 量化当前与目标状态的差距：逐组件工作量、迁移风险登记、备选架构权衡。</li>
+    <li><strong>Decision Documentation</strong> — 生成 ADR，改名 <code>RESOLVED - [Architecture]...</code>。</li>
+  </ol>
+
+  <h2>7 Rs 决策框架</h2>
+  <table>
+    <tr><th>策略</th><th>描述</th><th>CoreStory 价值</th></tr>
+    <tr><td>Retire</td><td>退役不再需要的应用</td><td>中 —— 识别死代码与未用服务</td></tr>
+    <tr><td>Retain</td><td>保留现状</td><td>高 —— 合理化 retain 决策、支持维护</td></tr>
+    <tr><td>Rehost</td><td>平面搬迁不改代码</td><td>低 —— 无代码改动</td></tr>
+    <tr><td>Relocate</td><td>VM 搬到云 hypervisor</td><td>低 —— 基础设施层面</td></tr>
+    <tr><td>Replatform</td><td>小优化不动核心架构</td><td>中度 —— 找受基础设施变化影响的集成点</td></tr>
+    <tr><td>Refactor / Re-architect</td><td>重构或重新设计</td><td><strong>最高</strong> —— 边界识别、依赖映射、行为验证</td></tr>
+    <tr><td>Repurchase</td><td>用 SaaS/COTS 替换</td><td>中度 —— 盘点必须由 SaaS 覆盖的规则；配 Feature Gap Analysis</td></tr>
+  </table>
+
+  <h2>行为标签（Behavior Tagging）</h2>
+  <p>对规格里识别出的每个行为，显式标迁移意图——不许静默变化：</p>
+  <table>
+    <tr><th>标签</th><th>含义</th><th>阶段六验证</th></tr>
+    <tr><td>[PRESERVE]</td><td>目标中行为必须完全一致</td><td>自动化等价测试 + SME 签字</td></tr>
+    <tr><td>[MODERNIZE]</td><td>同一业务结果、现代实现</td><td>SME 确认业务结果一致</td></tr>
+    <tr><td>[CHANGE]</td><td>有意的修改（修正 bug、增强、政策变化）</td><td>产品经理批核；旧行为归档</td></tr>
+    <tr><td>[NEW]</td><td>新系统增加的行为</td><td>标准验收测试</td></tr>
+    <tr><td>[RETIRE]</td><td>有意丢弃的旧行为</td><td>干系人确认不再需要</td></tr>
+  </table>
+  <div class="callout gate">
+    <span class="ctitle">范围蔓延报警</span>
+    若一个工作单元中 [CHANGE] + [NEW] 超过约 <strong>20%</strong>，就从"现代化"滑向"重写"——风险特征不同，需提示项目经理重审范围。
+  </div>
+
+  <div class="callout gate">
+    <span class="ctitle">最强 HITL 门禁</span>
+    阶段三第 4 步之后：架构师/技术负责人审阅目标架构、策略、风险估计。<strong>架构决策绝不能交给 AI。</strong> 决策树启发法可当起点，最后拍板的仍是人。
+  </div>
+
+  <h2>产出：ADR 的骨架</h2>
+  <p>Current State → Selected Strategy（含混合策略说明）→ Target Architecture（组件表、通信模式、数据架构）→ Migration Scope（策略/优先级/风险/工作量）→ Constraints &amp; Assumptions → Risks &amp; Mitigations → Alternatives Considered → Approval。</p>
+
+  <h2>最佳实践</h2>
+  <ul>
+    <li><strong>给选项，不给结论</strong>："三个可行方案 + 权衡"，而不是"你应该做 X"。</li>
+    <li><strong>每项建议要落到评估数据</strong>：如"OrderService 因共享 12 张表、与 4 个服务耦合、就绪 2 分 → 建议 Re-architect"。</li>
+    <li><strong>别强推单一策略</strong>（53% 企业混合）；<strong>显式处理数据架构</strong>（最难拆的是数据库）；记录被否决的备选方案。</li>
+    <li><strong>可考虑分阶段目标</strong>：先模块化 monolith 再微服务。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="tag">
+    <p class="q">迁移时把一个 bug 修复引入新系统，这种变更应标哪个标签？</p>
+    <button class="opt">[PRESERVE]</button>
+    <button class="opt" data-correct="true">[CHANGE]</button>
+    <button class="opt">[MODERNIZE]</button>
+    <button class="opt">[RETIRE]</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="who">
+    <p class="q">"选择最终目标架构"这个决定最终由谁做？</p>
+    <button class="opt">CoreStory Agent 自动定夺</button>
+    <button class="opt" data-correct="true">由架构师与干系人拍板</button>
+    <button class="opt">由阶段二的规则清单决定</button>
+    <button class="opt">由 CI 流水线自动审批</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/modernization/target-architecture">官方 Target Architecture &amp; Strategy Selection playbook</a> —— 含全部可复制查询、7 Rs 决策树 mermaid 图、ADR 完整模板。学完此课请通读该页 "Prompting Patterns Reference" 部分。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0004-business-rules-extraction.html">← Lesson 04</a>
+    <a href="0006-decomposition-sequencing.html">下一课：阶段四 Decomposition &amp; Sequencing →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 好奇决策树怎么用（主动使用 / 等待信号）？问老师要那棵 mermaid 决策树的可读版本。
+  </div>
+
+</div>
+</body>
+</html>

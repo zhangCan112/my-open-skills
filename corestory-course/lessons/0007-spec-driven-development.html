@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 07 · 阶段五：Spec-Driven Development</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0006-decomposition-sequencing.html">← Lesson 06</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 07 · 现代化阶段五</p>
+    <h1>Spec-Driven Development（规格驱动开发）</h1>
+    <p class="subtitle">为每个组件生成增量规格（delta spec）+ TDD 实现——阶段五的执行方法论，也是"第一次就写对"的方法。</p>
+  </header>
+
+  <h2>现有 SDD 工具的盲区</h2>
+  <p>GitHub Spec Kit、Kiro、Tessl 这类 SDD 工具擅长<strong>结构</strong>（怎么把规格写下来），但缺<strong>架构地基</strong>——它们不知道你的系统已有什么。CoreStory 的持久代码智能补上这一环：以 <strong>Expert</strong> 的身份提供 PRD/TechSpec/用户故事编码出的机构知识，以 <strong>Navigator</strong> 指出具体文件与扩展点。核心产出是 <strong>delta spec</strong>：只描述"会变化的"部分，并在实现<em>前</em>用架构验证它。<sup><a href="https://docs.corestory.ai/playbooks/spec-driven-development">来源</a></sup></p>
+
+  <h2>六相位</h2>
+  <ol>
+    <li><strong>Ground（地面）</strong>（Expert）— 收集需求、选项目、建长命对话 <code>Spec: #412 - Add webhook...</code>，然后四类基础查询：架构模式、<strong>可复用组件</strong>（reuse-first）、不变量与约束、设计历史。有阶段二清单就用 invariants + AC 字段。</li>
+    <li><strong>Specify（写增量规格）</strong> — 原则：<strong>reuse-first</strong>（先写可复用的现有组件）、<strong>invariant-first</strong>（先写"绝不能破坏的"，再写已有、只补增量）、带可测验收标准。规格节序：§不变量 → §要复用的现有组件 → §新增/修改组件 → §验收标准（引用具体组件）。</li>
+    <li><strong>Validate（验证）</strong> — 把规格提交给 CoreStory 做<strong>架构事前剖析（pre-mortem）</strong>：查模式冲突、缺依赖/下游影响、失败模式（目标 URL 不可达、峰值流量、删除中的队列项、安全）。任何 SDD 工具都做不到这一点。</li>
+    <li><strong>Plan（规划）</strong> — 把已验规格映射到具体文件、扩展点、依依赖排序的实现顺序（imports → 模型/migration → repository → service → endpoints → 注册 → 集成测试）。</li>
+    <li><strong>Implement（TDD）</strong> — 从<strong>验收标准</strong>（Given/When/Then 结果式）和<strong>不变量</strong>（后条件式："任意操作后 &lt;不变量&gt; 依然成立"，常做属性/性质测试）写失败测试，再逐步实现，每步都让 CoreStory 校验 <code>&lt;新代码&gt; 是否符合 &lt;模式&gt;</code>。</li>
+    <li><strong>Verify &amp; Capture</strong> — 逐条验收标准（每条 → 对应测试 + 实现位置）、每条不变量（→ 后条件测试），不留"隐式信任"；提交时带架构上下文并对对话加 <code>COMPLETED</code> 前缀、更新工单。</li>
+  </ol>
+
+  <h2>增量规格的三种坏气味（为什么不做 greenfield spec）</h2>
+  <p>Greenfield spec 把功能写成"代码库还不存在"的样子 → 自相矛盾、重复、臃肿、结构冗余。而 delta spec 动态适应性更好：<code>extend EventSubscriber</code> 之类的小改动天然跟随架构演进。</p>
+
+  <div class="callout">
+    <span class="ctitle">机构知识的"活"记录</span>
+    规格不只是单一静态文件——CoreStory 对话本身就是"活的规格记录"（决策 + 推理），用 conversation_id 引用它。
+  </div>
+
+  <h2>两大支柱原则（记忆锚点）</h2>
+  <ul>
+    <li><strong>Invariant-first</strong>：不变量是规格的"免疫系统"——测试失败先查不变量。</li>
+    <li><strong>Reuse-first</strong>：阶段一的重用问题常能砍掉 <strong>30–50%</strong> 的规格工作量（"约 40% 的新功能规格其实描述的是已实现功能"）。</li>
+  </ul>
+
+  <h2>现代场景下还配套两个动作</h2>
+  <p>变化时代注意：规格中引用的是"已存在的组件"，若是模板与 convention 之外的也要在"修改组件"里说明，例如给 EventBus 加订阅类型且不改既有接口。搞现代化时 AC 来自工作包等价要求 &gt; 规则清单 AC &gt; 仅对 [NEW]/[CHANGE] 新增 AC；[PRESERVE] 直接逐字保留旧 AC。</p>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="delta">
+    <p class="q">delta spec 相比 greenfield spec 更侧重的原则是？</p>
+    <button class="opt">把功能当全新系统来写完整规格</button>
+    <button class="opt" data-correct="true">先写不变量、复现已有、只写变化</button>
+    <button class="opt">一口气通读并抄录整个技术文档</button>
+    <button class="opt">先写实现代码再补规格说明</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="premortem">
+    <p class="q">阶段三"Validate"的核心动作是？</p>
+    <button class="opt" data-correct="true">用 CoreStory 对规格做架构 pre-mortem</button>
+    <button class="opt">用 grep 盲查代码库里有没有同名类</button>
+    <button class="opt">把规格发给所有同事人肉审阅</button>
+    <button class="opt">直接 git commit 功能代码</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/spec-driven-development">官方 Spec-Driven Development playbook</a> ——含全部 sample prompts、delta spec 文档结构。它是阶段五执行方法的地基，未来知识丰富的路径在此。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0006-decomposition-sequencing.html">← Lesson 06</a>
+    <a href="0008-monolith-to-microservices.html">下一课：阶段五变体 · Monolith to Microservices →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想让我带你现场为你的一个工单写一版 delta spec？把工单粘过来。
+  </div>
+
+</div>
+</body>
+</html>

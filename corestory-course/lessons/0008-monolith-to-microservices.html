@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 08 · 阶段五变体：Monolith to Microservices</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0007-spec-driven-development.html">← Lesson 07</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 08 · 阶段五 · 变体</p>
+    <h1>Monolith to Microservices（单体拆微服务）</h1>
+    <p class="subtitle">企业最常见的现代化模式——也是失败率最高的那一个。本课讲服务边界、数据库拆分与 strangler 执行。</p>
+  </header>
+
+  <h2>为什么叫"最难的模式"</h2>
+  <p>拆服务失败的团队往往做出一个比原来更糟的<strong>分布式单体</strong>：服务被数据库紧绑、同步调用过时、独立部署只是想象。CoreStory 在此的价值：浮出单体<em>真实</em>的内部结构（耦合模式、数据访问热点、隐式依赖），而不是团队成员脑中的想象。<sup><a href="https://docs.corestory.ai/playbooks/modernization/monolith-to-microservices">来源</a></sup></p>
+
+  <h2>每次服务抽取的六步走法</h2>
+  <ol>
+    <li><strong>Context Loading</strong> — 从阶段四对话载入工作包（WP-XXX）+ 依赖、阻碍项、TCE 计划、验收标准。建 <code>[Extraction] 系统名 - 服务名 (WP-XXX)</code> 对话。</li>
+    <li><strong>Service Boundary Identification</strong> — 精确划定边界：对模块递归标记 <strong>MOVE / SHARE / LEAVE</strong>；找隐身耦合（两个方向的直调、共享内存态/单例、共享 config、DB 触发器/存储过程/视图、事件处理器）；验证双方都能独立运转（检查循环依赖）。</li>
+    <li><strong>Database Decomposition Planning</strong> — 映射数据所有权（owned / read-only / shared-write；外键、跨边界 join）。用决策树选拆分策略（见下表）。这是最难的战场。</li>
+    <li><strong>Façade &amp; Communication Design</strong> — 枚举入口点（HTTP 路由、内部方法调用、后台任务、事件处理器、CLI），设计每类交互走网关/反向代理/适配器；选同步（REST/gRPC）还是异步（事件）；设计<strong>防腐蚀层（Anti-Corruption Layer）</strong>——单体模型与服务模型之间的翻译层，是临时的，注定要被移除。</li>
+    <li><strong>Extraction Execution</strong> — 按 delta spec 建独立新服务（Transform）→ 配置 facade 路由 + 影子请求对比 + 定向流量（Coexist，配好错误率/时长监控与熔断回退）→ 行为验证通过后退役（Eliminate：删单体旧代码、改路由拆除、清理 ACL、更新测试）。</li>
+    <li><strong>Verification &amp; Cutover</strong> — 拆除后：复核单体与服务差异、逐条集成点、DB 迁移与全量/冒烟负载，然后改名对话 RESOLVED。</li>
+  </ol>
+
+  <h2>数据库拆分策略（决策树）</h2>
+  <table>
+    <tr><th>情形</th><th>推荐策略</th></tr>
+    <tr><td>单写者 + 适合读</td><td><strong>API-mediated access</strong>（通过 API 读取，不共享表）</td></tr>
+    <tr><td>高频读、容忍最终一致</td><td><strong>CDC / 事件驱动同步</strong>（Debezium、AWS DMS）</td></tr>
+    <tr><td>可合并为单写者</td><td><strong>Refactor to single writer</strong></td></tr>
+    <tr><td>真共享状态</td><td><strong>共享 schema 合租</strong>（保持表在同一 schema）</td></tr>
+  </table>
+  <p>并发期间交叉边界外键：小心处理；回滚要有计划。</p>
+
+  <h2>分布式事务：Saga 与 Outbox</h2>
+  <p>分布后，跨两库的单事务是常见失败。两种工具：</p>
+  <ul>
+    <li><strong>Saga</strong>（长按事务编排）：Choreography（无中心，事件驱动，适合 2–3 服务）vs Orchestration（中央协调器，适合 4+ 复杂流程；工具：Temporal、AWS Step Functions、Camunda、Azure Durable Functions）。</li>
+    <li><strong>Outbox pattern</strong>：把"要发的事件"和业务写进<strong>同一个 DB 事务</strong>，随后由发布者读取发出 → 避免双写时的双振断流，配合幂等消费者保证性地至少一次。用 CoreStory 找跨事务操作来定位 candidate：当前是否跨事务、需要何补偿动作、严格 vs 最终一致。</li>
+  </ul>
+
+  <div class="callout gate">
+    <span class="ctitle">HITL 门禁：每次抽取前</span>
+    工程负责人要在服务边界、数据拆分计划、ACL 设计、中检通过后才放行某次抽取。第一次抽取尤其重要——它奠定后续抽取的模式。
+  </div>
+
+  <h2>最佳实践（最易踩的坑）</h2>
+  <ul>
+    <li><strong>先抽最小、可行的服务</strong>（低耦合、清晰所有权、消费者少）以增长模式肌肉记忆。</li>
+    <li><strong>别第一天就拆库</strong>——先从共享 schema ownership 起步，边界稳定后再拆。过早拆分是惯用失败。</li>
+    <li><strong>Facade 是你的安全网</strong>——投资百分比路由、熔断、请求镜像。</li>
+    <li><strong>从第一天就按可独立部署设计</strong>（独立 CI、config、DB migration、监控——否则做出分布式单体）。</li>
+    <li><strong>契约测试不可让步</strong>（Pact、Spring Cloud Contract）。</li>
+    <li><strong>为"数据税"做预算</strong>：共存期双写或数据同步复杂且临时，必须计划并设计拆除。</li>
+    <li><strong>用业务指标兜底</strong>（下单完成率、支付成功率、转化率），不止技术指标。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="db">
+    <p class="q">一张"被多个服务共同写入"的表，通常该先取哪种？</p>
+    <button class="opt">立刻数据库per服务彻底拆分</button>
+    <button class="opt" data-correct="true">共享 schema 所有权起步</button>
+    <button class="opt">全量重写这张数据库表</button>
+    <button class="opt">直接删除这张共享表</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="acl">
+    <p class="q">单体领域模型与服务模型之间的临时翻译层叫？</p>
+    <button class="opt" data-correct="true">Anti-Corruption Layer</button>
+    <button class="opt">Change Data Capture</button>
+    <button class="opt">Temporal 工作流引擎</button>
+    <button class="opt">Golden Master 金标库</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/modernization/monolith-to-microservices">官方 Monolith to Microservices playbook</a> ——含完整抽取脚本（六个阶段逐条 send_message）、DB 决策树、散单事务规划。要想加深可用 Sam Newman《Monolith to Microservices》。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0007-spec-driven-development.html">← Lesson 07</a>
+    <a href="0009-behavioral-verification.html">下一课：阶段六 Behavioral Verification →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想让我帮你从你自己的 monolith 里圈一个"最小的优先抽取服务"候选？把服务清单给我。
+  </div>
+
+</div>
+</body>
+</html>

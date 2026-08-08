@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 11 · Agentic Bug Resolution</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0010-feature-implementation.html">← Lesson 10</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 11 · AI 辅助开发</p>
+    <h1>Agentic Bug Resolution（Agentic 修 Bug）</h1>
+    <p class="subtitle">不靠 grep 盲走代码库——先让 CoreStory 讲清"系统该怎么工作"，再写失败测试证明 bug，最后最小修复。</p>
+  </header>
+
+  <h2>这正是 grep 取代不了的地方</h2>
+  <p>bug 修复最贵的是"理解意图"：系统<em>应当</em>如何行为、有哪些不变量、为什么这样写。这些不存在于代码搜索里，只存在于 PRD、TechSpec、用户故事与代码历史的综合理解中——这就是 <strong>Expert</strong> 角色。它解决"修症状而非根因""弄坏相邻功能"的风险。<sup><a href="https://docs.corestory.ai/playbooks/agentic-bug-resolution">来源</a></sup></p>
+
+  <h2>六相位（与 Feature Implementation 共享 DNA，起点相反：此处始于"坏了的东西"）</h2>
+  <ol>
+    <li><strong>Bug Intake &amp; Context</strong> — 拉取工单（或要求用户给症状/复现步骤/期望 vs 实际/影响组件）；选项目、验摄取、建对话 <code>Bug Investigation: #6992 - reset_index coord_names issue</code>。</li>
+    <li><strong>Understanding System Behavior（Expert 关键相位）</strong> — 建"应当如何"的真值表：<strong>架构</strong>（该功能所在文件、测试覆盖、辅助模块、集成点）、<strong>不变量与数据结构</strong>（本 bug 涉及的 _coord_names 与 _variables 关系、drop=True/False 下如何更新）、<strong>历史</strong>（设计意图、相关 bug）。此相位是分水岭。</li>
+    <li><strong>Hypothesis Generation（Navigator）</strong> — 把症状翻译成指向代码路径的排名根因假设：
+      <pre><code>"若 bug 是 drop=True 时 _coord_names 残留陈旧条目，该看哪些具体代码路径？带我过一遍逻辑流。"</code></pre>
+      生成"缺清理 / 状态更新错 / 其它"的概率排序。</li>
+    <li><strong>Test-First Investigation</strong> — <strong>在读完任何实现代码前</strong>先写复现测试（不变量即断言，如 <code>_coord_names ⊆ _variables.keys()</code>）。测试必须失败；让它失败的同时 CoreStory 验证它确实测对了行为。再针对性读 CoreStory 指明的代码，对照期望找出 bug，并用 CoreStory 确认发现。</li>
+    <li><strong>Solution Development</strong> — 最小修复（恢复不变量即可，遵循架构模式），复现测试通过，CoreStory 校验（对齐、副作用、不变量未破），补边界用例（部分操作、空输入、参数组合、并发），跑全量无回归。</li>
+    <li><strong>Completion &amp; Knowledge Capture</strong> — 结构化提交（Problem / Root Cause / Solution / Invariants Restored / Testing / References），置 resolve，改名 <code>Bug Investigation: #4821 - RESOLVED - ...</code>。</li>
+  </ol>
+
+  <h2>一个真实示例拆解（xdArray 术语）</h2>
+  <pre><code>Bug: reset_index(drop=True) leaves stale coord_names
+Problem: _coord_names 在 drop 后仍含被删坐标条目。
+Root Cause: line 4180 只往 coord_names 加 new_variables，却从不删 drop 掉的坐标，
+             违反不变量 coord_names ⊆ variables.keys()。
+Solution: 在加 new_variables 前先把 drop_indexes 从 coord_names 里减去。
+Invariants Restored: coord_names ⊆ variables.keys()
+Testing: 新增 reset_index_drop_cleanup + 3 个边界用例；全量无回归。</code></pre>
+
+  <h2>为什么"先失败测试"是铁律</h2>
+  <p>五个字：<strong>失败证明存在，通过证明修复</strong>，同时防复现。若测试意外通过 → 说明 bug 不是你以为的那样 → 回到阶段二。省掉它等于给每次都靠猜。</p>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="when-test">
+    <p class="q">复现 bug 的测试应该在什么时候写？</p>
+    <button class="opt">读完代码定位后再写</button>
+    <button class="opt" data-correct="true">在读完任何实现代码前写好</button>
+    <button class="opt">修完 bug 后顺手补一份</button>
+    <button class="opt">只在测试环境全量跑一次</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="expert">
+    <p class="q">Bug 修复流程中"理解设计意图"属于哪个阶段？</p>
+    <button class="opt">Phase 1 摄取阶段</button>
+    <button class="opt" data-correct="true">Phase 2 理解行为</button>
+    <button class="opt">Phase 4 测试先行</button>
+    <button class="opt">Phase 5 方案实现</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/agentic-bug-resolution">官方 Agentic Bug Resolution playbook</a> ——含 xdArray 完整走查、六相位全部查询脚本、提交信息模板。想深入先读它的 "Why not just grep the codebase?" 章节。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0010-feature-implementation.html">← Lesson 10</a>
+    <a href="0012-feature-gap-analysis.html">下一课：Feature Gap Analysis →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 手头有个 bug 想让我帮你照这套流程起个头？把现象和现象描述给老师。
+  </div>
+
+</div>
+</body>
+</html>

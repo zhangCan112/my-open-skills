@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 01 · CoreStory 平台与核心交互范式</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 01 · 平台基础</p>
+    <h1>CoreStory 平台与核心交互范式</h1>
+    <p class="subtitle">先建立"你能问出什么问题、机器如何回答"的心智模型——这是后续所有 playbook 的地基。</p>
+  </header>
+
+  <h2>CoreStory 是什么？</h2>
+  <p>CoreStory 是一个<strong>代码智能平台</strong>：用 AI <em>从源码反向工程出规范</em>。你接入仓库后，它摄取（ingest）整个代码库，产出一个<strong>持久化智能层</strong>——一个"可动态查询的代码库模型"，并持续跟随源码更新。</p>
+  <p>它解决的根本问题：<strong>文档陈旧、部落知识存在人脑里、AI 编码工具因缺少场景而幻觉</strong>。CoreStory 让人类和 AI 共享同一份准确的系统行为理解。<sup><a href="https://docs.corestory.ai/about/what-is-corestory">来源</a></sup></p>
+
+  <h3>摄取（Ingestion）工作原理</h3>
+  <p>输入：公开仓库、私有仓库、直接文件上传。输出：聊天界面 + 一组标准规范输出（executive summary、user personas、user stories、data models、API specifications、integration points）。接入方式：MCP server 与 REST API。<sup><a href="https://docs.corestory.ai/about/how-does-corestory-work">来源</a></sup></p>
+
+  <div class="callout">
+    <span class="ctitle">关键心智：快照</span>
+    分析反映的是"摄取时刻"的代码快照。如果源码之后变了，关键发现要与当前源码复核——这是 M&amp;A 尽调里的强制步骤。
+  </div>
+
+  <h2>给 Agent 的两个角色：Expert 与 Navigator</h2>
+  <table>
+    <tr><th>角色</th><th>回答的问题</th><th>示例</th></tr>
+    <tr><td><strong>Expert（专家）</strong></td><td>系统<em>应当</em>如何工作、设计意图、不变量、业务规则、架构模式、设计历史。</td><td>"resetting a Dataset 时 _coord_names 应如何更新？"</td></tr>
+    <tr><td><strong>Navigator（导航）</strong></td><td>具体文件、方法、扩展点、代码路径在哪。</td><td>"dataset.py 中 4180 行附近是哪块逻辑？"</td></tr>
+  </table>
+  <p>现代化阶段还有第三个角色 <strong>Verifier（验证）</strong>——对比旧版与新实现，证明行为等价。<sup><a href="https://docs.corestory.ai/playbooks/code-modernization">来源</a></sup></p>
+
+  <h2>MCP 与 8 个工具</h2>
+  <p>Agent 通过 <strong>MCP（Model Context Protocol）</strong> 访问 CoreStory。MCP 端点：<code>https://c2s.corestory.ai/mcp</code>，认证 <code>Authorization: Bearer mcp_YOUR_TOKEN</code>。8 个工具在所有 harness（Claude Code、Cursor、Copilot、Windsurf、Devin、Factory）下一致：</p>
+  <table>
+    <tr><th>工具</th><th>作用</th></tr>
+    <tr><td><code>list_projects</code></td><td>列出你的项目（确认摄入完成）</td></tr>
+    <tr><td><code>get_project_prd</code></td><td>取合成 PRD（业务需求上下文）</td></tr>
+    <tr><td><code>get_project_techspec</code></td><td>取合成 TechSpec（架构/数据模型）</td></tr>
+    <tr><td><code>create_conversation</code></td><td>为任务建持久化对话线程</td></tr>
+    <tr><td><code>send_message</code></td><td>查询代码智能（最常用）</td></tr>
+    <tr><td><code>list_conversations</code></td><td>回顾已有对话</td></tr>
+    <tr><td><code>get_conversation</code></td><td>取某个对话历史</td></tr>
+    <tr><td><code>rename_conversation</code></td><td>完成后加 "RESOLVED" 前缀</td></tr>
+  </table>
+
+  <div class="callout">
+    <span class="ctitle">重要陷阱</span>
+     PRD / TechSpec 往往巨大到塞不进上下文窗口。<strong>不要整篇读</strong>——用 <code>send_message</code> 去问它内容。CoreStory 已摄取这些文档，能针对性回答问题。
+  </div>
+
+  <h2>核心交互范式（6 步）</h2>
+  <ol>
+    <li><strong>选择项目</strong>：<code>list_projects</code> 确认目标，检查摄取完成。</li>
+    <li><strong>创建对话</strong>：<code>create_conversation</code>，用描述性标题（如 "Ticket Implementation: #6992 - CSV export"）。</li>
+    <li><strong>问 Expert</strong>：系统行为、不变量、架构。</li>
+    <li><strong>问 Navigator</strong>：文件/方法/扩展点。</li>
+    <li><strong>行动</strong>：实现/测试/文档。</li>
+    <li><strong>闭环</strong>：<code>rename_conversation</code> 加 "RESOLVED/COMPLETED" 前缀——对话成为"机构知识"。</li>
+  </ol>
+
+  <h3>提问的小撇步（官方 Best Practices）</h3>
+  <ul>
+    <li><strong>越具体越好</strong>：不要说 "Tell me about the order system"，要说 "What is the validation logic? What fields are required, minimum amounts, stock checks?"</li>
+    <li><strong>Expert before Navigator</strong>：先理解"应当如何"，再找"改哪里"。这让你更容易看见偏差与捷径。</li>
+    <li><strong>一次任务一个对话</strong>；善用命名；复用旧对话。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="roles">
+    <p class="q">想了解"设计意图"，该问 CoreStory 的哪个角色？</p>
+    <button class="opt" data-correct="true">Expert（专家）</button>
+    <button class="opt">Navigator（导航）</button>
+    <button class="opt">Verifier（验证器）</button>
+    <button class="opt">Gap Analyzer</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="conversation">
+    <p class="q">完成一个任务后，正确的收尾动作是什么？</p>
+    <button class="opt">把这个对话永远留着不动</button>
+    <button class="opt" data-correct="true">用 rename 加 RESOLVED 前缀</button>
+    <button class="opt">删除该项目全部对话</button>
+    <button class="opt">重新 create 一个新对话</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><strong>官方核心交互范式：</strong><a href="https://docs.corestory.ai/getting-started/supercharging-ai-agents">Supercharging AI Agents with CoreStory</a> ——MCP 配置、8 工具全表、6 步交互范式、实用的提问技巧。配合 <a href="https://docs.corestory.ai/getting-started/mcp-server-setup">MCP Server Setup</a> 完成你的真实连接。</p>
+  </div>
+
+  <div class="pager">
+    <span></span>
+    <a href="0002-playbook-landscape.html">下一课：Playbook 全景图 →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 有任何不清楚的命令、术语，或想让我演示在你自己的仓库上跑一次这 6 步，回来问你的老师即可。
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 02 · Playbook 全景图</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0001-corestory-foundations.html">← Lesson 01</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 02 · 地图</p>
+    <h1>Playbook 全景图</h1>
+    <p class="subtitle">官方把 playbooks 分成四大类；其中最复杂的是"六阶段现代化框架"。这一课给你一张能挂墙的地图。</p>
+  </header>
+
+  <h2>官方四大分类</h2>
+  <table>
+    <tr><th>类别</th><th>Playbook</th><th>一句话用途</th></tr>
+    <tr><td>现代化 &amp; 迁移</td><td>Code Modernization；M&amp;A Technical Due Diligence；Feature Gap Analysis</td><td>遗留系统六阶段现代化、并购技术尽调、新旧系统能力比对</td></tr>
+    <tr><td>AI 辅助开发</td><td>Feature Implementation；Agentic Bug Resolution；Spec-Driven Development</td><td>功能实现、bug 排查、先规范再编码</td></tr>
+    <tr><td>测试与验证</td><td>Spec-Driven Test Generation；Business Rules Extraction</td><td>从行为规格生成测试、提取并验证业务规则</td></tr>
+    <tr><td>集成</td><td>Using CoreStory with Jira</td><td>把迁移工作包推进 Jira 当 epic/story</td></tr>
+  </table>
+  <p>这些 playbook 每一份都同时给出两类资产：<strong>(1)</strong> 方法论步骤 + 一步步交互脚本；<strong>(2)</strong> 可安装的 Agent 技能文件（SKILL.md，装进 Claude Code / Cursor / AGENTS.md 等 harness）。这就是课程 0018 课要教你沉淀的东西。来源：<a href="https://docs.corestory.ai/playbooks">Playbooks 首页</a>。</p>
+
+  <h2>六阶段现代化框架（整个课程的中轴线）</h2>
+  <table>
+    <tr><th>阶段</th><th>目的</th><th>CoreStory 角色</th><th>子 Playbook（课程）</th></tr>
+    <tr><td>1 评估</td><td>就绪度评分：架构、依赖、技术债、风险</td><td>Expert</td><td>Codebase Assessment（03）</td></tr>
+    <tr><td>2 规则清单</td><td>提取并验证所有必须保留的业务规则</td><td>Expert + Navigator</td><td>Business Rules Extraction（04）</td></tr>
+    <tr><td>3 目标架构</td><td>选 7 Rs 策略、定义目标架构，人审批</td><td>Expert</td><td>Target Architecture（05）</td></tr>
+    <tr><td>4 分解与排序</td><td>服务边界、依赖图、有序迁移计划、进 Jira</td><td>Navigator</td><td>Decomposition &amp; Sequencing（06）</td></tr>
+    <tr><td>5 迭代执行</td><td>每组件 Transform→Coexist→Eliminate</td><td>Expert + Navigator</td><td>Spec-Driven Dev (07) + 变体 Monolith→Micro (08)</td></tr>
+    <tr><td>6 行为验证</td><td>证明新组件保留阶段二的行为契约</td><td>Verifier</td><td>Behavioral Verification（09）</td></tr>
+  </table>
+
+  <div class="callout gate">
+    <span class="ctitle">人的门禁（Human-in-the-loop gates）</span>
+    每年一份 playbook 都有"人必须拍板"的检查点——本框架尤其如此。现代化链条上至少 5 处 HITL：Go/No-Go、架构审批、排序审批、规格审阅、等价性签字。AI 只提供分析，人做组织承诺。认知浅见：AI 不适合做架构决策。
+  </div>
+
+  <h2>何时用哪个（速查决策）</h2>
+  <ul>
+    <li><strong>全新系统没有旧代码</strong> → 不要用现代化，用 Spec-Driven Development。</li>
+    <li><strong>只想理解并购标的代码库</strong> → M&amp;A Technical Due Diligence。</li>
+    <li><strong>只提取业务规则不迁移</strong> → Business Rules Extraction。</li>
+    <li><strong>纯 lift-and-shift（不动代码）</strong> → CoreStory 价值极小，跳过框架。</li>
+    <li><strong>码库极小（&lt;~10k LOC）</strong> → 直接重构，不需要六阶段方法。</li>
+  </ul>
+
+  <div class="callout">
+    <span class="ctitle">一个贯穿性统计（用于记忆）</span>
+    <strong>71%</strong> 的 Fortune 500 还在跑大型机；现代化失败的主因是<em>组织性的</em>（期望错位、治理缺口、技能短缺）而不是技术性的。三分之一 COBOL 程序员 2030 年前退休——压力真实、风险巨大。<sup><a href="https://docs.corestory.ai/playbooks/code-modernization">来源</a></sup>
+  </div>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="when">
+    <p class="q">一个主框架系统要"强制行为等价证明"，该用哪个阶段？</p>
+    <button class="opt" data-correct="true">阶段六行为验证</button>
+    <button class="opt">阶段三目标架构</button>
+    <button class="opt">阶段一代码评估</button>
+    <button class="opt">阶段二规则提取</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="class">
+    <p class="q">"Compare two systems' capabilities" 属于哪个类别？</p>
+    <button class="opt" data-correct="true">现代化与迁移</button>
+    <button class="opt">AI 辅助开发</button>
+    <button class="opt">测试与验证</button>
+    <button class="opt">集成</button>
+    <div class="feedback"></div>
+  </div>
+
+  <h2>技能落地（本周练习）</h2>
+  <p>打开官方 <a href="https://docs.corestory.ai/playbooks/code-modernization">Code Modernization</a> 页，翻到 "Agent Implementation Guides" 部分，看它如何把六阶段流程编码成 Claude Code 的 SKILL.md。那正是 0018 课要你复刻的格式。读完不必动手，先建立"原文长什么样"的印象。</p>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/index.md">Playbooks 官方首页</a> + <a href="https://docs.corestory.ai/playbooks/code-modernization">Code Modernization</a>（含六阶段表、执行模式、7 Rs、HITL 门禁）。这些页几乎含本课全部知识。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0001-corestory-foundations.html">← Lesson 01</a>
+    <a href="0003-codebase-assessment.html">下一课：阶段一 Codebase Assessment →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 拿不准某个项目该套用哪个 playbook？把你的场景描述给老师，我帮你定位。
+  </div>
+
+</div>
+</body>
+</html>

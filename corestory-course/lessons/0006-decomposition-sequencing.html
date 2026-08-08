@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 06 · 阶段四：Decomposition &amp; Sequencing</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0005-target-architecture.html">← Lesson 05</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 06 · 现代化阶段四</p>
+    <h1>Decomposition &amp; Sequencing（分解与排序）</h1>
+    <p class="subtitle">目标架构有了，问题变成：怎么抵达而不在半路把一切都弄坏？</p>
+  </header>
+
+  <h2>核心概念：Work Package（工作包）+ TCE 循环</h2>
+  <p>本阶段把现代化愿景拆成一组<strong>可独立部署</strong>的工作包，并按依赖排序。每个工作包都围绕 <strong>Transform → Coexist → Eliminate（TCE）</strong> 组织——这是 Strangler Fig（Martin Fowler, 2004）的操作化表达：先建新版（Transform），新旧同时跑并用 facade 路由流量（Coexist），行为验证通过后退役旧版（Eliminate）。<sup><a href="https://docs.corestory.ai/playbooks/modernization/decomposition-sequencing">来源</a></sup></p>
+
+  <div class="callout">
+    <span class="ctitle">为什么排序比想象难</span>
+    不能只挑"最容易的"组件先做——若它和另三个共享一张数据库表，立刻撞上数据分解难题；也不能盲从依赖图——高风险组件该早做（早消风险）还是晚做（先学容易的）取决于团队风险偏好。正确顺序平衡：依赖约束、风险偏好、业务价值交付、团队能力。
+  </div>
+
+  <h2>六步工作流</h2>
+  <ol>
+    <li><strong>Input Loading</strong> — 载入 ADR 与依赖分析；建 <code>[Decomposition] 系统名 - Migration Planning</code> 对话。</li>
+    <li><strong>Component Decomposition</strong> — 找出<strong>迁移单元</strong>（最小可独立部署集合）：
+      <pre><code>"哪些组件共享无法拆分（或须两侧同时迁移）的数据库表？哪些有同步调用依赖、单边现代化就会断？哪些共享业务逻辑？把组件分组为可独立部署的迁移单元。"</code></pre>
+      并验证每个单元真的能独立运行 + 有回滚路径。</li>
+    <li><strong>Dependency Mapping</strong> — 硬依赖（必须先完成，如 API 由对方提供）vs 软依赖（先做更顺、但可加临时集成点独立进行）vs 共享基础设施。识别<strong>关键路径</strong>。
+      <pre><code>"对每个工作包列出对其他包的依赖：硬依赖（WP-X 必须等 WP-Y）、软依赖、共享基础设施依赖。绘制依赖图，找出决定最小总时长的关键路径。"</code></pre>
+    </li>
+    <li><strong>Sequencing</strong> — 依依赖 → 风险 → 业务价值 → 团队容量排序；识别<strong>快速取胜</strong>（低耦合、高就绪、高价值、少依赖——第一个 sprint 打样用）；识别可并行的工作包；逐位做风险分析。这里最依赖工程判断。</li>
+    <li><strong>Work Package Definition</strong> — 每个工作包给出 Transform（delta spec 范围、目标模式、文件数、测试策略）/ Coexist（facade 方案、数据同步、回滚计划、验证标准）/ Eliminate（退役清单、facade 拆除、最终验证）+ 五类验收标准。</li>
+    <li><strong>Ticketing Integration</strong> — 有 Jira/Linear MCP 就推进去（epic + story + 依赖链接）；没有则输出结构化定义手动导入。</li>
+  </ol>
+
+  <h2>TCE 与另外两种执行模式</h2>
+  <table>
+    <tr><th>模式</th><th>何时用</th><th>要点</th></tr>
+    <tr><td>Strangler Fig</td><td>默认；可拦截流量时</td><td>Transform → Coexist（facade 路由，可秒回滚）→ Eliminate</td></tr>
+    <tr><td>Branch by Abstraction</td><td>内部共享库/数据访问层无法拦截</td><td>引入抽象层 → 新旧实现并存 → 逐个切调用方 → 删旧实现</td></tr>
+    <tr><td>Parallel Run（影子流量）</td><td>支付/合规/财务等高风险逻辑</td><td>生产请求双写，差异率低于阈值（关键服务 &lt;0.01%，一般 &lt;0.1%）才切换</td></tr>
+  </table>
+  <p>共存期数据同步：可用 <strong>CDC（Change Data Capture）</strong>（Kafka/Debezium）避免双写问题，实时同步新旧数据存储。</p>
+
+  <div class="callout gate">
+    <span class="ctitle">HITL 门禁</span>
+    第 4 步排序后：工程负责人审阅迁移序列、工作包定义、依赖图，批准后才推进 Jira/Linear。排序即团队排班，必须人来确认。
+  </div>
+
+  <h2>产出：Work Package 模板骨架</h2>
+  <p>ID / Component / Strategy / Migration Unit / Dependencies / Blocked by / Sequence Position / Effort。每段拆 Transform · Coexist · Eliminate 子块，结尾 <strong>Acceptance Criteria</strong>（功能、行为等价、性能、集成、运维五类勾选）。</p>
+
+  <h2>最佳实践</h2>
+  <ul>
+    <li><strong>按依赖链排序，不是按"以为的难度"</strong>。</li>
+    <li><strong>用快速取胜开局</strong>——第一次增量迁移建立团队信心与组织支持。</li>
+    <li><strong>别低估临时集成工作</strong>（防腐蚀层、适配器、数据同步——是真实工程活）。</li>
+    <li><strong>基础设施提前当作"Step 0"工作包</strong>（API 网关、事件总线、service mesh、CI/CD）。</li>
+    <li><strong>开工前先定义"完成"</strong>；Coexist 是你的安全网，别急着过。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="unit">
+    <p class="q">最小可独立部署的迁移集合叫什么？</p>
+    <button class="opt" data-correct="true">迁移单元 Migration Unit</button>
+    <button class="opt">关键路径 Critical Path</button>
+    <button class="opt">反腐蚀层 ACL 层</button>
+    <button class="opt">基础设施 Step 0</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="mode">
+    <p class="q">支付模块要"生产级等价证明"才敢切换，该用哪种模式？</p>
+    <button class="opt">Strangler Fig 绞杀藤</button>
+    <button class="opt" data-correct="true">Parallel Run 影子流量</button>
+    <button class="opt">Branch by Abstraction</button>
+    <button class="opt">Delta Spec 增量规格</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/modernization/decomposition-sequencing">官方 Decomposition &amp; Sequencing playbook</a> ——含完整查询脚本、依赖图示例（wave 图）、Work Package 模板。配合 <a href="https://docs.corestory.ai/playbooks/using-corestory-with-jira">Jira 集成</a> 看落地。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0005-target-architecture.html">← Lesson 05</a>
+    <a href="0007-spec-driven-development.html">下一课：阶段五 Spec-Driven Development →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想亲手在纸上画一张你系统的依赖图然后核对我给你的排序？问老师要演练模板。
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>术语表 / Glossary · CoreStory Playbooks</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">← 课程首页</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Reference · 快速参考</p>
+    <h1>术语表 / Glossary</h1>
+    <p class="subtitle">贯穿全部 18 课的核心术语，本课程约定始终沿用这些定义。每次学习新课时先回顾本节。</p>
+  </header>
+
+  <h2>平台与角色</h2>
+  <dl class="glossary">
+    <dt>CoreStory</dt>
+    <dd>代码智能平台：用 AI 从源码反向工程出规范（PRD、TechSpec、用户故事等），形成"持久化智能层"。来源：<a href="https://docs.corestory.ai/about/what-is-corestory">官方 What is CoreStory</a></dd>
+    <dt>Ingestion（摄取）</dt>
+    <dd>把仓库吸收为可查询的代码智能模型的过程。分析结果反映的是<strong>摄取时刻</strong>的代码快照——关键发现需对照当前源码复核。</dd>
+    <dt>Code Intelligence（代码智能）</dt>
+    <dd>从源码、PRD、技术规格、代码历史、架构分析中综合出的系统如何工作的知识，可被 Agent 查询。</dd>
+    <dt>MCP（Model Context Protocol）</dt>
+    <dd>Agent 与 CoreStory / Jira 等服务器通信的标准协议。CoreStory MCP 端点：<code>https://c2s.corestory.ai/mcp</code>，用 <code>Authorization: Bearer mcp_...</code>。</dd>
+    <dt>Expert（专家角色）</dt>
+    <dd>CoreStory 角色之一：解释系统"应该怎么工作"——架构、设计意图、不变量、业务规则、历史背景。</dd>
+    <dt>Navigator（导航角色）</dt>
+    <dd>CoreStory 角色之一：指出具体文件、方法、扩展点、代码路径——"代码在哪、改哪里"。</dd>
+    <dt>Verifier（验证角色）</dt>
+    <dd>现代化阶段的角色：对照旧系统与新实现，证明行为等价。</dd>
+    <dt>Gap Analyzer（差距分析角色）</dt>
+    <dd>Feature Gap Analysis 中的独特角色：把功能规范与现有系统逐项比对，标出"已有/缺失/需改动"。</dd>
+    <dt>Conversation（对话线程）</dt>
+    <dd>CoreStory 中的持久化会话。每个任务开一个，命名清晰，完成后加 <code>RESOLVED</code> 前缀——形成可检索的"机构知识"。</dd>
+  </dl>
+
+  <h2>核心交互范式（所有 playbook 共用）</h2>
+  <dl class="glossary">
+    <dt>Expert before Navigator（先专家后导航）</dt>
+    <dd>先问"系统设计上该如何工作"，再去找具体问题/代码路径。先理解意图，偏差才容易现形。</dd>
+    <dt>Specification before Code（先规格后代码）</dt>
+    <dd>测试/实现前先提取"应当的行为规格"，而不是先读实现代码照着写测试。</dd>
+    <dt>Conversation lifecycle（对话生命周期）</dt>
+    <dd>选项目（list_projects）→ 建对话（create_conversation）→ 查询（send_message）→ 完结改名（rename_conversation 加 RESOLVED）。</dd>
+  </dl>
+
+  <h2>现代化（六阶段框架）</h2>
+  <dl class="glossary">
+    <dt>7 Rs 现代化策略</dt>
+    <dd>Retire（退役）/ Retain（保留）/ Rehost（升降级搬迁）/ Relocate（虚拟机搬迁）/ Replatform（平台化）/ Refactor / Re-architect（重构再架构）/ Repurchase（采购 SaaS）。本 playbook 以 Refactor / Re-architect 价值最高。</dd>
+    <dt>Strangler Fig（绞杀藤模式）</dt>
+    <dd>Martin Fowler 提出的增量现代化模式：Transform（建新版）→ Coexist（共存、用 facade 路由流量）→ Eliminate（验证后退役旧版）。默认执行模式。</dd>
+    <dt>TCE 循环</dt>
+    <dd>Transform → Coexist → Eliminate 的缩写，每个工作包的执行结构。</dd>
+    <dt>Branch by Abstraction（抽象分支）</dt>
+    <dd>对无法在外部拦截的内部组件（共享库、数据访问层），在代码库内引入抽象层、新旧实现并存、逐个切换调用方。</dd>
+    <dt>Parallel Run / Shadow Traffic（影子流量）</dt>
+    <dd>把生产请求副本同时打到新旧系统，对比响应。临界值：关键服务差率 &lt;0.01%，一般服务 &lt;0.1%。来源：Microsoft Engineering Playbook。</dd>
+    <dt>Confidence Protocol（置信度协议）</dt>
+    <dd>对 AI 派生发现分级：Verified（已验证）/ High-confidence（高置信）/ Hypothesized（猜测）/ Contradicted（矛盾）。决定需要多少人工复核。</dd>
+    <dt>Behavior tags（行为标签）</dt>
+    <dd>每个行为标迁移意图：PRESERVE（原样保留）/ MODERNIZE（现代化实现）/ CHANGE（有意变更）/ NEW（新增）/ RETIRE（移除）。若 CHANGE+NEW 超过 20% 提示从现代化滑向重写。</dd>
+    <dt>Work Package（工作包）</dt>
+    <dd>最小可独立部署的迁移单元，含 Transform/Coexist/Eliminate 三阶段、验收标准、依赖、工作量估计。</dd>
+    <dt>ADR（Architectural Decision Record，架构决策记录）</dt>
+    <dd>阶段三产物：记录当前状态、选定策略、目标架构、迁移范围、约束、风险、备选方案、审批。</dd>
+    <dt>Behavioral Equivalence（行为等价）</dt>
+    <dd>新旧实现"输入条件、逻辑、副作用、错误处理、输出"语义一致。</dd>
+    <dt>Characterization / Golden Master Testing（刻画测试 / 金标测试）</dt>
+    <dd>Michael Feathers 提出：用大量输入抓取旧系统输出作为"金标"，新实现必须匹配。旧系统行为即规范。</dd>
+  </dl>
+
+  <h2>业务规则提取</h2>
+  <dl class="glossary">
+    <dt>BR-XXX 编号</dt>
+    <dd>业务规则清单的每条规则编号（如 BR-007），跨阶段引用（阶段二产出、阶段六验证）。</dd>
+    <dt>Claim Type（声明类型）</dt>
+    <dd>规则声称类型：Workflow / Constraint / Validation / Default / Calculation / Authorization。决定验证优先级。</dd>
+    <dt>Enforcement Point（强制执行点）</dt>
+    <dd>真正拒绝非法输入的那一行代码，而非字段声明处。找不到就降级为"Declared but not enforced"。</dd>
+    <dt>Invariants（不变量）</dt>
+    <dd>无论输入如何必须始终成立的性质，如 <code>coord_names ⊆ variables.keys()</code>。分类：数据完整性 / 状态机 / 引用 / 安全 / 时序。</dd>
+  </dl>
+
+  <h2>Spec-Driven Development &amp; 测试</h2>
+  <dl class="glossary">
+    <dt>Delta Spec（增量规格）</dt>
+    <dd>只描述"变化的部分"：不变量、要复用的现有组件、新增/修改组件、验收标准。避免绿地式重复规范。</dd>
+    <dt>Six-Phase SDD</dt>
+    <dd>Ground（地面/基于架构了解）→ Specify（写增量规格）→ Validate（架构 pre-mortem 验证）→ Plan（文件/依赖顺序）→ Implement（TDD）→ Verify &amp; Capture（逐条核验 + 记录）。</dd>
+    <dt>Reuse-first / Invariants-first</dt>
+    <dd>规格先写"绝不能破坏的不变量"，再写可复用组件；复用查询常能砍掉 30–50% 的规格工作。</dd>
+    <dt>Pre-mortem（事前剖析）</dt>
+    <dd>实现前让 CoreStory 审查规格：模式冲突、缺失依赖、失败模式。单机 SDD 工具做不到。</dd>
+    <dt>Code-mirroring tests（代码镜像测试）</dt>
+    <dd>断言"如何实现"（mock 调用、签名）。重命名就坏、重构就碎——"循环断言的伪覆盖"。</dd>
+    <dt>Specification-driven tests（规格驱动测试）</dt>
+    <dd>断言"应当的结果"（输出、状态变化）。任何保留业务规则的重构都能存活。例：<code>test_order_rejected_when_below_minimum_amount</code>。</dd>
+    <dt>Behavioral inventory（行为清单）</dt>
+    <dd>测试生成前的规格提取：验收标准、验证规则、状态迁移、授权矩阵、不变量、隐式行为、计算。</dd>
+    <dt>Flakiness management（测试不稳定管理）</dt>
+    <dd>E2E 用条件等待而非固定延时、隔离测试数据、稳定环境；新套件至少连跑 3 次确认稳定性。</dd>
+  </dl>
+
+  <h2>集成与技能</h2>
+  <dl class="glossary">
+    <dt>Rovo MCP Server</dt>
+    <dd>Atlassian 官方 MCP 服务器（云托管，支持 Jira/Confluence/Compass，OAuth 2.1）。端点 <code>https://mcp.atlassian.com/v1/mcp</code>。</dd>
+    <dt>SKILL.md</dt>
+    <dd>Agent 技能文件（Claude Code 装在 <code>.claude/skills/&lt;name&gt;/SKILL.md</code>）。本课程 0018 课教你如何写它。</dd>
+    <dt>AGENTS.md</dt>
+    <dd>跨 harness 的技能分发单文件规范，被 Codex、Aider、Cursor、Gemini CLI、Windsurf 等读取。</dd>
+    <dt>Spec Kit</dt>
+    <dd>GitHub 的 SDD 框架，提供 /speckit.constitution、/speckit.specify 等命令生成结构化规格产物，存于 <code>.specify/memory/</code>。</dd>
+  </dl>
+
+  <hr>
+
+  <p><small>本术语表依据官方文档全部 playbook 页面编写。原始地址：<a href="https://docs.corestory.ai/playbooks">https://docs.corestory.ai/playbooks</a>。对任何术语有疑问，问你的老师（本 Agent）。</small></p>
+
+</div>
+</body>
+</html>

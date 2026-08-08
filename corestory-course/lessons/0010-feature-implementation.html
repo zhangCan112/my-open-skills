@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 10 · Feature Implementation</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0009-behavioral-verification.html">← Lesson 09</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 10 · AI 辅助开发</p>
+    <h1>Feature Implementation（功能实现）</h1>
+    <p class="subtitle">用 AI Agent 在"你熟悉的或陌生的"代码库里放心地加新功能——先学架构，再 TDD 落地。</p>
+  </header>
+
+  <h2>为什么不用"直接让 Agent 去写"</h2>
+  <p>无架构理解地写功能，结果是"孤立运行、系统内四不像"。本 playbook 用 CoreStory 两个角色把 Agent 变得像"待了几年的人"：<strong>Expert</strong>（架构、模式、命名、不变量——系统<em>如何工作</em>）与 <strong>Navigator</strong>（文件、扩展点、数据结构——<em>在哪儿实现、复用啥</em>）。<sup><a href="https://docs.corestory.ai/playbooks/feature-implementation">来源</a></sup></p>
+
+  <h2>六相位工作流</h2>
+  <ol>
+    <li><strong>Ticket Intake &amp; Context</strong> — 取工单（有 ticketing MCP 就自动拉，如 <code>Fetch GitHub issue #6992 from myorg/myapp</code>），确认项目、查摄取完成、建持久对话 <code>Ticket Implementation: #6992 - ...</code>。验收标准不清晰就先澄清，别硬动手。</li>
+    <li><strong>Understanding System Architecture（Expert）</strong> — 三组查询：架构（负责该功能区的文件、模式与覆盖）、模式与约定（同类功能如何结构、命名、要维护的不变量）、历史（最近类似功能的设计意图、相关故事/工单）。</li>
+    <li><strong>Implementation Planning（Navigator）</strong> — 三个高价值查询：<strong>扩展点</strong>（在哪实现、逐步走一遍）、<strong>数据结构</strong>（哪些模型/关系）、<strong>参考实现</strong>（最相似的同名功能复制模板——"最高价值查询"）。</li>
+    <li><strong>Test-First Implementation（Validation）</strong> — 先写失败测试（验收标准 + 阶段2 模式 + 阶段3 结构），交给 CoreStory 验证；确认测试<strong>的确失败</strong>（若通过说明功能已存在或测试写错）；实现后验证通过；再让 CoreStory 校验实现与架构一致、无副作用。</li>
+    <li><strong>Feature Completion（Validation）</strong> — 问边界用例（空态、大数据量、并发、非法输入、权限边界、缺关联数据），补相应测试；跑全量套件（回归即副作用——重做）；性能与安全敏感功能单独加测试。</li>
+    <li><strong>Completion &amp; Knowledge Capture</strong> — 提交（结构化信息：特性/实现/架构对齐/测试范围，引用 conversation id）；更名 <code>#6992 - COMPLETED - CSV export</code>。</li>
+  </ol>
+
+  <h2>一个关键教训：参考实现（Reference Implementation）</h2>
+  <p>给 Agent 一个"已存在的、最相近的功能"当模板，效果远胜抽象模式描述。比如加 CSV 导出，找出已有的 PDF 导出类 <code>PdfExportService</code>，新类 <code>CsvExportService</code> 顺着它写——具体、一致、不越界。</p>
+
+  <h2>提交信息模板（沉淀知识）</h2>
+  <pre><code>Feat: Add CSV export for user profiles (#6992)
+
+Feature: Admin users can export user profile data in CSV format.
+Implementation: New CsvExportService following PdfExportService pattern;
+  new /users/export/csv endpoint (admin only); async processing for
+  large datasets (>1000 records).
+Architecture Alignment: extends ExportServiceBase; uses established
+  auth pattern; follows async job pattern.
+Testing: 7 integration tests covering acceptance criteria; 3 unit tests.
+References: Ticket: #6992 · CoreStory Investigation: [conversation-id]</code></pre>
+
+  <h2>何时不要用全套流程</h2>
+  <div class="callout">
+    trivial 的两行配置改动、纯文档改动、<strong>bug 修复</strong>（用 Bug Resolution）、无 CoreStory 项目、用户要求手动写——这五种情形跳过它，别杀鸡用牛刀。
+  </div>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="order">
+    <p class="q">TDD 流程中，测试必须先处于什么状态才能继续？</p>
+    <button class="opt">必须先通过（验证实现正确）</button>
+    <button class="opt" data-correct="true">必须失败（证明 bug 或未实现）</button>
+    <button class="opt">必须全部跳过不运行</button>
+    <button class="opt">必须删掉旧的测试文件</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="phase">
+    <p class="q">"给我最相近功能的参考实现"属于哪个相位？</p>
+    <button class="opt">Phase 2 架构理解</button>
+    <button class="opt" data-correct="true">Phase 3 规划选址</button>
+    <button class="opt">Phase 4 Test-First</button>
+    <button class="opt">Phase 5 完成验证</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/feature-implementation">官方 Feature Implementation playbook</a> ——含六个相位可复制的查询脚本、提交信息模板、参考实现的完整示例（CSV 导出）。它和 Bug Resolution 共享六相位 DNA。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0009-behavioral-verification.html">← Lesson 09</a>
+    <a href="0011-agentic-bug-resolution.html">下一课：Agentic Bug Resolution →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想拿你正在排的一个真实工单跟我走一遍六个相位？把工单粘过来。
+  </div>
+
+</div>
+</body>
+</html>

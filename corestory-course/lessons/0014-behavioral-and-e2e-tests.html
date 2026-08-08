@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 14 · Behavioral 覆盖 + E2E 测试生成</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0013-spec-driven-test-generation.html">← Lesson 13</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 14 · 测试与验证</p>
+    <h1>Behavioral 覆盖 + E2E 测试生成</h1>
+    <p class="subtitle">Spec-Driven Test Generation 的两个执行子流程：单模块行为测试（10–30 用例）与关键用户旅程 E2E（5–15 场景）。</p>
+  </header>
+
+  <h2>上篇：Behavioral Test Coverage（核心子流程）</h2>
+  <p>痛点是"测试套件从内部腐烂"——<strong>覆盖率跟着新鲜度而不是重要性走</strong>：最新代码测得好，真正重要的老代码没人测。核心机制：<strong>Specification before Code</strong>——先向 CoreStory 提取行为规格，再生成测试。<sup><a href="https://docs.corestory.ai/playbooks/test-generation/behavioral-test-coverage">来源</a></sup></p>
+
+  <h3>六相位速览</h3>
+  <ol>
+    <li><strong>Setup &amp; Scoping</strong> — 选项目、查旧对话（有 Business Rules 清单直接消费）、建 <code>Test Generation - &lt;scope&gt;</code>；范围：模块（10–30）/ 域（30–80+）/ 全系统（80+ 分成多会话）。首次选"有缺口 + 高业务价值"的单模块。</li>
+    <li><strong>Behavioral Inventory（Expert）</strong> — 按类提取：验收标准、验证规则、批量状态迁移（合法 + 非法）、授权规则（角色 × 操作）、不变量与边界、<strong>隐式行为</strong>（"团队 just know 但从未写下来——往往最高价值用例"）、计算/转换公式。</li>
+    <li><strong>Convention Discovery（Expert + Navigator）</strong> — 框架/目录/命名、夹具模式、断言风格、mock 工具；再读 2–3 个代表性测试确认。</li>
+    <li><strong>Coverage Gap Analysis（Navigator）</strong> — 分类 已测 / 弱（仅 happy path）/ 未测 → gap 矩阵 → 按业务重要性与破风险排序。<strong>HITL 门禁：</strong>生成测试前让人审规格与优先级（错规格 → 自信地错断言）。</li>
+    <li><strong>Generation &amp; Validation</strong> — 逐条生成（用项目夹具、断言行为规格、docstring 挂接规则 ID 如 BR-012）；跑测试按失败类型分类（setup 失败=改测试机制；<strong>断言失败=发现</strong>：规格错或代码错，标给人审，绝不削断言去迁就现在行为）；对关键不变量做<strong>手工变异检查</strong>（临时改源码破坏规则，确认测试抓得住，恢复）。</li>
+    <li><strong>Completion &amp; Capture</strong> — 覆盖率汇总 → 提交（模板：类型清单 + 总数 + "无回归"）→ 改名 <code>RESOLVED - Test Generation - ...</code>。</li>
+  </ol>
+
+  <h2>下篇：E2E Test Generation（旅程级）</h2>
+  <p>引子：E2E 是<strong>最贵、最脆、最后真正最有用</strong>的测试。多数套件是"重大 bug 上线后某人补了一条"。CoreStory 作为 <strong>Journey Expert</strong> 从 PRD 提取用户故事/验收标准/关键路径 + 从代码库看路由/API/数据流。<sup><a href="https://docs.corestory.ai/playbooks/test-generation/e2e-test-generation">来源</a></sup></p>
+
+  <h3>八步走</h3>
+  <ol>
+    <li><strong>Setup</strong> — 取项目、建 <code>E2E Test Generation - &lt;scope&gt;</code>；范围：单旅程（3–8 场景）/ 旅程集群（8–15）/ 核心旅程系统级（15–30）。<em>"10 个结构良好的旅程测试胜过 50 个浅层点击。"</em></li>
+    <li><strong>Journey Extraction</strong> — happy path（用户每步看到啥/输入啥/调啥 API/状态如何变化）、<strong>unhappy paths</strong>（验证失败、网络错误、部分完成状态——"用户卡住的地方最该测"）、前置条件、数据需求。</li>
+    <li><strong>Convention Discovery</strong> — E2E 框架、页面对象/选择器策略（优先 data-testid 与 roles，别用脆弱 CSS）、夹具/seed、认证方式；读 2–3 个代表文件。</li>
+    <li><strong>Journey Prioritization</strong> — 按收入影响 / 用户频率 / 失败严重性 / 复杂度。<strong>HITL 门禁：</strong>E2E 维护成本高，人先确认选旅程值得投。</li>
+    <li><strong>Generate + Stabilize</strong> — 先生成 happy path（查命名/选择器/夹具）→ 跑 &amp; 稳定（失败分类：selector 错、超时、状态错、断言错）→ 再 unhappy path → 全量跑 <strong>至少 3 次</strong> 防 flaky。</li>
+    <li><strong>Flakiness 管理</strong> — 条件等待而非固定延时、每测隔离数据、测试环境禁动画、重试只对瞬时基础设施问题、稳定专用环境。</li>
+    <li><strong>Completion</strong> — 汇报：<code>Journeys inventoried: X · Happy path: Y · Unhappy path: Z · Remaining: ...</code> → 提交（模板）→ 改名 <code>RESOLVED - E2E Test Generation - ...</code>。</li>
+  </ol>
+
+  <h2>两者如何互补（金字塔原则）</h2>
+  <div class="callout">
+    Behavioral 测试抓<strong>逻辑 bug</strong>；E2E 抓<strong>集成失败、UI 回归、跨组件断了</strong>。E2E 在最顶，别重复 behavioral 已覆盖的逻辑。命名用"旅程"而非"页面"，缺口处一目了然。
+  </div>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="flaky">
+    <p class="q">E2E 新套件提交前应至少连跑几次以检验稳定性？</p>
+    <button class="opt">一次跑通就能交</button>
+    <button class="opt" data-correct="true">至少要连跑三次</button>
+    <button class="opt">只在周末跑一次</button>
+    <button class="opt">从不用跑直接从 CI 过</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="taxonomy">
+    <p class="q">生成测试后"断言失败"首先意味着什么？</p>
+    <button class="opt">测试基础设施坏了</button>
+    <button class="opt" data-correct="true">规格或代码有问题需要发现</button>
+    <button class="opt">只是 flaky 需要重试</button>
+    <button class="opt">没人审就该删掉</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/test-generation/behavioral-test-coverage">Behavioral Test Coverage</a> 与 <a href="https://docs.corestory.ai/playbooks/test-generation/e2e-test-generation">E2E Test Generation</a>——各含全部查询脚本、失败分类表、提交模板与 HITL 门禁。两者应配合使用，E2E 前先做 behavioral。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0013-spec-driven-test-generation.html">← Lesson 13</a>
+    <a href="0015-ma-technical-due-diligence.html">下一课：M&amp;A Technical Due Diligence →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想让我用你项目里的一个模块走一遍"行为清单 → gap 矩阵 → 补测试"流程？把模块名给我。
+  </div>
+
+</div>
+</body>
+</html>

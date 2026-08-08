@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 17 · Spec Kit Companion</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0016-using-corestory-with-jira.html">← Lesson 16</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 17 · 高级主题</p>
+    <h1>Spec Kit Companion（与 GitHub Spec Kit 集成）</h1>
+    <p class="subtitle">CoreStory 给架构地基，Spec Kit 给结构化书写。两个工具互补：一个管"写什么"，一个管"确认是现实"。</p>
+  </header>
+
+  <h2>分工的本质</h2>
+  <p><strong>CoreStory 告诉你架构实际上是什么</strong>；<strong>Spec Kit 给你一套把它写下来的统一格式</strong>（机器可读、可版本控制、可 PR 审查）。谁也不替代谁：CoreStory 给出 grounding，Spec Kit 给出 artifact 结构。<sup><a href="https://docs.corestory.ai/playbooks/spec-kit-companion">来源</a></sup></p>
+
+  <h2>相位 ↔ 命令映射表（记忆核心）</h2>
+  <table>
+    <tr><th>SDD 相位</th><th>Spec Kit 命令</th><th>整合模式</th></tr>
+    <tr><td>1 · Ground</td><td><code>/speckit.constitution</code></td><td>CoreStory 发现（架构/约定/不变量/技术决策/测试）喂入 constitution</td></tr>
+    <tr><td>2 · Specify</td><td><code>/speckit.specify</code></td><td>delta spec（不变量 + 复用 + 增量）约束 spec</td></tr>
+    <tr><td>3 · Validate</td><td><em>（无对应）</em></td><td><strong>仅 CoreStory</strong>——对 .specify 产物做架构 pre-mortem</td></tr>
+    <tr><td>4 · Plan</td><td><code>/speckit.plan</code> + <code>/speckit.tasks</code></td><td>已验 spec 喂计划与任务拆分</td></tr>
+    <tr><td>5 · Implement</td><td><code>/speckit.implement</code></td><td>标准 TDD 实现</td></tr>
+    <tr><td>6 · Verify &amp; Capture</td><td><em>（无对应）</em></td><td><strong>仅 CoreStory</strong>——验证不变量并捕获知识</td></tr>
+  </table>
+
+  <div class="callout">
+    <span class="ctitle">核心洞察</span>
+    相位 3（Validate）与相位 6（Verify &amp; Capture）<strong>没有 Spec Kit 等价物</strong>——这是 CoreStory 填的坑。Spec Kit 结构化产物，CoreStory 验证它是否符合现实。
+  </div>
+
+  <h2>安装与初始化</h2>
+  <pre><code>uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+specify --version
+specify init my-project --ai claude    # 或 copilot / cursor-agent / gemini / opencode 等</code></pre>
+
+  <h2>关键理念：CoreStory before Spec Kit（每相位都先 CoreStory）</h2>
+  <ul>
+    <li><strong>Constitution 是最有杠杆的产物</strong>——把最多的查询时间投给它。没有 CoreStory 它会写出一份"干净代码"式通用宪法；有 CoreStory 它就具体到 <code>UserService</code>、指明异步都用 <code>TaskQueue</code>、记下审计敏感模型强制软删除。它是活文档，特性上线后要更新。</li>
+    <li>阶段一 Ground 后把架构发现粘进 /speckit.constitution 提示（示例段），阶段三把 spec.md 黏进 CoreStory 做 pre-mortem。</li>
+    <li><strong>两个"只有 CoreStory"的相位别跳过</strong>——跳过 Phase 3 会得到"重复建已有服务"的愚蠢建议。</li>
+  </ul>
+
+  <h2>规格产物存放（可 PR 审查、可版本化）</h2>
+  <table>
+    <tr><th>产物</th><th>位置</th><th>由谁创建</th></tr>
+    <tr><td>Constitution</td><td><code>.specify/memory/constitution.md</code></td><td>/speckit.constitution</td></tr>
+    <tr><td>Feature spec</td><td><code>.specify/memory/features/{name}/spec.md</code></td><td>/speckit.specify</td></tr>
+    <tr><td>Technical plan</td><td><code>.specify/memory/features/{name}/plan.md</code></td><td>/speckit.plan</td></tr>
+    <tr><td>Task breakdown</td><td><code>.specify/memory/features/{name}/tasks.md</code></td><td>/speckit.tasks</td></tr>
+  </table>
+
+  <h2>陷阱排查</h2>
+  <ul>
+    <li>命令不可用 → 检查 <code>.specify/</code> 存在，或 <code>specify init --here --ai &lt;agent&gt;</code>。</li>
+    <li>分成太通用 → 先查 CoreStory 再把具体信息贴进提示（通用输入出通用产物）。</li>
+    <li>Spec Kit 建议新建已存在的服务 → 相位 3 没做或没做充分；问 CoreStory "应该复用哪个已有服务"。</li>
+    <li>产物与对话分叉 → <strong>CoreStory 对话是事实源</strong>，用刷新后的产物内容重跑验证。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="gaps">
+    <p class="q">Spec Kit 没有对应命令、必须由 CoreStory 独自完成的相位有？</p>
+    <button class="opt" data-correct="true">Phase 3 验证 + Phase 6 核验捕获</button>
+    <button class="opt">Phase 1 地面 + Phase 2 规范化</button>
+    <button class="opt">Phase 4 规划 + Phase 5 实现</button>
+    <button class="opt">只有最初安装初始化一步</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="leverage">
+    <p class="q">最该投精力（省时不省事）的 Spec Kit 产物是？</p>
+    <button class="opt">Feature spec 功能规格</button>
+    <button class="opt" data-correct="true">Constitution 宪法文件</button>
+    <button class="opt">Task breakdown 任务分解</button>
+    <button class="opt">Technical plan 技术计划</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/spec-kit-companion">官方 Spec Kit Companion playbook</a> ——含相位↔命令映射表、每条命令的详细整合提示词、产物目录、陷阱排查表。工具现场安装指令来自 <a href="https://github.com/github/spec-kit">GitHub Spec Kit</a>。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0016-using-corestory-with-jira.html">← Lesson 16</a>
+    <a href="0018-from-playbook-to-agent-skill.html">下一课：从 Playbook 到 Agent 技能 →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想让我带你在一台机器上搭好 Spec Kit 并生成第一份 constitution？直接说。
+  </div>
+
+</div>
+</body>
+</html>

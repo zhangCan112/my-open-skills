@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 13 · Spec-Driven Test Generation（总纲）</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0012-feature-gap-analysis.html">← Lesson 12</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 13 · 测试与验证</p>
+    <h1>Spec-Driven Test Generation（规格驱动测试生成 · 总纲）</h1>
+    <p class="subtitle">多数 AI 生成的测试是"实现镜像"——在断言代码如何做，而不是做对了什么。本课拆开这个哲学问题。</p>
+  </header>
+
+  <h2>镜像测试的原罪（code-mirroring tests）</h2>
+  <p>大多数 AI 生成测试的路径是：读一个函数 → 猜它做什么 → 写测试来"确认代码按它自己那样做"。于是它 <strong>第一天全绿、每次重构就碎、验证不了任何意义</strong>——"循环断言化装的覆盖率"（circular assertions dressed up as coverage）。<sup><a href="https://docs.corestory.ai/playbooks/spec-driven-test-generation">来源</a></sup></p>
+
+  <pre><code># 镜像测试：断言"how"（如何调用）
+def test_order_calls_minimum_check_validator():
+    with mock.patch("OrderValidator.check_minimum") as m:
+        m.return_value = False
+        submit_order(create_order(total=4.99))
+        m.assert_called_once_with(4.99)
+
+# 规格驱动：断言"what"（结果是什么）
+def test_order_rejected_when_below_minimum_amount():
+    result = submit_order(create_order(total=4.99))
+    assert result.status == "rejected"
+    assert "minimum order amount" in result.error</code></pre>
+  <p>第一个测试在有人改名 validator 时立刻坏；第二个测试能活过任何"保留业务规则"的重构。这就是全部差异。</p>
+
+  <h2>CoreStory 的角色：Specification Expert（规格专家）</h2>
+  <p>不镜像实现，而是<strong>先提取规格</strong>：验收标准、业务规则、不变量、授权策略、状态机定义。四个职能：<strong>行为提取</strong>（浮出验收标准/规则/状态迁移/授权矩阵/隐式行为）、<strong>约定发现</strong>（项目测试框架、目录、夹具、断言风格——生成物要跟手写的无法区分）、<strong>差距分析</strong>（哪些已测、部分测、未测）、<strong>验证</strong>（审生成的测试确实测的是"应当"而非实现细节）。</p>
+
+  <h2>两个子 playbook 的分野</h2>
+  <table>
+    <tr><th>子流程</th><th>范围</th><th>每会话产出规模</th><th>角色</th></tr>
+    <tr><td>Behavioral Test Coverage</td><td>单模块或单域（规则/验证/授权/迁移/计算）</td><td><strong>10–30 用例</strong>（域级 30–80+）</td><td>Specification Expert</td></tr>
+    <tr><td>E2E Test Generation</td><td>关键用户旅程（全栈）</td><td><strong>5–15 场景</strong>（旅程级 3–8）</td><td>Journey Expert</td></tr>
+  </table>
+
+  <h2>什么时候用 / 什么时候跳过</h2>
+  <ul>
+    <li><strong>用</strong>：有未测业务逻辑、上手安全网、重构前回归套件、合规审计、刚做完 Business Rules Extraction。</li>
+    <li><strong>跳过</strong>：实现新功能（用 Feature Implementation）、行为等价比对（用 Behavioral Verification）、纯基础设施/配置、极小型代码库（&lt;5k LOC）。</li>
+  </ul>
+
+  <h2>测试质量三原则</h2>
+  <ul>
+    <li><strong>Specification before Code</strong>——先向 CoreStory 提取"要测的规格"，再读源码或写测试。</li>
+    <li><strong>Match conventions exactly</strong>——同框架、同目录、同夹具、同断言风格。</li>
+    <li><strong>失败断言 = 发现</strong>——断言失败（而非 setup 失败）说明"规格错"或"代码错"，值得标出给人审，别默默调断言去适配当前行为。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="mirror">
+    <p class="q">哪个测试最容易在重构后坏掉？</p>
+    <button class="opt">断言业务结果的行为测试</button>
+    <button class="opt" data-correct="true">断言 mock 调用细节的镜像测试</button>
+    <button class="opt">断言状态变化的规格测试</button>
+    <button class="opt">断言输出格式的验收测试</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="role-spec">
+    <p class="q">测试生成流程中 CoreStory 主要扮演什么角色？</p>
+    <button class="opt">Verifier 验证器</button>
+    <button class="opt" data-correct="true">Specification Expert 规格专家</button>
+    <button class="opt">Gap Analyzer 差距分析器</button>
+    <button class="opt">Journey Expert 旅程专家</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/spec-driven-test-generation">官方 Spec-Driven Test Generation playbook</a> ——含镜像 vs 规格驱动的完整对比表、两个子流程的适用范围与产出规模。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0012-feature-gap-analysis.html">← Lesson 12</a>
+    <a href="0014-behavioral-and-e2e-tests.html">下一课：Behavioral 覆盖 + E2E 测试生成 →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想知道具体怎么写"行为式"而非"实现式"断言？把你现有的一个测试发给我，我帮你改成规格驱动。
+  </div>
+
+</div>
+</body>
+</html>

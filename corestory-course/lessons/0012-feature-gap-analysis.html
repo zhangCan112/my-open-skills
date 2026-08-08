@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESSON 12 · Feature Gap Analysis</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+<script defer src="../assets/quiz.js"></script>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumbs"><a href="../index.html">课程首页</a> · <a href="0011-agentic-bug-resolution.html">← Lesson 11</a></div>
+
+  <header class="masthead">
+    <p class="kicker">Lesson 12 · AI 辅助开发</p>
+    <h1>Feature Gap Analysis（功能差距分析）</h1>
+    <p class="subtitle">在已有代码库上加新功能几乎都不是绿地——先系统化标出"已有 / 缺失 / 需改动"，写代码前心里有底。</p>
+  </header>
+
+  <h2>为什么需要"差距分析"扮演者</h2>
+  <p>给成熟代码库加功能，主干成本在于弄清新功能与现状的交互：数据模型要加哪些字段、哪些 UI 组件要改、扩展/冲突了哪些业务规则、哪些集成点要更新。CoreStory 在此多了一个独特角色 <strong>Gap Analyzer</strong>：把功能规范与系统逐项比对，指向具体文件/函数。<sup><a href="https://docs.corestory.ai/playbooks/feature-gap-analysis">来源</a></sup></p>
+
+  <h2>四相位</h2>
+  <ol>
+    <li><strong>Context Loading</strong>（Expert）— 建 <code>Gap Analysis: &lt;Feature Name&gt;</code> 对话，取 PRD/TechSpec，把功能规范抛给 CoreStory 定向定位最相关子系统：
+      <pre><code>"我要实现一个新功能：[粘贴 spec]。 现有代码库中与本功能最相关的子系统/模块是哪些？有没有相似模式的已有功能？主架构模式是什么（MVC / 事件驱动 / 微服务）？"</code></pre>
+    </li>
+    <li><strong>Gap Identification</strong>（Gap Analyzer 核心）— 七类全量一查（见下表），逐类带<strong>文件路径 + 开发者级改动描述</strong>；对稀疏类目追问（能再挖细一点吗）、对跨类目影响（链式）识别。</li>
+    <li><strong>Validation &amp; Completeness</strong>（Expert + Navigator）— 让 CoreStory 复核是否遗漏文件/下游影响、是否与既有模式冲突、给依赖排序与范围汇总（新建 vs 修改文件数、最高风险项、哪些可延后）。</li>
+    <li><strong>Implementation Planning</strong>（Navigator）— 依依赖分组（数据模型 → 业务逻辑 → UI → 渲染/输出 → 集成），每组列出文件、改动、模式、测试、依赖。改名 <code>Gap Analysis: &lt;Feature&gt; - Complete</code>。</li>
+  </ol>
+
+  <h2>七类 Gap（记忆手枪扳机）</h2>
+  <table>
+    <tr><th>#</th><th>类别</th><th>示例问题</th></tr>
+    <tr><td>1</td><td>现有可复用能力</td><td>哪些能原样复用？</td></tr>
+    <tr><td>2</td><td>数据模型缺口</td><td>要加哪些字段/表/枚举？</td></tr>
+    <tr><td>3</td><td>UI 缺口</td><td>哪些界面/组件要更新？</td></tr>
+    <tr><td>4</td><td>业务逻辑缺口</td><td>哪些规则要新增/改？</td></tr>
+    <tr><td>5</td><td>渲染 / 输出缺口</td><td>导出/打印/响应格式？</td></tr>
+    <tr><td>6</td><td>集成缺口</td><td>哪些外部系统/API 要接？</td></tr>
+    <tr><td>7</td><td>约束缺口</td><td>哪些非功能/约束要满足？</td></tr>
+  </table>
+  <p>每条 gap 有 ID（DM-001、UI-001、BL-001、RO-001、IG-001、CG-001）并记录"当前状态 / 目标状态 / 依赖"。</p>
+
+  <h2>产出：Feature Gap Analysis Report</h2>
+  <p>Executive Summary → 7 类 gap 表 → Cross-Cutting Concerns → Scope Summary（文件数/风险/延后项）→ 依赖序实施计划。用"活文档"心态持续更新。</p>
+
+  <h2>最佳实践</h2>
+  <ul>
+    <li><strong>先全量七类扫一遍，再向下钻</strong>到稀疏类目；大功能拆子功能分开查。</li>
+    <li><strong>模式冲突要显式标记</strong>，别无声制造例外（问是延展现模式还是合理化新模式）。</li>
+    <li><strong>优先级：数据先</strong>（下游都依赖），再业务、再 UI/渲染、集成最后。</li>
+    <li>spec 变了就重跑分析；善用 <code>list_conversations</code> 追踪演化。</li>
+  </ul>
+
+  <h2>随堂测验</h2>
+  <div class="quiz" data-topic="seven">
+    <p class="q">以下几类 gap 按实施顺序，谁排最前？</p>
+    <button class="opt">UI 组件调整</button>
+    <button class="opt" data-correct="true">数据模型改动</button>
+    <button class="opt">外部系统集成</button>
+    <button class="opt">渲染输出格式</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="quiz" data-topic="role">
+    <p class="q">比对"规范 vs 现状"并给出具体文件路径的是哪个角色？</p>
+    <button class="opt">Verifier 验证器</button>
+    <button class="opt">Gap Analyzer 差距分析器</button>
+    <button class="opt" data-correct="true">Navigator 导航器</button>
+    <button class="opt">Expert 专家</button>
+    <div class="feedback"></div>
+  </div>
+
+  <div class="source">
+    <span class="label">Primary source（最强一手资料）</span>
+    <p><a href="https://docs.corestory.ai/playbooks/feature-gap-analysis">官方 Feature Gap Analysis playbook</a> ——含七类差距一字不差的完整查询、报告完整模板（Gap ID 体系、实施计划分组）。</p>
+  </div>
+
+  <div class="pager">
+    <a href="0011-agentic-bug-resolution.html">← Lesson 11</a>
+    <a href="0013-spec-driven-test-generation.html">下一课：Spec-Driven Test Generation →</a>
+  </div>
+
+  <div class="ask-teacher">
+    ❓ 想让我帮你把真实的新功能需求跑一次七类 gap 扫描？把需求粘贴给老师。
+  </div>
+
+</div>
+</body>
+</html>
