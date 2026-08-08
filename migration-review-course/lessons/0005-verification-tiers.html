@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 课 · 四层验证梯队</title>
+<style>:root{
+  --ink:#1a1a1a; --paper:#faf9f6; --accent:#0f4c81; --accent2:#c7417b;
+  --muted:#6b6b6b; --line:#e2e0da; --warn:#b8860b; --good:#2e7d32; --bad:#c62828;
+  --code-bg:#f2f1ec; --shadow:0 1px 3px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:780px;margin:0 auto;padding:32px 24px 80px}
+header.top{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:28px}
+header.top .kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700}
+header.top h1{font-size:28px;line-height:1.25;margin:6px 0 4px}
+header.top .sub{color:var(--muted);font-size:15px}
+h2{font-size:21px;margin-top:40px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin-top:28px;color:var(--accent)}
+h4{font-size:15px;margin-top:20px}
+p{margin:10px 0}
+a{color:var(--accent);text-decoration:underline 1px dotted;text-underline-offset:3px}
+a:hover{color:var(--accent2)}
+strong{font-weight:600}
+em{color:var(--muted)}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:0.88em;background:var(--code-bg);padding:1px 5px;border-radius:3px;
+}
+pre{
+  background:var(--code-bg);border:1px solid var(--line);border-radius:6px;
+  padding:14px 16px;overflow-x:auto;font-size:0.88em;line-height:1.55;
+}
+pre code{background:none;padding:0}
+ul,ol{margin:10px 0 10px 0;padding-left:24px}
+li{margin:5px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:0.93em}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--code-bg);font-weight:600}
+blockquote{
+  margin:16px 0;padding:10px 18px;border-left:4px solid var(--accent);
+  background:#f3f6fa;font-size:0.95em;border-radius:0 6px 6px 0;
+}
+.callout{padding:12px 16px;border-radius:6px;margin:16px 0;font-size:0.95em}
+.callout.key{background:#eef4fb;border:1px solid #c9d9ec}
+.callout.warn{background:#fdf3e2;border:1px solid #ecd9ae}
+.callout.danger{background:#fceeee;border:1px solid #e9c4c4}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;margin-right:6px;font-weight:600}
+.tag.missing{background:#fceeee;color:var(--bad);border:1px solid #e9c4c4}
+.tag.partial{background:#fdf3e2;color:var(--warn);border:1px solid #ecd9ae}
+.tag.differs{background:#eef2fb;color:var(--accent);border:1px solid #c9d9ec}
+.tag.equiv{background:#e8f5e9;color:var(--good);border:1px solid #bfe6c2}
+.tag.review{background:#f0f0f5;color:#555;border:1px solid #d0d0dd}
+.task{background:#fff;border:1px dashed var(--accent);border-radius:8px;padding:16px;margin:18px 0}
+.task .label{font-weight:700;color:var(--accent);font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+.tight li{margin:3px 0}
+.sep{border:none;border-top:1px solid var(--line);margin:32px 0}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.breadcrumb{font-size:13px;color:var(--muted);margin-bottom:20px}
+.breadcrumb a{color:var(--muted)}
+.breadcrumb a:hover{color:var(--accent)}
+/* quiz */
+.quiz{margin:18px 0}
+.quiz .q{font-weight:600;margin-bottom:8px}
+.quiz button{
+  display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;
+  border:1px solid var(--line);border-radius:6px;background:#fff;font-size:0.93em;cursor:pointer;
+  transition:border-color .12s, background .12s;
+}
+.quiz button:hover{border-color:var(--accent)}
+.quiz button.correct{border-color:var(--good);background:#e8f5e9}
+.quiz button.wrong{border-color:var(--bad);background:#fceeee}
+.quiz .reveal{display:none;margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--code-bg);font-size:0.92em}
+.quiz.revealed .reveal{display:block}
+@media print{
+  body{background:#fff}
+  .quiz button{cursor:default}
+}</style>
+<script>// Shared quiz widget for lessons.
+// Usage: <div class="quiz" data-correct="2"> <p class="q">鈥?/p>
+//          <button data-i="0">A</button> <button data-i="1">B</button> <button data-i="2">C</button>
+//          <div class="reveal">explanation</div> </div>
+// The widget marks the chosen button; correct = data-correct index.
+(function(){
+  function init(){
+    document.querySelectorAll('.quiz').forEach(function(q){
+      var correct = parseInt(q.getAttribute('data-correct'),10);
+      q.querySelectorAll('button').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var i = parseInt(btn.getAttribute('data-i'),10);
+          q.querySelectorAll('button').forEach(function(b){ b.classList.remove('correct','wrong'); });
+          if(i===correct){ btn.classList.add('correct'); q.classList.add('revealed'); }
+          else{ btn.classList.add('wrong'); q.classList.remove('revealed'); }
+        });
+      });
+    });
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); }
+  else{ init(); }
+})();</script>
+</head>
+<body>
+<div class="wrap">
+<nav class="breadcrumb"><a href="../index.html">课程目录</a> › 第 5 课</nav>
+
+<header class="top">
+  <div class="kicker">Lesson 05 · Verification Tiers</div>
+  <h1>验证方法分四层：从静态解析到生产流量</h1>
+  <div class="sub">手动 review 只是第 0 层。真正的验证从"玩真的"开始</div>
+</header>
+
+<p>前面的课建立了清单（第 2 课）、分类（第 3 课）、隐形行为（第 4 课）——这些全是<strong>静态审查</strong>。静态审查的最大弱点是"看起来都对，跑起来才崩"。所以一线实践（GitHub 的 Crane、AWS 的 Transform、CoreStory 的 playbook）都把验证分成四层，越往下越接近"新旧代码真刀真枪对打"。</p>
+
+<h2>四层验证方法</h2>
+<table>
+  <tr><th>层</th><th>名字</th><th>做法</th><th>能证明什么</th></tr>
+  <tr>
+    <td><strong>Tier 1</strong></td>
+    <td>静态行为比对</td>
+    <td>你的知识清单 + 旧新代码对照（第 2~4 课的成果）</td>
+    <td>行为全集"看起来"完整</td>
+  </tr>
+  <tr>
+    <td><strong>Tier 2</strong></td>
+    <td>Characterization（表征）测试</td>
+    <td>用真实输入在旧系统跑出输出，存成"黄金标准"（golden master），新系统必须逐条对上</td>
+    <td>给定输入，新旧输出逐字节一致</td>
+  </tr>
+  <tr>
+    <td><strong>Tier 3</strong></td>
+    <td>Shadow / 影子流量对比</td>
+    <td>生产流量同时打旧、新两套，对比每个响应，不一致的告警</td>
+    <td>在生产真实负载下行为一致</td>
+  </tr>
+  <tr>
+    <td><strong>Tier 4</strong></td>
+    <td>数据对账（Reconciliation）</td>
+    <td>迁移后对比新旧数据：行数、校验和、派生字段、外键完整性</td>
+    <td>迁移后数据真实无损（不是"再跑两遍就是一样的"）</td>
+  </tr>
+</table>
+
+<div class="callout key"><strong>关键思想（Chesterton's Fence）</strong>：没有 Tier 2+，说"我们把业务逻辑完整搬了"可能只是 wishful thinking。Characterization 测试用"旧系统输出 = 规格"。这是唯一能跳过"需求文档说不清、代码就是事实"困境的办法——旧系统跑出来的才是权威基准。</div>
+
+<h2>怎么做出 Tier 2 的黄金基准（golden master）</h2>
+<ol>
+  <li>选定一个业务函数或工作流。</li>
+  <li>喂一组真实或构造的输入（覆盖边界值、错误路径、典型场景）。</li>
+  <li>在<strong>旧系统</strong>上运行，捕获输出——这就是 baseline。</li>
+  <li>为每对 (输入)→(输出) 写成断言。</li>
+  <li>跑新系统，把新旧输出逐字段 diff。</li>
+</ol>
+<p>这里的细节很讲究：<strong>数字容差</strong>（浮点 / 舍入差异要不要一刀切）、<strong>字段级别对比</strong>（不能只输出 pass/fail）。第 6 课会讲怎么处理"故意不同"（修复 bug 后基准改了怎么办）。</p>
+
+<h2>Quiz</h2>
+<div class="quiz" data-correct="1">
+  <p class="q">银行迁移项目，你担心迁移后"状态机流转"在极值 case 下出错。最高效的验证方法是什么？</p>
+  <button data-i="0">再人工复查一遍规则清单</button>
+  <button data-i="1">先找历史交易造数据做表征 + 影子流量对比</button>
+  <button data-i="2">只用单测闭眼信用例数</button>
+  <div class="reveal">状态流转的诡异 case 靠人读不出来——用 Tier 2（表征）构造覆盖 + Tier 3（影子）在生产流量下验证。单测用例多不代表覆盖到。</div>
+</div>
+
+<h2>来源与延伸阅读</h2>
+<ul>
+  <li>CoreStory：Tier 1–4 的完整定义见 <a href="https://docs.corestory.ai/playbooks/modernization/behavioral-verification">Behavioral Verification</a> 的 "Verification Approaches" 一节。</li>
+  <li>Golden master 的经验来自 <a href="https://modernizespec.dev/techniques/parity-testing">ModernizeSpec Parity Testing</a> 和 Michael Feathers 的《Working Effectively with Legacy Code》。</li>
+  <li>影子流量对比与"别信你们重写了，要实测"的思路见 GitHub 的 <a href="https://githubnext.com/posts/crane/">Crane</a> 一文。</li>
+</ul>
+
+<div class="callout">有问题随时问我。</div>
+
+<footer><a href="0004-hidden-behaviors.html">← 第 4 课</a>
+<span><a href="0006-report-and-gate.html">第 6 课：生成报告并设置人类闸门 →</a></span></footer>
+</div>
+</body>
+</html>

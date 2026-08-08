@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 课 · 以清单为纲：拒绝逐行审查</title>
+<style>:root{
+  --ink:#1a1a1a; --paper:#faf9f6; --accent:#0f4c81; --accent2:#c7417b;
+  --muted:#6b6b6b; --line:#e2e0da; --warn:#b8860b; --good:#2e7d32; --bad:#c62828;
+  --code-bg:#f2f1ec; --shadow:0 1px 3px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:780px;margin:0 auto;padding:32px 24px 80px}
+header.top{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:28px}
+header.top .kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700}
+header.top h1{font-size:28px;line-height:1.25;margin:6px 0 4px}
+header.top .sub{color:var(--muted);font-size:15px}
+h2{font-size:21px;margin-top:40px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin-top:28px;color:var(--accent)}
+h4{font-size:15px;margin-top:20px}
+p{margin:10px 0}
+a{color:var(--accent);text-decoration:underline 1px dotted;text-underline-offset:3px}
+a:hover{color:var(--accent2)}
+strong{font-weight:600}
+em{color:var(--muted)}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:0.88em;background:var(--code-bg);padding:1px 5px;border-radius:3px;
+}
+pre{
+  background:var(--code-bg);border:1px solid var(--line);border-radius:6px;
+  padding:14px 16px;overflow-x:auto;font-size:0.88em;line-height:1.55;
+}
+pre code{background:none;padding:0}
+ul,ol{margin:10px 0 10px 0;padding-left:24px}
+li{margin:5px 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:0.93em}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--code-bg);font-weight:600}
+blockquote{
+  margin:16px 0;padding:10px 18px;border-left:4px solid var(--accent);
+  background:#f3f6fa;font-size:0.95em;border-radius:0 6px 6px 0;
+}
+.callout{padding:12px 16px;border-radius:6px;margin:16px 0;font-size:0.95em}
+.callout.key{background:#eef4fb;border:1px solid #c9d9ec}
+.callout.warn{background:#fdf3e2;border:1px solid #ecd9ae}
+.callout.danger{background:#fceeee;border:1px solid #e9c4c4}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;margin-right:6px;font-weight:600}
+.tag.missing{background:#fceeee;color:var(--bad);border:1px solid #e9c4c4}
+.tag.partial{background:#fdf3e2;color:var(--warn);border:1px solid #ecd9ae}
+.tag.differs{background:#eef2fb;color:var(--accent);border:1px solid #c9d9ec}
+.tag.equiv{background:#e8f5e9;color:var(--good);border:1px solid #bfe6c2}
+.tag.review{background:#f0f0f5;color:#555;border:1px solid #d0d0dd}
+.task{background:#fff;border:1px dashed var(--accent);border-radius:8px;padding:16px;margin:18px 0}
+.task .label{font-weight:700;color:var(--accent);font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+.tight li{margin:3px 0}
+.sep{border:none;border-top:1px solid var(--line);margin:32px 0}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.breadcrumb{font-size:13px;color:var(--muted);margin-bottom:20px}
+.breadcrumb a{color:var(--muted)}
+.breadcrumb a:hover{color:var(--accent)}
+/* quiz */
+.quiz{margin:18px 0}
+.quiz .q{font-weight:600;margin-bottom:8px}
+.quiz button{
+  display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;
+  border:1px solid var(--line);border-radius:6px;background:#fff;font-size:0.93em;cursor:pointer;
+  transition:border-color .12s, background .12s;
+}
+.quiz button:hover{border-color:var(--accent)}
+.quiz button.correct{border-color:var(--good);background:#e8f5e9}
+.quiz button.wrong{border-color:var(--bad);background:#fceeee}
+.quiz .reveal{display:none;margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--code-bg);font-size:0.92em}
+.quiz.revealed .reveal{display:block}
+@media print{
+  body{background:#fff}
+  .quiz button{cursor:default}
+}</style>
+<script>// Shared quiz widget for lessons.
+// Usage: <div class="quiz" data-correct="2"> <p class="q">鈥?/p>
+//          <button data-i="0">A</button> <button data-i="1">B</button> <button data-i="2">C</button>
+//          <div class="reveal">explanation</div> </div>
+// The widget marks the chosen button; correct = data-correct index.
+(function(){
+  function init(){
+    document.querySelectorAll('.quiz').forEach(function(q){
+      var correct = parseInt(q.getAttribute('data-correct'),10);
+      q.querySelectorAll('button').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var i = parseInt(btn.getAttribute('data-i'),10);
+          q.querySelectorAll('button').forEach(function(b){ b.classList.remove('correct','wrong'); });
+          if(i===correct){ btn.classList.add('correct'); q.classList.add('revealed'); }
+          else{ btn.classList.add('wrong'); q.classList.remove('revealed'); }
+        });
+      });
+    });
+  }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', init); }
+  else{ init(); }
+})();</script>
+</head>
+<body>
+<div class="wrap">
+<nav class="breadcrumb"><a href="../index.html">课程目录</a> › 第 2 课</nav>
+
+<header class="top">
+  <div class="kicker">Lesson 02 · Business Rules Inventory</div>
+  <h1>先从旧代码提炼"业务规则清单"，再逐条验证</h1>
+  <div class="sub">一个让人不舒服但无比正确的做法：先建清单，再查新代码</div>
+</header>
+
+<h2>核心思想：验证目标是清单，不是代码本身</h2>
+<p>上一课我们建立了心智模型：旧系统行为就是规格。那么问题来了——<strong>"旧系统行为"这个规格装在哪？</strong>如果你说"装在旧代码里"，那你就又回到逐行读代码的老路（这条路在上一课我们已经判了死刑）。</p>
+<p>CoreStory 的答案是：<strong>先把它提炼成一份 <em>Business Rules Inventory（业务规则清单）</em>，然后所有验证都以这份清单为基准</strong>，而不是以旧代码逐行为准。</p>
+<blockquote>旧代码里混着 bug、workaround、dead code、过时行为——这些<em>不该</em>全部被搬运。清单记的是<em>应当</em>被保留的东西。---- CoreStory playbook</blockquote>
+<p>这句话值得反复咀嚼。它意味着清单比代码更"准"：清单是<em>意图</em>，代码是<em>实现</em>。迁移要保住的是意图。</p>
+
+<h2>清单条目长什么样</h2>
+<p>一个"规则"约等于一个<strong>可验证的行为断言</strong>。CoreStory 建议每条规则带四个字段：</p>
+<table>
+  <tr><th>字段</th><th>含义</th><th>示例</th></tr>
+  <tr><td><code>rule id</code></td><td>唯一编号，可被报告引用</td><td><code>BR-012</code></td></tr>
+  <tr><td><code>description</code></td><td>行为断言本身</td><td>订单总额必须为正数</td></tr>
+  <tr><td><code>legacy location</code></td><td>旧代码实现位置，便于追溯</td><td><code>legacy/order.java:45</code></td></tr>
+  <tr><td><code>classification</code></td><td>重要度：critical / important / minor</td><td>critical</td></tr>
+</table>
+<p>清单的产出就是一张表。后面每一课（第 3~5 课）的产出，都从"扫描这张表每行在新代码里是否存在"开始。</p>
+
+<h2>提炼诀窍：从四个维度出发</h2>
+<p>从一个模块提炼规则时，Chesterton's Fence 心态非常管用——<em>我还没搞懂它为什么在，就先不能删它</em>。向代码问这四个问题，答案就是清单条目：</p>
+<ol>
+  <li><strong>这个输入进来后，产生什么输出？</strong>（验证、计算、转换 = 规则）</li>
+  <li><strong>什么条件会改变这个输出？</strong>（if/switch/guard = 规则边界）</li>
+  <li><strong>这个操作后，发生了什么副作用？</strong>（写库、发事件、留日志、发通知）</li>
+  <li><strong>出错时怎么处理？</strong>（抛、降级、重试、默认值 fallback）</li>
+</ol>
+<div class="callout warn"><strong>注意区分"两层清单"：</strong>业务规则清单（rules）回答"业务上应该发生什么"；第 1 课预告过"行为清单/行为枚举"（behaviors）则更细，逐项到分支、守卫、错误路径。两者用途略不同，但都贯彻"先列清单、再验证"的精神。本课先掌握规则层，第 3 课再引入行为层。</div>
+
+<h2>Quiz</h2>
+<div class="quiz" data-correct="0">
+  <p class="q">迁移验证时，以下哪个是"最靠谱的基准"？</p>
+  <button data-i="0">通过审读提炼出的业务规则清单</button>
+  <button data-i="1">直接逐行对比新旧 diff</button>
+  <button data-i="2">相信编译通过就能说明正确</button>
+  <div class="reveal">对。清单 = 意图契约；diff = 实现差异；编译通过 = 只说明"能跑"，都不证明"行为被保留"。</div>
+</div>
+
+<h2>主阅读源</h2>
+<p><a href="https://docs.corestory.ai/playbooks/modernization/behavioral-verification" target="_blank">CoreStory Behavioral Verification Playbook</a>（只看 <em>Prerequisites</em> 节，它解释为什么没有清单就没得验证），以及 <a href="https://docs.corestory.ai/playbooks/modernization/business-rules-extraction" target="_blank">Business Rules Extraction playbook</a>。</p>
+
+<div class="callout">有不清楚的尽管问我——老师随时在线。</div>
+
+<footer>
+  <a href="0001-mental-model.html">← 第 1 课</a>
+  <span id="next"><a href="0003-gap-classification.html">下一课：差异怎么分类 →</a></span>
+</footer>
+</div>
+</body>
+</html>

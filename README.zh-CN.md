@@ -15,6 +15,8 @@
 | [designing-workflows](./designing-workflows/) | 工作流编排 — 把"用 AI 做某事"的目标编排成可复用、分层的 workflow playbook（能力盘点驱动、以终为始） | [SKILL.md](./designing-workflows/SKILL.md) |
 | [skill-architect](./skill-architect/) | Skill 架构师 — 为 skill 选择正确的结构模式、按模板出脚手架，或把屎山 SKILL.md 重构成模块化架构 | [SKILL.md](./skill-architect/SKILL.md) |
 | [orchestrating-subagents](./orchestrating-subagents/) | Subagent 编排 — 通过 grounded grilling 把任务/prompt/workflow 转成 VS Code subagent 团队（coordinator + worker `.agent.md`） | [README](./orchestrating-subagents/README.md) |
+| [migration-reviewer-generate](./migration-reviewer-generate/) | 迁移审查生成 meta-skill — 诊断真实迁移场景，为其产出专属的 review 检查清单 / skill / 规则块 / agent 主题 | [README](./migration-reviewer-generate/README.md) |
+| [migration-reviewer-audit](./migration-reviewer-audit/) | 迁移审查执行 skill — 对比迁移前后代码、核对行为全集与业务规则是否完整搬移，产出行为等价报告 | [README](./migration-reviewer-audit/README.md) |
 
 ## Plugins
 
@@ -36,6 +38,8 @@ cp -r release-test-focus ~/.claude/skills/
 cp -r designing-workflows ~/.claude/skills/
 cp -r skill-architect ~/.claude/skills/
 cp -r orchestrating-subagents ~/.copilot/skills/   # 面向 Copilot 的 skill
+cp -r migration-reviewer-generate ~/.claude/skills/
+cp -r migration-reviewer-audit ~/.claude/skills/
 ```
 
 ## 许可证
