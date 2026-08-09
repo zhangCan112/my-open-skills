@@ -3,18 +3,21 @@
 **Migration:** {{SOURCE}} → {{TARGET}}
 **Scope:** {{SCOPE}}
 **Date:** {{DATE}}
-**Auditor:** {{AUDITOR}} (agent: migration-reviewer)
+**Auditor:** {{AUDITOR}} (agent: migration-reviewer-audit)
 
 ## 1. Summary
 
 | Metric | Count |
 |---|---|
-| Behaviours enumerated | {{N}} |
-| Gaps (MISSING / PARTIAL / DIFFERS) | {{M}} / {{P}} / {{D}} |
+| Behaviours enumerated (incl. non-code: DB/batch/config) | {{N}} |
 | Rules verified equivalent | {{N}} |
 | Rules improved (intentional) | {{N}} |
 | Rules different (needs review) | {{N}} |
 | Rules missing | {{N}} |
+| Rules not verified (tier unreachable) | {{N}} |
+| **~% missing + different** | {{N}}% |
+
+> If `missing + different > ~20%`, conclusion flips to **rewrite, not migration** — stop auditing as migration.
 
 **Conclusion:** {{RELEASE / FIX-FIRST / NEEDS-DOMAIN-REVIEW}}
 **Verification tier used:** {{TIER}} — {{why this tier}}
@@ -25,6 +28,8 @@
 |---|---|---|---|---|
 | BR-001 | … | `file:line` | `file:line` | Equivalent |
 | BR-002 | … | `file:line` | not found | Missing |
+| BR-003 | … | `file:line` | `file:line` | Improved — deliberate, documented |
+| BR-004 | … | `file:line` | `file:line` | NotVerified — tier 2+ not reachable |
 | … | | | | Different |
 
 ## 3. Behaviour differences
@@ -44,10 +49,13 @@ Intentionality is only decided by a domain expert, not the auditor.
 ## 5. Edge cases & invariants
 
 | Case / invariant | Legacy behaviour | New behaviour | Status |
-|---|---|---|---|
+|---|---|---|
 | null input → | defaults | throws | different |
-| status machine: pending → shipped (skip confirmed) | blocked | allowed | regression |
+| state machine: pending → shipped (skip confirmed) | blocked | allowed | regression |
 | mechanism change (app → DB constraint) | … | … | documented |
+| DB trigger / stored proc (non-code) | … | … | missing |
+| batch job / cron schedule | … | … | different |
+| config default | … | … | not verified |
 
 ## 6. Integration points
 

@@ -1,6 +1,6 @@
 # Migration Reviewer — Audit
 
-The **audit half** of the migration-reviewer pair: given a real before→after code migration, checks for missed functionality and silently changed business logic, and produces a **Behavioral Equivalence Report** (six-piece methodology, MISSING/PARTIAL/DIFFERS classification, explicit verification tier, human sign-off gate).
+The **audit half** of the migration-reviewer pair: given a real before→after code migration, checks for missed functionality and silently changed business logic, and produces a **Behavioral Equivalence Report** (six-piece methodology, MISSING/PARTIAL/DIFFERS gap tags feeding the five-way rule status Equivalent/Improved/Different/Missing/NotVerified, explicit verification tier, drift guard, human sign-off gate).
 
 Use this when you already have the migration in flight and the two sides of code to compare. If you instead need a reusable migration-review checklist/skill for a scene, use `migration-reviewer-generate`.
 

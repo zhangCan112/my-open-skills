@@ -27,15 +27,15 @@ Enumerate behaviours **before** diffing. Classification is `MISSING / PARTIAL / 
 3. **Business Rules Inventory** — "what must be preserved", per rule: ID · description · legacy location · criticality.
 4. **Gap classification** — compare against target; each gap = category + severity + legacy ref + new ref.
 5. **Hidden behaviours** — sweep for defaults, ordering, timing, logging/audit, error surface, invariants.
-6. **Verification tier** — state which tier is actually reachable *(1 static, 2 characterization test/golden master, 3 shadow, 4 data reconciliation)*, and say where it was impossible.
-7. **Report + human gate** — fill `assets/report-template.md`; mark pending expert sign-off. Show it to the user as the deliverable.
+6. **Verification tier** — state which tier is actually reachable *(1 static, 2 characterization test/golden master, 3 shadow, 4 data reconciliation)*, and say where it was impossible. Unverifiable rules are `NotVerified`, never defaulted to `Equivalent`.
+7. **Report + human gate** — fill `assets/report-template.md`; run `references/self-check.md` against it and fix every finding; mark pending expert sign-off. Show it to the user as the deliverable.
 
 ## Checklist
 
 - [ ] Scope confirmed (before/after pairs, what's out).
 - [ ] Behavior inventory written with `file:line`, not summarized away.
-- [ ] Every gap classified <kbd>MISSING</kbd> (absent) / <kbd>PARTIAL</kbd> (incomplete) / <kbd>DIFFERS</kbd> (logic changed) + severity.
-- [ ] Hidden behaviours pass done: defaults, ordering, timing, logging, error surface, invariants.
+- [ ] Every gap classified <kbd>MISSING</kbd> (absent) / <kbd>PARTIAL</kbd> (incomplete) / <kbd>DIFFERS</kbd> (logic changed) + severity; report state per rule is **Equivalent / Improved / Different / Missing / NotVerified**
+- [ ] Hidden behaviours pass done: defaults, ordering, timing, logging, error surface, invariants, non-code artifacts (DB constraints/triggers, batch jobs, config).
 - [ ] Verification tier stated and realistic for the available evidence.
 - [ ] Report contains every mandatory section (summary, rules, differences, missing, invariants, integration, recommendation).
 - [ ] Report marked "pending expert sign-off" — the human gate is a rule, not an aside.
@@ -56,10 +56,12 @@ Enumerate behaviours **before** diffing. Classification is `MISSING / PARTIAL / 
 - The classification column is empty.
 - "Verified" but no verification (tier is not stated) — tier states impossible as `none reachable`.
 - Human gate skipped with "they'll trust our diff".
+- Drift ignored: `MISSING + DIFFERS > ~20%` treated as a checklist of gaps instead of being flagged as a rewrite.
 
 ## References
 
 - `references/methodology.md` — the six pieces (authority).
+- `references/self-check.md` — DoD checklist run against the report before sign-off.
 - `assets/report-template.md` — Behavioral Equivalence Report template.
 
 Producing a reusable review checklist/skill for a specific migration scene → `migration-reviewer-generate`.

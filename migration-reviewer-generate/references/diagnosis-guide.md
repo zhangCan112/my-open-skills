@@ -33,6 +33,12 @@ The type decides which behaviour categories the checklist must stress and which 
 - Constraint enforcement moved from DB to app (and vice versa)
 - Error surface changes: SQLSTATE  → app exception codes
 
+### A5. Library → new vendor / API
+- **Dependency surface**: which package/version/endpoint replaces which; transitive deps drift
+- **Error surface**: error codes, status text, exception types consumers may parse
+- **Data shape**: request/response fields, formats, defaults, pagination/ordering
+- **Deprecation behaviour**: old API silently changed defaults, removed overloads, feature-flagged paths
+
 ## B. Classify the artifact type
 
 Read the user's request. Each points to a different output:

@@ -14,8 +14,9 @@ preservation before signing off. Diff alone cannot see deleted behaviour;
 {{RISKIEST_LOGIC}} is the risk hotspot.
 
 Checklist (from the migration type, condensed):
-- [ ] {{TYPE_SPECIFIC_ROWS}}        # e.g. cross-language: numeric overflow/rounding, unicode, timezone
-- [ ] hidden behaviours: defaults, ordering, timing, logging, error surface, invariants
+- [ ] {{TYPE_SPECIFIC_ROWS}}        # e.g. cross-language: numeric overflow/rounding, unicode, timezone; library→vendor: error codes, data shape
+- [ ] hidden behaviours: defaults, ordering, timing, logging, error surface, invariants, non-code (DB/batch/config)
+- [ ] report status vocabulary: Equivalent / Improved / Different / Missing / NotVerified
 - [ ] verification tier reached: {{REACHABLE_TIER}} (based on {{EVIDENCE}})
 
 **Gate:** a human (domain user) signs off on the report before the legacy side is retired.

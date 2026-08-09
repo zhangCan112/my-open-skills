@@ -14,6 +14,8 @@ exists and matches.
 **Remit:**
 - Behaviour inventory of the legacy scope (branches, guards, event handlers,
   derived state, error paths, i18n, side effects), each with `file:line`.
+- Non-code behaviours (DB triggers/procs, batch jobs, config defaults, message
+  schemas) tagged `kind: DB|batch|config|schema`.
 - Business Rules Inventory — "what must be preserved" — as the reference point,
   not the diff.
 - Gap classification: every difference is MISSING / PARTIAL / DIFFERS + severity.
@@ -21,9 +23,10 @@ exists and matches.
   surface, invariants.
 
 **End metric:** a Behavioral Equivalence Report with
-- summary (verified / improved / different / missing) + conclusion
+- summary (equivalent / improved / different / missing / not-verified) + conclusion
 - rule-by-rule table + behaviour differences + missing rules + integration points
 - explicit verification tier used (reachable from {{EVIDENCE}}: {{TIER}})
+- drift guard: `missing + different > ~20%` → conclude rewrite, not migration
 
 **Guardrails (HITL):**
 - The legacy system is not retired until a domain expert signs the report.

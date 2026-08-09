@@ -75,8 +75,8 @@ Pull everything you can from the user's own words before asking anything:
 Ask only what Phase 0 could not settle, one question at a time, each with a recommended answer. Restate inferred facts first so the user can confirm or correct.
 
 - **Scope** — which paths/packages; which explicitly out of scope.
-- **Evidence** — old tests runnable? golden corpus? does legacy run in this environment? production traffic available? → this fixes the reachable verification tier.
-- **Artifact form** — standalone `migration-review-<name>/` skill, section inside an existing skill, agent topic, or a one-off CLI checklist.
+- **Evidence** — old tests runnable? golden corpus? does legacy run in this environment? production traffic available? → this fixes the reachable verification tier. **Existing Business Rules Inventory** (CoreStory Phase 2 spec or similar)? If yes, the artifact checks *against* it instead of rebuilding it.
+- **Artifact form** — standalone `migration-review-<name>/` skill, rule section inside an existing skill, agent topic, or a one-off CLI checklist.
 
 Where scope implies risk (ask only if the scene leaves it open):
 

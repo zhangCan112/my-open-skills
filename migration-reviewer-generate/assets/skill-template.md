@@ -37,15 +37,22 @@ Follow `references/methodology.md` — the six-piece process, in order.
 Migration type: {{MIGRATION_TYPE}}. Add the rows this type demands
 (cross-language: numeric width, float rounding, unicode, timezone, concurrency;
 framework: lifecycle/hooks, DI, defaults; split: API contract, data custody, event
-timing; DB→app: proc/trigger semantics, NULL/default, transactions, rounding).
+timing; DB→app: proc/trigger semantics, NULL/default, transactions, rounding;
+library→vendor: dependency surface, error codes, data shape, deprecation behaviour).
+Also sweep non-code artifacts if the scene holds logic outside code
+(DB triggers/procs, batch jobs, config defaults, message schemas) — tag them
+`kind: DB|batch|config|schema`.
 
 ## Verification
 Evidence available: {{EVIDENCE}} → reachable tier {{REACHABLE_TIER}}.
 Tier 2+ golden inputs: {{GOLDEN_INPUTS}}; Tier 4 reconciliation: {{RECONCILIATION_CHECKS}}.
+Unverifiable rules are `NotVerified`, never defaulted to `Equivalent`.
 
 ## Report
-Produce the Behavioral Equivalence Report (`assets/report-template.md`). It is not
-final until a domain expert signs it (HITL gate).
+Produce the Behavioral Equivalence Report (`assets/report-template.md`). Rule status
+is the five-way contract: Equivalent / Improved / Different / Missing / NotVerified.
+It is not final until a domain expert signs it (HITL gate). If `missing + different`
+exceeds ~20%, conclude **rewrite, not migration**.
 ```
 
 ## references/checklist.md (write from the grounded scene)

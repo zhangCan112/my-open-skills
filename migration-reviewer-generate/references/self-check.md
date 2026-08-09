@@ -14,7 +14,10 @@ Run every line against the produced artifact (skill, rule block, topic, or check
 - [ ] Trigger words cover what the user would actually say (e.g. "Python → Go", "审查迁移遗漏") in their language.
 - [ ] Scope section reflects the confirmed scene, not a generic example.
 - [ ] The checklist is **migration-type specific** — it has rows that only make sense for this kind of migration (e.g. hooks/effects for React, integer width for cross-language, data custody for service split). The six generic categories alone are a FAIL.
+- [ ] Non-code sweep row present if the scene holds logic outside code (DB triggers/procs, batch jobs, config defaults, message schemas).
 - [ ] Riskiest-logic rows carry a target verification tier that matches the user's stated evidence.
+- [ ] Status vocabulary present: Equivalent / Improved / Different / Missing / NotVerified (unverifiable ≠ Equivalent).
+- [ ] Drift guard present: `missing + different > ~20%` → conclude rewrite, not migration.
 - [ ] HITL / human gate is present where a report is expected, phrased as an explicit rule.
 - [ ] No `{{PLACEHOLDER}}` markers left unfilled (except a documented "fill me" example).
 - [ ] Methodology is linked (`references/…`) not inlined as an essay.

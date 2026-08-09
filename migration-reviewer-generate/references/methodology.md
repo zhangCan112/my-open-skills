@@ -24,6 +24,8 @@ Extract "what must be preserved" *before* comparing. Distinct from the behavior 
 
 Each rule: **ID** · description (a verifiable assertion) · legacy location · classification (critical/important/minor).
 
+> Reuse first: if a Business Rules Inventory already exists (e.g. a CoreStory Phase 2 spec), load it as the base contract instead of deriving rules from scratch — the audit then checks *against* the inventory rather than rebuilding it. Derive only what the existing inventory omits.
+
 Derivation questions to ask the code:
 
 1. This input arrives → what output leaves? (validation, computation, transformation)
@@ -50,6 +52,8 @@ Rules of classification:
 - `DIFFERS` states the specific difference (field, branch), not just "behaviour differs".
 - Rebuttals for common rationalizations: "gaps are intentional" → intentional omissions need comments; undocumented gaps are bugs. "Edge cases won't happen" → legacy handled them for a reason; verify before removing. "We'll add it in a follow-up" → track as debt or fix now.
 
+Report state is the five-way contract, per rule: **Equivalent** (verified identical) · **Improved** (deliberate, documented improvement) · **Different** (behaviour changed — carries gap tag + intent classification) · **Missing** (absent) · **NotVerified** (no evidence available). The gap tags above feed the state: a rule is `Improved` only when the change is deliberate and documented — an undocumented change is `DIFFERS`, never `Improved`. `NotVerified` is not a pass: when tier 2+ was impossible, mark the rule `NotVerified` instead of defaulting it to `Equivalent`.
+
 ## 4. Hidden behaviours & invariants (隐形行为)
 
 Diff cannot see these. Sweep every scope line for:
@@ -60,6 +64,7 @@ Diff cannot see these. Sweep every scope line for:
 - **Logging/audit**: audit records and log lines that compliance or consumers rely on
 - **Error surface**: HTTP status codes, error codes, error message *text* — consumers may parse them
 - **Invariants**: system-wide constraints never written down but enforced in code — state-machine transitions, "balance never negative", "all timestamps UTC", "created_at ≤ updated_at"
+- **Non-code artifacts**: business logic lives outside `.code()` too — DB constraints/triggers/stored procs, batch jobs/cron, config defaults (`application.yml`, env vars), message schemas, report definitions. Enumerate them in the inventory as first-class behaviours with a `kind: DB|batch|config|schema` tag.
 
 Check invariants even when individual rules are equivalent: isolated rules can each be right while their interaction shifts.
 
@@ -70,7 +75,7 @@ Static review (pieces 1–4) says "looks complete". Truth lives in execution. Pi
 | Tier | Method | Proves | Needs |
 |---|---|---|---|
 | 1 | static cross-check (this entire doc) | coverage looks complete | code access |
-| 2 | characterization test (golden master) | given the same input, the same output | runnable legacy + input corpus |
+| 2 | characterization test (golden master) + consumer-driven contract test | given the same input, the same output; every consumer's contract holds | runnable legacy + input corpus, or Pact/contract harness |
 | 3 | shadow traffic comparison | parity under production load | production traffic that both systems can run on |
 | 4 | data reconciliation | migration data is lossless | new + old data stores (row counts, checksums, computed fields, FK integrity) |
 
@@ -81,13 +86,15 @@ Static review (pieces 1–4) says "looks complete". Truth lives in execution. Pi
 
 The audit is not done until it is written down. Use `assets/report-template.md`. Structure:
 
-1. **Summary** — counts (verified / improved / different / missing) + conclusion (release / fix-first)
+1. **Summary** — counts (verified / improved / different / missing / not-verified) + conclusion (release / fix-first / rewrite)
 2. **Rule-by-rule table** — ID, description, legacy location, new location, status
 3. **Behavior differences** — legacy vs new vs *classification* (intentional improvement / acceptable deviation / regression)
 4. **Missing rules** — why missing, risk, action
 5. **Edge cases & invariants** — findings incl. mechanism changes (app-logic → DB constraint)
 6. **Integration points** — API contract / data format / downstream match
 7. **Recommendation + signatures**: release / remediation list / expert decision
+
+**Drift signal**: if `MISSING + DIFFERS` exceeds ~20% of enumerated behaviours, the "migration" has drifted into a rewrite — stop treating gaps as omissions to fix and call it out: `conclusion: rewrite, not migration`. Same for `[CHANGE]+[NEW]` intent tags during planning.
 
 **Human-in-the-loop gate**: a domain expert signs the report before the legacy system is retired. Only the genuinely ambiguous intentionality goes to the expert, not every row.
 

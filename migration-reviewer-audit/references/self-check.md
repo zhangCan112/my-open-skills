@@ -4,8 +4,9 @@ Run every line against the produced report before showing it as final. Fix findi
 
 ## Inventory & classification
 
-- [ ] Behavior inventory **table** exists and is not summarized away — one row per behaviour, `file:line` on every row.
+- [ ] Behavior inventory **table** exists and is not summarized away — one row per behaviour, `file:line` on every row; non-code behaviours (DB triggers/procs, batch jobs, config) present with a kind tag.
 - [ ] Every gap carries MISSING / PARTIAL / DIFFERS **and** a severity (high/med/low) **and** a new-code ref (real path, or `not found`).
+- [ ] Every rule's report status is one of Equivalent / Improved (deliberate+documented) / Different / Missing / NotVerified — none defaulted to Equivalent when evidence was missing.
 - [ ] Hidden behaviours pass (piece 4) done: defaults, ordering, timing, logging/audit, error surface, invariants — each swept over every scope line.
 - [ ] Invariants checked even when rules are individually equivalent.
 - [ ] No generic "looks fine" rows — anything suspicious carries an action.
@@ -21,6 +22,7 @@ Run every line against the produced report before showing it as final. Fix findi
 
 - [ ] Sections present: summary (counts + conclusion), rule-by-rule table, behaviour differences (with intention classification), missing rules (with action), edge cases/invariants, integration points, recommendation.
 - [ ] Summary has real counts, not `N`.
+- [ ] Drift checked: `missing + different > ~20%` → conclusion is rewrite, not migration.
 - [ ] Recommendations distinguishes release / fix-first / needs-domain-review.
 - [ ] Human gate present: marked "pending expert sign-off", signed-line placeholders.
 - [ ] No `{{PLACEHOLDER}}` left unfilled.
