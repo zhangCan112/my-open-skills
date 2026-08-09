@@ -7,7 +7,7 @@ Run every line against the produced artifact (skill, rule block, topic, or check
 - [ ] Source → target, scope, and evidence type are confirmed — not invented. If inferred, they were explicitly re-stated to the user.
 - [ ] The migration type is identified (cross-language / framework / split / DB→app / vendor / adapter relocation), or explicitly marked unknown and asked.
 - [ ] The artifact form is chosen and appropriate to the user's request — not always "a skill".
-- [ ] **Adapter relocation only**: the scene was partitioned into `portable core` (verify byte-identical to legacy) vs `host glue` (verify against host B's rules, NOT against legacy host A's glue); a glue that diverged from A while conforming to B is never reported as `DIFFERS`.
+- [ ] **Adapter relocation only**: the scene was partitioned into `adapter core` (full methodology vs legacy core; changes allowed for re-pointed host couplings; byte-identical only in the zero-coupling special case) vs `host glue` (verify against host B's rules, NOT against legacy host A's glue); a glue that diverged from A while conforming to B is never reported as `DIFFERS`.
 
 ## Artifact correctness
 

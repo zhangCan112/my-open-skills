@@ -36,11 +36,16 @@
 
 ### 适配器搬迁 / re-host（A6 辅助，2026-08 补充）
 
-> `migration-reviewer-generate` 的 A6 迁移类型（`portable core` vs `host glue` 双 oracle）素材。
+> `migration-reviewer-generate` 的 A6 迁移类型（`adapter core` vs `host glue`）素材。
+> **2026-08 修正**：核心段不假定字节一致——适配器天然耦合宿主，re-host 时 seam 合法改写；核心走完整方法论 + 行为等价验证，字节一致只是零耦合特例。
 > 完整清单见根目录 `REFERENCES.md` A 节，此处只收录课程主线能用上的核心几条：
 
 - [Martin Fowler: Legacy Displacement — Feature Parity](https://martinfowler.com/articles/patterns-legacy-displacement/feature-parity.html)
   旧代码即规格 + 可执行契约对新系统复验 —— "双 oracle"的雏型：核心对旧代码、胶水对宿主契约。
+- [Ploeh: Ports and Adapters — and a Test Strategy](https://blog.ploeh.dk/2021/01/28/ports-and-adapters-and-a-test-strategy/)
+  适配器的契约 = 它的测试，而非实现；迁到新宿主时对同一 port 契约在重写的 adapter 上重跑 —— 核心段"行为等价"判据来源。
+- [Ploeh: Ports and Fat Adapters](https://blog.ploeh.dk/2025/04/01/ports-and-fat-adapters/)
+  adapter 本质是 "fat"：解析/校验/取依赖/当前时间都在 adapter 里 —— 适配器天然耦合宿主，re-host 时这些 seam 合法改写。
 - [GitLab: Hexagonal Monolith](https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/modular_monolith/hexagonal_monolith/)
   adapter = 薄胶水、宿主可换核心不动：判断"哪段能搬、哪段是宿主胶水"。
 - [rustqual: adapter-parity](https://github.com/SaschaOnTour/rustqual/blob/main/book/adapter-parity.md)
@@ -49,7 +54,7 @@
   宿主干预点/生命周期契约 = 宿主-B 专属"必挂钩"清单的模型。
 - [Start Debugging: Semantic Kernel Plugin → MCP](https://startdebugging.net/2026/05/migrate-a-semantic-kernel-plugin-to-an-mcp-server/)
   drop-in bridge vs native rewrite：宿主差异归 harness，不随核心搬。
-- oracle 文献（用于理解"规格标的物"可不止旧码一个）：[MatchFixAgent](https://arxiv.org/html/2509.16187v2) · [Mokav](https://arxiv.org/html/2406.10375v1) · [Testora](https://arxiv.org/html/2503.18597v1)
+- oracle 文献（oracle 来源不止旧码一个）：[MatchFixAgent](https://arxiv.org/html/2509.16187v2) · [Mokav](https://arxiv.org/html/2406.10375v1) · [Testora](https://arxiv.org/html/2503.18597v1)
 
 ## 智慧（社区）
 

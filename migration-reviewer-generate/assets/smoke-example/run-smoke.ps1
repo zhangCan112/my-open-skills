@@ -28,8 +28,8 @@ $checks = @(
         { ($legacy -match 'amount=\{amount\}') -and ($target -match 'amount=%\.2f') })
     , @('F5 DIFFERS numeric semantics (Decimal vs float64)',
         { ($legacy -match 'Decimal\(str') -and ($target -match 'float64') })
-    , @('F6 A6 portable core carried byte-identical (adapter_core unchanged)',
-        { ($coreL -match 'normalize_currency') -and ($coreT -match 'normalize_currency') -and ($coreL -eq $coreT) })
+    , @('F6 A6 adapter core re-hosted: seam re-pointed A->B (PROVIDER_SOURCE), pure logic preserved',
+        { ($coreL -match 'PROVIDER_SOURCE\s*=\s*"A:ATLAS_FX"') -and ($coreT -match 'PROVIDER_SOURCE\s*=\s*"B:ORB_FX"') -and ($coreT -notmatch 'PROVIDER_SOURCE\s*=\s*"A:ATLAS_FX"') -and ($coreL -match 'normalize_currency') -and ($coreT -match 'normalize_currency') })
     , @('F7 A6 host glue rewired to host B rules (oracle = B, not legacy A)',
         { ($glueL -match 'ATLAS_MODE') -and ($glueL -match '"error"') -and ($glueT -match 'ORB_SECTION') -and ($glueT -match 'reason') -and ($glueT -notmatch 'ATLAS_MODE') })
     , @('F8 A6 legacy-A residue leaked into host B glue',

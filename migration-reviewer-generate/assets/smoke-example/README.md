@@ -21,8 +21,8 @@ Exit code: `0` = all 9 expected findings surfaced; `1` = a regression.
    - `fixtures/adapter/legacy/{adapter_core.py, app_a/glue_a.py}` →
      `fixtures/adapter/target/{adapter_core.py, app_b/glue_b.py}`
      (adapter relocation App A → App B, so the twin-oracle rows are stress-tested:
-     portable core byte-identical, host glue conforms to B not A, legacy-A residue,
-     host-B-only requirement missing).
+     core seam re-pointed A→B while pure logic is preserved, host glue conforms
+     to B not A, legacy-A residue, host-B-only requirement missing).
 2. Reproduces the classification a generated checklist must surface: it checks that
    every expected finding (see `expected-findings.md`) is still detectable from the
    generated artifact's shape.
@@ -39,9 +39,9 @@ smoke-example/
     legacy/calculate_fee.py     # scene 1 before (Decimal, apply_coupon, audit text)
     svc/payments/fee.go         # scene 1 after (float64 rewrite with subtle drops)
     adapter/
-      legacy/adapter_core.py    # scene 2 portable core — must stay byte-identical
+      legacy/adapter_core.py    # scene 2 adapter core with host-acquisition seam (A:ATLAS_FX)
       legacy/app_a/glue_a.py    # scene 2 host A glue (ATLAS: env key, "error", label)
-      target/adapter_core.py    # scene 2 core as relocated (identical on purpose)
+      target/adapter_core.py    # scene 2 core relocated — seam re-pointed to B:ORB_FX
       target/app_b/glue_b.py    # scene 2 host B glue (ORB_SECTION, reason, display + A residue)
 ```
 

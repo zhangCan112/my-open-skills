@@ -45,14 +45,15 @@
 
 ### 适配器搬迁 / re-host（A6 补充，2026-08 调研）
 
-> 支撑 `diagnosis-guide.md` 的 A6 迁移类型（`portable core` vs `host glue` 分区、双 oracle、"旧行为即规格"只在核心段成立）。分三类：
+> 支撑 `diagnosis-guide.md` 的 A6 迁移类型（`adapter core` vs `host glue` 分区、双 oracle、"旧行为即规格"只在核心段成立）。
+> **2026-08 调研修正**：核心段**不**假定字节一致——适配器本来就耦合宿主（能力获取、时钟、env），re-host 时这些 seam 合法改写；核心走**完整方法论**（行为等价 + characterization/契约测试），字节一致仅是"零宿主耦合"特例且须用 byte-oracle harness 证明。下面**带 ✅ 的条目是本次修正的直接证据**。分三类：
 
 - [Martin Fowler: Legacy Displacement — Feature Parity](https://martinfowler.com/articles/patterns-legacy-displacement/feature-parity.html)
   旧代码当规格 + 用"可执行契约"对新系统复验。双 oracle 里"核心对旧代码、胶水对 B 契约"的雏型。
 - [GitLab: Hexagonal Monolith — handbook](https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/modular_monolith/hexagonal_monolith/)
   adapter 是纯胶水、可换宿主核心不动 —— 判断"哪段能搬、哪段是胶水"的结构判据。
 - [ThoughtWorks: 六边形架构落地示例](https://www.thoughtworks.com/en-us/insights/blog/architecture/hexagonal-architecture-explained-practical-example)
-  换基础设施/宿主不改 domain/adapter 逻辑，是 A6"核心字节级一致"的经验依据。
+  换基础设施/宿主时 domain 与 adapter 的职责边界 —— A6"哪些是能搬的核心、哪些是宿主胶水"的结构判据（注意：它说明的是"耦合点隔离"，不是"核心必须字节一致"）。
 - [AWS Prescriptive Guidance: Hexagonal best practices](https://docs.aws.amazon.com/prescriptive-guidance/latest/hexagonal-architectures/best-practices.html)
   同上，验证策略（domain 单测 / ports contract / adapters 薄测）。
 - [rustqual: adapter-parity](https://github.com/SaschaOnTour/rustqual/blob/main/book/adapter-parity.md)
@@ -67,6 +68,16 @@
   adapter/compatibility layer 残留与 hybrid-state 风险："迁移没完成"的病灶常在适配层。
 - [pluxx-translate-hosts — orchidautomation/pluxx](https://github.com/orchidautomation/pluxx/blob/main/plugins/pluxx/skills/pluxx-translate-hosts/SKILL.md)
   跨宿主行为映射的 preserve/translate/degrade/drop 四类：A6"对 B 预期迁移/降级/丢弃"的表述来源。
+- ✅ [Ploeh: Ports and Adapters — and a Test Strategy](https://blog.ploeh.dk/2021/01/28/ports-and-adapters-and-a-test-strategy/)
+  "**the contract of an adapter is its tests**"，而非实现；移植到新宿主时对同一 port 契约在新 adapter 上重跑。"核心行为等价、不拼字节"的原判据 + port-contract 检查的来源。
+- ✅ [Ploeh: Ports and Fat Adapters](https://blog.ploeh.dk/2025/04/01/ports-and-fat-adapters/)
+  Controller/消息处理器即"fat adapter"，负责解析/校验/取依赖/当前时间 —— 适配器天然耦合"宿主 + 宿主上下文"，re-host 时这些 seam 合法变化（另据该文：可将整个应用移植到新 context，只需为新 context 重建 adapter/配置器）。
+- ✅ [Jaeger PR #8922: request-wire-format golden suite](https://github.com/jaegertracing/jaeger/pull/8922)
+  为可证明"wire 上行为保持"而建 golden 快照套件（`{method,path,query,body}` 规范化后比对），并**自动把字节一致的连续版本折叠为范围**——行为等价由捕获并运行的 golden 判定，非逐行 diff。
+- ✅ [open-shaders verify harness：byte-identical 是特例，runtime A/B 兜底](https://github.com/alandtse/open-shaders/commit/990a65096ca100ccc440c902795d67a1e34b2491)
+  重构显式分两条路：字节级等价（编译器 SSA 后大多成立，`fxc` 字节比对即可）是"自由精度、无游戏"的快径；当"重构合法改变字节码"（op 重排/代数改写）时改用 runtime A/B 对照——与本轮结论（字节一致=零变化特例、否则行为等价验证）完全同构。
+- ✅ [general-secure-coding-agent-skills: multi-version-behavior-comparator](https://github.com/santosomar/general-secure-coding-agent-skills/blob/47d56bbc24dc4560c0afe546edbb34973da79391/skills/code-analysis/multi-version-behavior-comparator/SKILL.md)
+  "Two outputs can be 'the same' without being byte-identical"：规范化diff表（键序/浮点ε/时间戳/UUID/空白/无序集合/错误文本→比较异常类型）——依赖/配置切换的等价判定不是字节比对，是"规范化后的行为相等"。
 
 **论文 / 深度阅读（"oracle" 的种类，双 oracle 命名）：**
 
@@ -109,5 +120,5 @@
 
 - 教程外部链接指向中文社区较少，方法论以英文为主（`RESOURCES.md` Gaps 节）。
 - "Business Rules Inventory" 目前只依赖 CoreStory 一家，缺中性第三方佐证（Martin Fowler 的 Feature Parity 可作补充视角，但非专门论述业务规则清单）。
-- 适配器搬迁（A6）的外部来源已在"### 适配器搬迁 / re-host（A6 补充）"补录（六边形/结构判据、宿主-适配器契约、oracle 文献三类）；未入课程主线，仅生成侧使用。
-- 生成的 meta-skill 已做端到端冒烟：`migration-reviewer-generate/assets/smoke-example/` 的 fixtures 被跑通，当前产出 9 条纯 diff 不可见的具体发现（跨语言 5 条 + 适配器搬迁 A6 4 条：核心字节一致 / 胶水按 B / A 残留泄漏 / B 契约缺失），`run-smoke.ps1` 可作回归。
+- 适配器搬迁（A6）的外部来源已在"### 适配器搬迁 / re-host（A6 补充）"补录（六边形/结构判据、宿主-适配器契约、oracle 文献三类）；未入课程主线，仅生成侧使用。**2026-08 修正**：原稿"核心必须字节一致"过强，实际适配器耦合宿主（能力获取/时钟/env），re-host 时 seam 合法改写；核心段已改为"完整方法论 + 行为等价验证"，字节一致仅保留为"零宿主耦合特例"（须用 byte-oracle 证明），glue 判定保持"对 B 契约"不变。
+- 生成的 meta-skill 已做端到端冒烟：`migration-reviewer-generate/assets/smoke-example/` 的 fixtures 被跑通，当前产出 9 条纯 diff 不可见的具体发现（跨语言 5 条 + 适配器搬迁 A6 4 条：核心 seam 重指并验证 / 胶水按 B / A 残留泄漏 / B 契约缺失），`run-smoke.ps1` 可作回归。

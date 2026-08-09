@@ -64,7 +64,7 @@ Pull everything you can from the user's own words before asking anything:
    - Service split / monolith → services — API contract, data ownership, event timing, shared mutable state.
    - DB → application layer — stored-proc semantics, NULL/default, transactions, rounding, trigger logic.
    - Library → new vendor / API — dependency surface, error codes, data shape.
-   - Adapter relocation / re-host (framework adapter moved from App A to App B) — partition `portable core` (must stay byte-identical to legacy) vs `host glue` (must conform to host B's rules, never to legacy A's); sweep for legacy-A residue in B.
+   - Adapter relocation / re-host (framework adapter moved from App A to App B) — partition `adapter core` vs `host glue`; core gets the FULL methodology (behavior vs legacy core, not byte-identity — re-pointed acquisition seams ARE expected to change; byte-identical only in the zero-coupling special case, proved by a byte-oracle, not eyeballed); glue must conform to host B's rules, never to legacy A's; sweep for legacy-A residue in B.
 3. **List what is NOT settled** — the gaps become Phase 1 questions.
 4. **Pick the artifact form** the scene calls for:
    - standalone skill → `assets/skill-template.md`
@@ -83,7 +83,7 @@ Where scope implies risk (ask only if the scene leaves it open):
 
 - **Risk you fear** — payments, state machine, timezones, rounding… → that logic gets the highest verification tier.
 - **Consumer contracts** — does any external caller parse error text / status codes / ordering? (hidden behaviour tier)
-- **Adapter relocation only** — who owns the host glue's spec: host B's rules doc, B's framework conventions, or nothing (then MUST be produced)? Is the portable core truly host-free, or does an A-ism hide inside it? (two-oracle split)
+- **Adapter relocation only** — who owns the host glue's spec: host B's rules doc, B's framework conventions, or nothing (then MUST be produced)? Which host couplings live in the core (config keys, env, DI, clock, downstream providers) and were re-pointed for B — enumerate those seams and verify their behavior, rather than claiming core identity? (two-oracle split)
 - **Data movement** — is data migrating, and must it be lossless? → Tier 4 reconciliation.
 - **Language** — Chinese / English / bilingual (default matches the user's language).
 

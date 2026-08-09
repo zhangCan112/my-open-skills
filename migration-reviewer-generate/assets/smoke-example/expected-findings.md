@@ -23,14 +23,15 @@ Files: `fixtures/legacy/calculate_fee.py` → `fixtures/svc/payments/fee.go`.
 Files: `fixtures/adapter/legacy/{adapter_core.py, app_a/glue_a.py}` →
 `fixtures/adapter/target/{adapter_core.py, app_b/glue_b.py}`.
 
-The scene splits into a **portable core** (host-agnostic framework-adapter logic, must be
-byte-identical) and a **host glue** (per-host wiring). The glue's spec is **host B's rules**,
-NOT the legacy host-A glue: a glue that diverges from A while conforming to B is the intended
-outcome, never a regression.
+The scene splits into an **adapter core** (framework-adapter logic — audited for
+behaviour vs the legacy core, NOT byte-identity) and a **host glue** (per-host wiring).
+The glue's spec is **host B's rules**, NOT the legacy host-A glue: a glue that diverges from
+A while conforming to B is the intended outcome, never a regression. The core's only change is
+the host-acquisition seam `PROVIDER_SOURCE` legitimately re-pointed `A:ATLAS_FX` → `B:ORB_FX`.
 
 | # | Tag | Finding | Why diff alone misses it |
 |---|---|---|---|
-| 6 | DIFFERS→NA | Portable core `adapter_core.py` stayed **byte-identical** (`normalize_currency` unchanged) — the re-hosted piece is untouched, verified equal to legacy | A naive diff would see "no change there" and skip it; the move is the risk, so identity is the check |
+| 6 | RE-POINTED→verified | Adapter core relocated: the **host-acquisition seam** `PROVIDER_SOURCE` re-pointed `A:ATLAS_FX` → `B:ORB_FX` while `normalize_currency` logic is carried over (behavior preserved, verified by adapting the legacy contract tests, not byte-identity) | A plain diff sees the changed seam line and flags a `DIFFERS`; the checklist classifies it as the intended host re-pointing and asks for a behavior check, not a red flag |
 | 7 | INTENDED | Host glue rewired to B's rules: old `ATLAS_MODE`/`"error"`/`label` glue replaced by `ORB_SECTION`/`reason`/`display` — this diverges from A and is **correct**, not a `DIFFERS` regression | The standard "old behaviour is the spec" rule would flag A→B glue changes as gaps; the twin-oracle classification re-anchors them to B |
 | 8 | DIFFERS | Legacy-A residue leaked into B's glue: `LEGACY_WIRE = "ATLAS"` carried over into the new host region | Fine on a diff (constant survived), but it is A-specific state that must not reach B |
 | 9 | MISSING | Host-B-only requirement absent: B requires `emit_metric(name)` on every published render; the relocated `view()` never calls it | Nothing was lost *versus A*, so a legacy-vs-new comparison misses it — only the B contract spots it |
@@ -39,4 +40,4 @@ outcome, never a regression.
 
 Scene 1: amount ∈ {0.01, 0.005, 100, 4503599627370497}, country ∈ {US, CA, FR, GB}, coupon ∈ {WELCOME10, welcome10, WELCOME20}.
 
-Scene 2: feed the same normalized currency corpus to both cores {USD, EUR, GBP, USDT, JPY, None}; run each host's glue against its own contract fixtures.
+Scene 2: feed the same normalized currency corpus to both cores {USD, EUR, GBP, USDT, JPY, None}; assert both cores produce identical `normalize_currency` output for the corpus; run each host's glue against its own contract fixtures (B's glue against B's contract).
