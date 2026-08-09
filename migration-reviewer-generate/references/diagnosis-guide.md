@@ -39,6 +39,14 @@ The type decides which behaviour categories the checklist must stress and which 
 - **Data shape**: request/response fields, formats, defaults, pagination/ordering
 - **Deprecation behaviour**: old API silently changed defaults, removed overloads, feature-flagged paths
 
+### A6. Adapter relocation / re-host (适配器搬迁)
+(source & target: the same module moved/attached to a *different host app*; the framework-adapter piece stays put.
+Example: `framework → adapter logic → host A glue → App A` becomes `framework → adapter logic → host B glue → App B`.)
+- **Split the scene before diffing: `portable core` vs `host glue`.** Every line in scope goes to exactly one side — the framework-adapter logic that **must not change**, and the host wiring that follows that host's conventions (param/field names, env/config keys, error codes & text, status payload shapes, logging/audit prefixes, DI/lifecycle registration).
+- **Two oracles, not one — the "old code is the spec" rule has a region boundary.** Legacy code is the spec **only** for the portable core (it should be byte-identical: any diff there is high-severity, either the piece wasn't portable or it was mutated in transit). The host glue's spec is **host B's rules**, not the old host-A code — a glue that now conforms to B and diverges from A is the *intended outcome*, not a regression to classify `DIFFERS`.
+- **Legacy-A residue check**: the new glue must not carry A's own field names, env keys, error-text, table/queue names, or log format silently into B (host-specific state is a leak).
+- **Host-B conformance check**: every B convention a host requires (auth, banner/section callback, telemetry id, event subject, config key) must be wired in the new glue — an absent B rule is `MISSING` against B, even if nothing was lost versus A.
+
 ## B. Classify the artifact type
 
 Read the user's request. Each points to a different output:

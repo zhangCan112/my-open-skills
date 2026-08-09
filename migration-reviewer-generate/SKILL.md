@@ -1,6 +1,6 @@
 ---
 name: migration-reviewer-generate
-description: Use when someone wants a reusable migration-review checklist, skill, or rule for a real before→after code migration scene — a framework upgrade, language rewrite, service split, database-to-app refactor, or large refactor. Produce the document/skill FROM the actual scene, never from a generic template filled by assumption. Triggers on "写个迁移 review 的 skill/清单", "给这次迁移出个检查规则", "给现有 skill 补一条迁移 review 规则", "怎么检查这次框架升级没漏". Do NOT use for directly reviewing before/after code (use migration-reviewer-audit), for generic code review, or for executing a migration (use dependency-migrator).
+description: Use when someone wants a reusable migration-review checklist, skill, or rule for a real before→after code migration scene — a framework upgrade, language rewrite, service split, database-to-app refactor, large refactor, or adapter relocation between hosts (e.g. a framework adapter moved from App A to App B). Produce the document/skill FROM the actual scene, never from a generic template filled by assumption. Triggers on "写个迁移 review 的 skill/清单", "给这次迁移出个检查规则", "给现有 skill 补一条迁移 review 规则", "怎么检查这次框架升级没漏", "适配器要从 A 搬到 B 怎么查". Do NOT use for directly reviewing before/after code (use migration-reviewer-audit), for generic code review, or for executing a migration (use dependency-migrator).
 ---
 
 # Migration Reviewer — Generate
@@ -64,6 +64,7 @@ Pull everything you can from the user's own words before asking anything:
    - Service split / monolith → services — API contract, data ownership, event timing, shared mutable state.
    - DB → application layer — stored-proc semantics, NULL/default, transactions, rounding, trigger logic.
    - Library → new vendor / API — dependency surface, error codes, data shape.
+   - Adapter relocation / re-host (framework adapter moved from App A to App B) — partition `portable core` (must stay byte-identical to legacy) vs `host glue` (must conform to host B's rules, never to legacy A's); sweep for legacy-A residue in B.
 3. **List what is NOT settled** — the gaps become Phase 1 questions.
 4. **Pick the artifact form** the scene calls for:
    - standalone skill → `assets/skill-template.md`
@@ -82,6 +83,7 @@ Where scope implies risk (ask only if the scene leaves it open):
 
 - **Risk you fear** — payments, state machine, timezones, rounding… → that logic gets the highest verification tier.
 - **Consumer contracts** — does any external caller parse error text / status codes / ordering? (hidden behaviour tier)
+- **Adapter relocation only** — who owns the host glue's spec: host B's rules doc, B's framework conventions, or nothing (then MUST be produced)? Is the portable core truly host-free, or does an A-ism hide inside it? (two-oracle split)
 - **Data movement** — is data migrating, and must it be lossless? → Tier 4 reconciliation.
 - **Language** — Chinese / English / bilingual (default matches the user's language).
 

@@ -14,10 +14,11 @@ preservation before signing off. Diff alone cannot see deleted behaviour;
 {{RISKIEST_LOGIC}} is the risk hotspot.
 
 Checklist (from the migration type, condensed):
-- [ ] {{TYPE_SPECIFIC_ROWS}}        # e.g. cross-language: numeric overflow/rounding, unicode, timezone; library→vendor: error codes, data shape
+- [ ] {{TYPE_SPECIFIC_ROWS}}        # e.g. cross-language: numeric overflow/rounding, unicode, timezone; library→vendor: error codes, data shape; adapter relocation: core byte-identical + glue vs host B's rules + no legacy-A residue
 - [ ] hidden behaviours: defaults, ordering, timing, logging, error surface, invariants, non-code (DB/batch/config)
 - [ ] report status vocabulary: Equivalent / Improved / Different / Missing / NotVerified
 - [ ] verification tier reached: {{REACHABLE_TIER}} (based on {{EVIDENCE}})
+- For an **adapter relocation** the glue is verified against the new host's contract (B), NOT against the legacy host's glue (A): a glue that diverges from A while conforming to B is the intended outcome, not a `DIFFERS` regression.
 
 **Gate:** a human (domain user) signs off on the report before the legacy side is retired.
 ```

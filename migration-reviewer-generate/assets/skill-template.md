@@ -38,7 +38,10 @@ Migration type: {{MIGRATION_TYPE}}. Add the rows this type demands
 (cross-language: numeric width, float rounding, unicode, timezone, concurrency;
 framework: lifecycle/hooks, DI, defaults; split: API contract, data custody, event
 timing; DB→app: proc/trigger semantics, NULL/default, transactions, rounding;
-library→vendor: dependency surface, error codes, data shape, deprecation behaviour).
+library→vendor: dependency surface, error codes, data shape, deprecation behaviour;
+**adapter relocation/re-host: partition `portable core` vs `host glue` before
+diffing — core must be byte-identical to legacy, glue must conform to host B's
+rules (not legacy A's), and sweep for legacy-A residue in B**).
 Also sweep non-code artifacts if the scene holds logic outside code
 (DB triggers/procs, batch jobs, config defaults, message schemas) — tag them
 `kind: DB|batch|config|schema`.

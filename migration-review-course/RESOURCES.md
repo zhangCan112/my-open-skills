@@ -34,6 +34,23 @@
 - [Working Effectively with Legacy Code — Michael Feathers](https://www.oreilly.com/library/view/working-effectively-with/0131177052/)
   characterization test / golden master 概念的源头。**用于**：第 5 课"旧系统行为就是规格"这一思想依据。
 
+### 适配器搬迁 / re-host（A6 辅助，2026-08 补充）
+
+> `migration-reviewer-generate` 的 A6 迁移类型（`portable core` vs `host glue` 双 oracle）素材。
+> 完整清单见根目录 `REFERENCES.md` A 节，此处只收录课程主线能用上的核心几条：
+
+- [Martin Fowler: Legacy Displacement — Feature Parity](https://martinfowler.com/articles/patterns-legacy-displacement/feature-parity.html)
+  旧代码即规格 + 可执行契约对新系统复验 —— "双 oracle"的雏型：核心对旧代码、胶水对宿主契约。
+- [GitLab: Hexagonal Monolith](https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/modular_monolith/hexagonal_monolith/)
+  adapter = 薄胶水、宿主可换核心不动：判断"哪段能搬、哪段是宿主胶水"。
+- [rustqual: adapter-parity](https://github.com/SaschaOnTour/rustqual/blob/main/book/adapter-parity.md)
+  每个 adapter 必须触达相同 target 触点，缺即漂移 —— 胶水对齐检查。
+- [Microsoft Agent Governance Toolkit — Framework Adapter Contract](https://microsoft.github.io/agent-governance-toolkit/specs/FRAMEWORK-ADAPTER-CONTRACT-1.0/)
+  宿主干预点/生命周期契约 = 宿主-B 专属"必挂钩"清单的模型。
+- [Start Debugging: Semantic Kernel Plugin → MCP](https://startdebugging.net/2026/05/migrate-a-semantic-kernel-plugin-to-an-mcp-server/)
+  drop-in bridge vs native rewrite：宿主差异归 harness，不随核心搬。
+- oracle 文献（用于理解"规格标的物"可不止旧码一个）：[MatchFixAgent](https://arxiv.org/html/2509.16187v2) · [Mokav](https://arxiv.org/html/2406.10375v1) · [Testora](https://arxiv.org/html/2503.18597v1)
+
 ## 智慧（社区）
 
 - 暂无高信任社区被确认。候选（待用户确认是否加入）：
@@ -43,4 +60,5 @@
 ## 缺口（Gaps）
 
 - 没有找到"迁移 review 专用"的高质量中文社区内容；中文资源以工具介绍为主，方法论多来自英文社区。
-- "业务规则清单"（Business Rules Inventory）目前主要依赖 CoreStory 一家，缺少中立第三方对同一主题的阐述。
+- "业务规则清单"（Business Rules Inventory）目前主要依赖 CoreStory 一家，缺少中立第三方对同一主题的阐述（Martin Fowler 的 Feature Parity 是行为契约视角，不是规格清单视角）。
+- A6 适配器搬迁的完整来源清单放在根目录 `REFERENCES.md`（六边形/结构判据、宿主-适配器契约、oracle 文献三类）；本文件只在这儿收录课程主线要用的子集，跨宿主迁移的中文社区资源仍缺。
