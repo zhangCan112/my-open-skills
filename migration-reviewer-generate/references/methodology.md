@@ -1,6 +1,6 @@
 # Methodology — audit a migration before → after
 
-Six pieces, in order. Each is a leading-word defined in SKILL.md. This reference is the authority; SKILL.md only points here.
+Six pieces, in order. This reference is the authority; SKILL.md only points here. Adapter relocation / re-host (type A6) runs the same six pieces under a dual oracle — see the variant section at the end.
 
 ## 1. Behavior inventory (行为清单)
 
@@ -54,6 +54,8 @@ Rules of classification:
 
 Report state is the five-way contract, per rule: **Equivalent** (verified identical) · **Improved** (deliberate, documented improvement) · **Different** (behaviour changed — carries gap tag + intent classification) · **Missing** (absent) · **NotVerified** (no evidence available). The gap tags above feed the state: a rule is `Improved` only when the change is deliberate and documented — an undocumented change is `DIFFERS`, never `Improved`. `NotVerified` is not a pass: when tier 2+ was impossible, mark the rule `NotVerified` instead of defaulting it to `Equivalent`.
 
+> Adapter relocation (A6) extends this classification with two intent tags — `RE-POINTED` and `INTENDED` — defined in the A6 variant section at the end.
+
 ## 4. Hidden behaviours & invariants (隐形行为)
 
 Diff cannot see these. Sweep every scope line for:
@@ -84,7 +86,7 @@ Static review (pieces 1–4) says "looks complete". Truth lives in execution. Pi
 
 ## 6. Equivalence report + human gate (等价报告与人类闸门)
 
-The audit is not done until it is written down. Use `assets/report-template.md`. Structure:
+The audit is not done until it is written down. Use the equivalence report template (source copy: `migration-reviewer-audit/assets/report-template.md`; a generated skill copies it into its own `assets/`). Structure:
 
 1. **Summary** — counts (verified / improved / different / missing / not-verified) + conclusion (release / fix-first / rewrite)
 2. **Rule-by-rule table** — ID, description, legacy location, new location, status
@@ -99,3 +101,21 @@ The audit is not done until it is written down. Use `assets/report-template.md`.
 **Human-in-the-loop gate**: a domain expert signs the report before the legacy system is retired. Only the genuinely ambiguous intentionality goes to the expert, not every row.
 
 > Best practice: verify against the *inventory*, not against every line of code. Classify differences before deciding to fix — some are real improvements.
+
+## Adapter relocation / re-host (A6) — the dual-oracle variant
+
+When the scene is *the same adapter re-hosted from App A to App B* (the framework-facing side of the adapter is unchanged), run the six pieces **per partition** under two oracles. Partition first (`diagnosis-guide.md` A6): `adapter core` (pure logic + its host-acquisition seams) vs `host glue` (per-host wiring).
+
+- **Oracle 1 — the legacy core**, for the adapter core. The core is NOT assumed byte-identical: an adapter is coupled to the host it lives in (env/config keys, DI, clock, downstream providers — the "fat adapter" reality), and re-hosting legitimately re-points those seams. Everything else must preserve behavior.
+- **Oracle 2 — host B's contract**, for the glue. Never legacy A's glue: a glue that diverges from A while conforming to B is the intended outcome. If B's contract is not written down, enumerating it (from B's docs, B's framework conventions, or sibling adapters already running in B) is a prerequisite deliverable — glue cannot be verified against an oracle that does not exist.
+
+| Piece | Adapter core (oracle: legacy core) | Host glue (oracle: B's contract) |
+|---|---|---|
+| 1 Inventory | enumerate core behaviors vs the legacy core; every host-acquisition seam is a first-class row | enumerate B's mandatory touchpoints (auth, metrics/telemetry, banner, lifecycle hooks, config keys, error payload shape) — the B-contract inventory |
+| 2 Rules | extract what must be preserved from the legacy core, as usual | rules = B's conventions from the B contract; preserve/translate/degrade/drop decisions for unhostable behaviors are recorded here, not improvised later |
+| 3 Classification | vs the legacy core. Seam rewritten for B → `RE-POINTED` (expected change; still verify behavior). Behavior B cannot host → map **preserve / translate / degrade / drop**, each documented — an undocumented drop is `MISSING` | vs the B contract only. Glue diverging from A while conforming to B → `INTENDED`, never `DIFFERS`. Missing B touchpoint → `MISSING vs B`; surviving A-specific touchpoint → residue |
+| 4 Hidden behaviours | core invariants and error surface carry over — check them, don't assume | A-residue sweep: A's field names, env keys, error text, table/queue names, log prefixes leaking into B |
+| 5 Verification | tier 2 on both cores with the same corpus; compare **normalized** outputs (key order, float ε, timestamps/UUIDs, unordered collections; compare error *type* over text) — byte equality is neither required nor sufficient evidence. Include boundary/adversarial inputs, not just happy-path. A byte-identity claim requires a byte-oracle harness AND zero host coupling | run B's contract tests / re-run the port's contract tests in B ("the contract of an adapter is its tests"); walk the touchpoint checklist |
+| 6 Report | every row carries an `oracle` column (`A-core` / `B-contract`); `RE-POINTED` and `INTENDED` are intent tags, not passes — each still needs its verification evidence | same |
+
+**Drift guard, per partition**: if core `MISSING + DIFFERS` (excluding `RE-POINTED` / `INTENDED`) exceeds ~20% of enumerated core behaviors, the "relocation" has become a core rewrite — say so.

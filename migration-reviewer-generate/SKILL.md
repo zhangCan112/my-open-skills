@@ -64,7 +64,7 @@ Pull everything you can from the user's own words before asking anything:
    - Service split / monolith → services — API contract, data ownership, event timing, shared mutable state.
    - DB → application layer — stored-proc semantics, NULL/default, transactions, rounding, trigger logic.
    - Library → new vendor / API — dependency surface, error codes, data shape.
-   - Adapter relocation / re-host (framework adapter moved from App A to App B) — partition `adapter core` vs `host glue`; core gets the FULL methodology (behavior vs legacy core, not byte-identity — re-pointed acquisition seams ARE expected to change; byte-identical only in the zero-coupling special case, proved by a byte-oracle, not eyeballed); glue must conform to host B's rules, never to legacy A's; sweep for legacy-A residue in B.
+   - Adapter relocation / re-host (framework adapter moved from App A to App B) — partition `adapter core` vs `host glue`, then dual oracle: core runs the FULL methodology against the legacy core (acquisition seams are `RE-POINTED` rows to verify, not red flags; byte-identity only in the zero-coupling special case, proved by a byte-oracle); glue conforms to host B's contract, never to A's; sweep B for missing B touchpoints and legacy-A residue.
 3. **List what is NOT settled** — the gaps become Phase 1 questions.
 4. **Pick the artifact form** the scene calls for:
    - standalone skill → `assets/skill-template.md`
@@ -83,7 +83,7 @@ Where scope implies risk (ask only if the scene leaves it open):
 
 - **Risk you fear** — payments, state machine, timezones, rounding… → that logic gets the highest verification tier.
 - **Consumer contracts** — does any external caller parse error text / status codes / ordering? (hidden behaviour tier)
-- **Adapter relocation only** — who owns the host glue's spec: host B's rules doc, B's framework conventions, or nothing (then MUST be produced)? Which host couplings live in the core (config keys, env, DI, clock, downstream providers) and were re-pointed for B — enumerate those seams and verify their behavior, rather than claiming core identity? (two-oracle split)
+- **Adapter relocation only** — does host B's contract exist (rules doc, framework conventions, sibling adapters in B)? If not, producing it is a prerequisite deliverable. Which acquisition seams in the core (config keys, env, DI, clock, downstream providers) were re-pointed for B — enumerate them; each becomes a `RE-POINTED` verify row (dual-oracle split).
 - **Data movement** — is data migrating, and must it be lossless? → Tier 4 reconciliation.
 - **Language** — Chinese / English / bilingual (default matches the user's language).
 
@@ -134,7 +134,7 @@ Where scope implies risk (ask only if the scene leaves it open):
 
 ## References
 
-- `references/methodology.md` — the six-part methodology (inventory → rules → classification → hidden behaviours → verification → report).
+- `references/methodology.md` — the six-part methodology (inventory → rules → classification → hidden behaviours → verification → report) + the A6 dual-oracle variant.
 - `references/diagnosis-guide.md` — scene classification (migration type, artifact form) + grill question tree.
 - `references/self-check.md` — DoD checklist + smoke procedure for Phase 3.
 - `assets/skill-template.md` — standalone skill skeleton.

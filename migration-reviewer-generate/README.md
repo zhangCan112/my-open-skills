@@ -40,6 +40,7 @@ powershell -ExecutionPolicy Bypass -File .\assets\smoke-example\run-smoke.ps1
 - Written per `writing-for-agents`: SKILL.md stays a thin orchestrator; methodology and templates are externalized.
 - Phase 0 diagnose-first + Phase 1 one-question-at-a-time grill — grounded, never invented.
 - The three artifact templates are equal citizens; producing "a skill" is only one branch, not the default.
+- A6 (adapter relocation / re-host) is a first-class methodology variant: dual oracle (legacy core / host-B contract), `RE-POINTED` seam rows, `INTENDED` glue divergence, B-touchpoint conformance, legacy-A residue sweep — mapped per methodology piece in `references/methodology.md`.
 
 ## License
 

@@ -40,15 +40,19 @@ The type decides which behaviour categories the checklist must stress and which 
 - **Deprecation behaviour**: old API silently changed defaults, removed overloads, feature-flagged paths
 
 ### A6. Adapter relocation / re-host (适配器搬迁)
-(source & target: the same adapter module moved/attached to a *different host app*; framework face stays the same.
-Example: `framework → adapter core → host A glue → App A` becomes `framework → adapter core → host B glue → App B`.)
-- **Split the scene before diffing: `adapter core` vs `host glue`.** Every line in scope goes to exactly one side — the framework-adapter logic (translation, validation, capability acquisition), and the host wiring that follows each host's conventions (param/field names, env/config keys, error codes & text, status payload shapes, logging/audit prefixes, DI/lifecycle registration).
-- **The adapter core is NOT assumed byte-identical — it goes through the full methodology.** An adapter is coupled to the host it lives in: it parses typed input, reads the clock/config, and pulls capabilities from the host's container/downstream services (Ploeh's "fat adapter"; adapters routinely touch host context via env/static/system imports). When re-hosted, those acquisition points *legitimately change* (new env keys, new DI, new provider). So run the standard pipeline on it: enumerate behaviors, classify each refactor-gap against the legacy core's semantics, sweep hidden behaviors. "Changed here" is a *finding to verify*, not an automatic `DIFFERS` for the pure logic, and not a red flag for the legitimately re-pointed acquisition seams.
-- **Byte-identical is the special case, not the rule.** It only applies when the core truly has zero host coupling (no dependency/config/capability change) — then prove it with a byte-oracle/characterization harness, not eyeball diffing. Assume the ordinary case first: behavior must be preserved and verified (golden-master/characterization against the runnable core; the port-contract check below), code may be reshaped (kubb-style characterization snapshots, "behavior-preserving, not line-by-line").
-- **Port-contract check**: if the core exposes expected capabilities, re-run the *same adapter's contract tests* against the new host (Ploeh: "the contract of an adapter is its tests") — verification against B that is not a line-diff at all.
-- **Host glue's single oracle = host B's rules, never legacy A's glue.** A glue that now conforms to B and diverges from A is the intended outcome, not a `DIFFERS`.
-- **Legacy-A residue check**: the new glue must not carry A's own field names, env keys, error-text, table/queue names, or log format silently into B (host-specific state is a leak).
-- **Host-B conformance check**: every B convention a host requires (auth, banner, db callback, token, event subject, config key) must be wired in the new glue — an absent B rule is `MISSING` against B, even if nothing was lost versus A.
+(source & target: the same adapter module re-hosted from App A to App B; the framework-facing side of the adapter is unchanged. Example: `framework → adapter core → host-A glue → App A` becomes `framework → adapter core → host-B glue → App B`.)
+
+How each of the six pieces adapts per partition is defined in `methodology.md` ("A6 — the dual-oracle variant"). The scene diagnosis itself is four checks:
+
+1. **Partition before diffing — three zones; every line in scope goes to exactly one:**
+   - *pure core logic* (translation, validation, decisions) — oracle: the legacy core;
+   - *acquisition seams inside the core* (env/config keys, DI, clock, downstream providers) — expected to be re-pointed to B; each is a `RE-POINTED` row to verify, not a red flag;
+   - *host glue* (param/field names, error codes & text, status payload shapes, logging/audit prefixes, DI/lifecycle registration) — oracle: host B's contract.
+2. **Dual oracle.** The core is audited for *behavior* vs the legacy core through the full methodology — never assumed byte-identical (adapters legitimately couple their host; only the zero-coupling special case may claim byte-identity, and only via a byte-oracle harness). The glue is audited only against B's rules; if B's contract is not written down, producing it is a prerequisite deliverable.
+3. **Two sweeps unique to A6.** *B-touchpoint conformance*: every hook B mandates (auth, metrics, banner, lifecycle, config keys) must be wired in the new glue — an absent one is `MISSING vs B` even though nothing was lost versus A. *Legacy-A residue*: A's env keys, field names, error text, table/queue names, or log prefixes surviving in B — a leak.
+4. **Unhostable behaviors.** Core behaviors B's environment cannot support map to **preserve / translate / degrade / drop** — each documented; an undocumented drop is `MISSING`.
+
+Worked micro-example: `assets/smoke-example/fixtures/adapter/` (seam re-point, glue rewired to B, A-residue, missing B touchpoint).
 
 ## B. Classify the artifact type
 

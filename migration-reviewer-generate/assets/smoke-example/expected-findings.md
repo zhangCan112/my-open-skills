@@ -16,7 +16,7 @@ Files: `fixtures/legacy/calculate_fee.py` → `fixtures/svc/payments/fee.go`.
 | F2 | DIFFERS | Rounding: legacy `Decimal.quantize(ROUND_HALF_UP)` vs Go `math.Round` (half-away-from-zero) — edge values differ ±0.01 | Both sides "round to 2dp", only execution differs |
 | F3 | DIFFERS | Error surface: `ValueError("…")` exception vs `fmt.Errorf` — consumers parsing error text/type break | Same message text, different mechanism |
 | F4 | DIFFERS | Audit log text: legacy `amount=5` (repr) vs Go `%.2f` → `amount=5.00` | Machine-parsed text changed with same "shape" |
-| 5 | DIFFERS | Numeric semantics: `Decimal(str(int))` exact vs Go `float64` loses precision >2^53 | Type change not flagged as behaviour change |
+| F5 | DIFFERS | Numeric semantics: `Decimal(str(int))` exact vs Go `float64` loses precision >2^53 | Type change not flagged as behaviour change |
 
 ## Scene 2 — framework adapter relocated App A → App B (adapter relocation / re-host)
 
@@ -25,16 +25,17 @@ Files: `fixtures/adapter/legacy/{adapter_core.py, app_a/glue_a.py}` →
 
 The scene splits into an **adapter core** (framework-adapter logic — audited for
 behaviour vs the legacy core, NOT byte-identity) and a **host glue** (per-host wiring).
-The glue's spec is **host B's rules**, NOT the legacy host-A glue: a glue that diverges from
-A while conforming to B is the intended outcome, never a regression. The core's only change is
-the host-acquisition seam `PROVIDER_SOURCE` legitimately re-pointed `A:ATLAS_FX` → `B:ORB_FX`.
+The glue's spec is **host B's contract**, NOT the legacy host-A glue: a glue that diverges from
+A while conforming to B is the intended outcome (`INTENDED`), never a regression. The core's only
+change is the host-acquisition seam `PROVIDER_SOURCE` legitimately re-pointed `A:ATLAS_FX` →
+`B:ORB_FX` (`RE-POINTED`). Tag vocabulary is defined in `references/methodology.md` (A6 variant).
 
 | # | Tag | Finding | Why diff alone misses it |
 |---|---|---|---|
-| 6 | RE-POINTED→verified | Adapter core relocated: the **host-acquisition seam** `PROVIDER_SOURCE` re-pointed `A:ATLAS_FX` → `B:ORB_FX` while `normalize_currency` logic is carried over (behavior preserved, verified by adapting the legacy contract tests, not byte-identity) | A plain diff sees the changed seam line and flags a `DIFFERS`; the checklist classifies it as the intended host re-pointing and asks for a behavior check, not a red flag |
-| 7 | INTENDED | Host glue rewired to B's rules: old `ATLAS_MODE`/`"error"`/`label` glue replaced by `ORB_SECTION`/`reason`/`display` — this diverges from A and is **correct**, not a `DIFFERS` regression | The standard "old behaviour is the spec" rule would flag A→B glue changes as gaps; the twin-oracle classification re-anchors them to B |
-| 8 | DIFFERS | Legacy-A residue leaked into B's glue: `LEGACY_WIRE = "ATLAS"` carried over into the new host region | Fine on a diff (constant survived), but it is A-specific state that must not reach B |
-| 9 | MISSING | Host-B-only requirement absent: B requires `emit_metric(name)` on every published render; the relocated `view()` never calls it | Nothing was lost *versus A*, so a legacy-vs-new comparison misses it — only the B contract spots it |
+| F6 | `RE-POINTED` | Adapter core relocated: the **host-acquisition seam** `PROVIDER_SOURCE` re-pointed `A:ATLAS_FX` → `B:ORB_FX` while `normalize_currency` logic is carried over (behavior preserved, verified by adapting the legacy contract tests, not byte-identity) | A plain diff sees the changed seam line and flags a `DIFFERS`; the dual-oracle classification marks it the intended host re-pointing and asks for a behavior check, not a red flag |
+| F7 | `INTENDED` | Host glue rewired to B's rules: old `ATLAS_MODE`/`"error"`/`label` glue replaced by `ORB_SECTION`/`reason`/`display` — this diverges from A and is **correct**, not a `DIFFERS` regression | The standard "old behaviour is the spec" rule would flag A→B glue changes as gaps; the dual-oracle classification re-anchors them to B |
+| F8 | DIFFERS | Legacy-A residue leaked into B's glue: `LEGACY_WIRE = "ATLAS"` carried over into the new host region | Fine on a diff (constant survived), but it is A-specific state that must not reach B |
+| F9 | MISSING | Host-B-only requirement absent: B requires `emit_metric(name)` on every published render; the relocated `view()` never calls it | Nothing was lost *versus A*, so a legacy-vs-new comparison misses it — only the B contract spots it |
 
 ## Golden-master fixtures (tier 2)
 

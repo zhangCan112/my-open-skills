@@ -41,8 +41,9 @@ exists and matches.
   (e.g. float width for cross-language, lifecycle/hooks for framework, API
   contract for a split, **host-glue rules for an adapter relocation/re-host**).
 - For an **adapter relocation/re-host**: give the persona two oracles — the
-  legacy core (behavior equivalence, changes allowed where host couplings are
-  re-pointed; full methodology, not byte-identity) and host B's rules
-  (glue conforms to B, never to legacy A; flag legacy-A residue as a leak).
+  legacy core (behavior equivalence; acquisition seams tagged `RE-POINTED` and
+  verified; full methodology, not byte-identity) and host B's contract
+  (glue conforms to B, never to legacy A — divergence from A is `INTENDED`;
+  absent B touchpoints are MISSING vs B; flag legacy-A residue as a leak).
 - If the agent already loads the migration methodology, link it; else keep these
   lines self-contained.

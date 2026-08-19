@@ -39,11 +39,12 @@ Migration type: {{MIGRATION_TYPE}}. Add the rows this type demands
 framework: lifecycle/hooks, DI, defaults; split: API contract, data custody, event
 timing; DB→app: proc/trigger semantics, NULL/default, transactions, rounding;
 library→vendor: dependency surface, error codes, data shape, deprecation behaviour;
-**adapter relocation/re-host: partition `adapter core` vs `host glue` before
-diffing — core is audited for BEHAVIOUR vs legacy core (changes allowed for
-re-pointed host couplings; byte-identical only in the zero-coupling special case
-and then proved by a byte-oracle, not eyeballed), glue must conform to host B's
-rules (not legacy A's), and sweep for legacy-A residue in B**).
+**adapter relocation/re-host: partition `adapter core` vs `host glue`, dual oracle —
+core audited for behaviour vs the legacy core (acquisition seams tagged `RE-POINTED`
+and verified; byte-identical only in the zero-coupling special case, proved by a
+byte-oracle), glue audited against host B's contract (divergence from A = `INTENDED`,
+missing B touchpoint = MISSING vs B; sweep legacy-A residue). See the A6 variant in
+`references/methodology.md` for the per-piece mapping**.
 Also sweep non-code artifacts if the scene holds logic outside code
 (DB triggers/procs, batch jobs, config defaults, message schemas) — tag them
 `kind: DB|batch|config|schema`.

@@ -20,9 +20,9 @@ Exit code: `0` = all 9 expected findings surfaced; `1` = a regression.
      (cross-language rewrite, so the checklist is stress-tested for type-driven rows).
    - `fixtures/adapter/legacy/{adapter_core.py, app_a/glue_a.py}` →
      `fixtures/adapter/target/{adapter_core.py, app_b/glue_b.py}`
-     (adapter relocation App A → App B, so the twin-oracle rows are stress-tested:
-     core seam re-pointed A→B while pure logic is preserved, host glue conforms
-     to B not A, legacy-A residue, host-B-only requirement missing).
+      (adapter relocation App A → App B, so the dual-oracle rows are stress-tested:
+      core seam re-pointed A→B while pure logic is preserved, host glue conforms
+      to B not A, legacy-A residue, host-B-only requirement missing).
 2. Reproduces the classification a generated checklist must surface: it checks that
    every expected finding (see `expected-findings.md`) is still detectable from the
    generated artifact's shape.
