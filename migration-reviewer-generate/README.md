@@ -44,3 +44,5 @@ powershell -ExecutionPolicy Bypass -File .\assets\smoke-example\run-smoke.ps1
 ## License
 
 MIT
+
+[完整中文文档](./README.zh-CN.md)

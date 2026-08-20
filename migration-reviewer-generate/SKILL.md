@@ -1,6 +1,6 @@
 ---
 name: migration-reviewer-generate
-description: Use when someone wants a reusable migration-review checklist, skill, or rule for an adapter relocation / re-host — the SAME framework adapter moved from host App A to host App B. Produce the artifact FROM the actual scene (adapter-core vs host-glue partition, dual oracle: legacy core + host-B contract), never from a generic template filled by assumption. Triggers on "适配器要从 A 搬到 B 怎么查", "re-host / adapter 搬迁 review", "给这次宿主迁移出个检查规则", "检查搬迁没漏 B 的要求". Do NOT use for other migration types (cross-language rewrite, framework upgrade, service split, DB→app, library swap), for generic code review, or for executing the migration (use dependency-migrator).
+description: Use when the user wants a review checklist, skill, or rule for an adapter relocation (re-host) - the same adapter moves from host App A to host App B. Triggers on "适配器要从 A 搬到 B 怎么查", "re-host / adapter 搬迁 review", "检查搬迁没漏 B 的要求". Not for other migration types (language rewrite, framework upgrade, service split, DB-to-app, library swap), not for generic code review, and not for executing the migration (use dependency-migrator).
 ---
 
 # Migration Reviewer — Generate
