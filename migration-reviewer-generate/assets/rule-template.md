@@ -5,16 +5,17 @@ Use this when the user wants to extend an **existing** skill with a migration-re
 ## What to write
 
 ```markdown
-## Migration-review rule ({{SOURCE}} → {{TARGET}})
+## Migration-review rule (adapter re-host {{HOST_A}} → {{HOST_B}})
 
 Triggers: {{TRIGGERS}} (add as a bullet in the hosting skill's "when to use").
 
-**Rule:** when these before/after code pairs are in scope, audit behaviour
-preservation before signing off. Diff alone cannot see deleted behaviour;
+**Rule:** when this adapter's before/after relocation pairs are in scope, audit
+behaviour preservation per partition before signing off. Diff alone cannot see
+deleted behaviour — and in a re-host, glue that diverged from A is often correct;
 {{RISKIEST_LOGIC}} is the risk hotspot.
 
-Checklist (from the migration type, condensed):
-- [ ] {{TYPE_SPECIFIC_ROWS}}        # e.g. cross-language: numeric overflow/rounding, unicode, timezone; library→vendor: error codes, data shape; adapter relocation: dual oracle — core vs legacy core (seams tagged `RE-POINTED`, verified) + glue vs host B's contract + B-touchpoint conformance + no legacy-A residue
+Checklist (dual oracle, condensed):
+- [ ] {{A6_ROWS}}        # e.g. core vs legacy core per branch; seams tagged `RE-POINTED`, verified; glue vs host B's contract; B-touchpoint conformance; no legacy-A residue
 - [ ] hidden behaviours: defaults, ordering, timing, logging, error surface, invariants, non-code (DB/batch/config)
 - [ ] report status vocabulary: Equivalent / Improved / Different / Missing / NotVerified
 - [ ] verification tier reached: {{REACHABLE_TIER}} (based on {{EVIDENCE}})
@@ -33,19 +34,20 @@ Checklist (from the migration type, condensed):
 ## Concrete example (illustrative)
 
 ```markdown
-## Migration-review rule (PHP → Go payments)
+## Migration-review rule (payment adapter: host ATLAS → host ORB)
 
-Triggers: reviewing `checkout` rewrite, before/after `PaymentService`.
+Triggers: reviewing the payment adapter re-host from App ATLAS to App ORB,
+before/after `PaymentAdapter` + glue.
 
-**Rule:** audit the payment path for behaviour preservation — reject, refund,
-balance invariants — before sign-off.
+**Rule:** audit the relocation across both partitions — core decisions vs the
+legacy core, glue conformance vs ORB's contract — before sign-off.
 
 Checklist:
-- [ ] currency precision & float rounding parity in both environments (money as long/money-decimal)
-- [ ] each branch of `calculateFee()` classified MISSING / PARTIAL / DIFFERS against legacy
-- [ ] event emission order on the failure path
-- [ ] verification: golden master on 3 fee profiles (tier 2) — needs fixtures
+- [ ] core: every `normalize_currency`/fee branch classified MISSING / PARTIAL / DIFFERS vs legacy core
+- [ ] seams: `PROVIDER_SOURCE`, `PAYMENTS_CLOCK` re-pointed to ORB → tagged `RE-POINTED`, behavior verified (same corpus through both cores, normalized comparison)
+- [ ] glue: ORB touchpoints (auth scope, `emit_metric`, error payload shape) all wired — absent = MISSING vs B
+- [ ] residue: no ATLAS env keys / field names / log prefixes surviving in the ORB region
 
-**Gate:** domain expert signs the equivalence report; legacy `calculateFee` not
+**Gate:** domain expert signs the equivalence report; App ATLAS's glue not
 deleted before that.
 ```

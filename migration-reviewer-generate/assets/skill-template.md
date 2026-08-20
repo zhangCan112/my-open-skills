@@ -19,32 +19,27 @@ Do not inline the whole methodology as prose — link to `references/methodology
 ```markdown
 ---
 name: migration-review-{{SCENE_SLUG}}
-description: Use when auditing a {{SOURCE}} → {{TARGET}} migration ({{SCOPE}}) for
-  missing functionality or changed business logic. Triggers on {{TRIGGER_PHRASES}}.
-  Do NOT use for generic code review or unrelated migrations.
+description: Use when auditing the relocation of {{ADAPTER}} from host {{HOST_A}} to
+  host {{HOST_B}} ({{SCOPE}}) for behavior loss or contract violations. Triggers on
+  {{TRIGGER_PHRASES}}. Do NOT use for generic code review or other migration types.
 ---
 
-# {{SOURCE}} → {{TARGET}} migration review
+# {{ADAPTER}} re-host review ({{HOST_A}} → {{HOST_B}})
 
 ## Scope
 - In scope: {{SCOPE_DETAIL}}
 - Out of scope: {{OUT_OF_SCOPE}}
 
 ## Method
-Follow `references/methodology.md` — the six-piece process, in order.
+Follow `references/methodology.md` — the six-piece process under the dual oracle.
 
 ## Scene-specific sweep
-Migration type: {{MIGRATION_TYPE}}. Add the rows this type demands
-(cross-language: numeric width, float rounding, unicode, timezone, concurrency;
-framework: lifecycle/hooks, DI, defaults; split: API contract, data custody, event
-timing; DB→app: proc/trigger semantics, NULL/default, transactions, rounding;
-library→vendor: dependency surface, error codes, data shape, deprecation behaviour;
-**adapter relocation/re-host: partition `adapter core` vs `host glue`, dual oracle —
-core audited for behaviour vs the legacy core (acquisition seams tagged `RE-POINTED`
-and verified; byte-identical only in the zero-coupling special case, proved by a
-byte-oracle), glue audited against host B's contract (divergence from A = `INTENDED`,
-missing B touchpoint = MISSING vs B; sweep legacy-A residue). See the A6 variant in
-`references/methodology.md` for the per-piece mapping**.
+Migration type: adapter relocation / re-host. Partition `adapter core` vs `host glue`
+first, dual oracle — core audited for behaviour vs the legacy core (acquisition seams
+tagged `RE-POINTED` and verified; byte-identical only in the zero-coupling special case,
+proved by a byte-oracle), glue audited against host B's contract (divergence from A =
+`INTENDED`, missing B touchpoint = MISSING vs B; sweep legacy-A residue). See the
+dual-oracle variant in `references/methodology.md` for the per-piece mapping.
 Also sweep non-code artifacts if the scene holds logic outside code
 (DB triggers/procs, batch jobs, config defaults, message schemas) — tag them
 `kind: DB|batch|config|schema`.
@@ -65,7 +60,7 @@ exceeds ~20%, conclude **rewrite, not migration**.
 
 Minimum content, each row scannable per run:
 
-- diff surface: the module/path pairs to compare
-- migration-type categories: the rows above that matter for THIS scene
-- risky logic and which verification tier must cover it
+- diff surface: the module/path pairs to compare, per partition zone
+- A6 rows: partition zones, `RE-POINTED` seam list, B touchpoints, legacy-A residue sweep
+- risky core logic and which verification tier must cover it
 - consumer contracts that must not change (error codes, response fields, ordering)

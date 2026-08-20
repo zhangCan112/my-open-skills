@@ -37,10 +37,7 @@ exists and matches.
 ## Composition rules
 
 - Keep it a topic; don't scaffold a whole skill around it.
-- Replace the placeholders; the persona inherits the migration-type emphasis
-  (e.g. float width for cross-language, lifecycle/hooks for framework, API
-  contract for a split, **host-glue rules for an adapter relocation/re-host**).
-- For an **adapter relocation/re-host**: give the persona two oracles — the
+- Replace the placeholders; the persona carries both oracles — the
   legacy core (behavior equivalence; acquisition seams tagged `RE-POINTED` and
   verified; full methodology, not byte-identity) and host B's contract
   (glue conforms to B, never to legacy A — divergence from A is `INTENDED`;

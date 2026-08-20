@@ -4,7 +4,7 @@
 
 ## A. 外部方法论来源（教程与 skill 的素材）
 
-来自 `migration-review-course/RESOURCES.md`，并用在课程各课与 `migration-reviewer-generate` / `migration-reviewer-audit` 的六片方法论中。
+来自（已删除的）`migration-review-course/RESOURCES.md`，并用在课程各课与 `migration-reviewer-generate` 的六片方法论中。**2026-08 起课程与 `migration-reviewer-audit` 已删除**，本文件成为这些引用的唯一记录。
 
 ### 优先读（主线教材）
 
@@ -96,7 +96,7 @@
 
 ## B. 本地引用方式（repo 惯例 + 已加载 skills）
 
-写 `migration-reviewer-generate` / `migration-reviewer-audit` 时依循了本仓库惯例与两个编写 skill 的规范：
+写 `migration-reviewer-generate`（原 `migration-reviewer-audit`，已删除）时依循了本仓库惯例与两个编写 skill 的规范：
 
 - **仓库惯例**（模式参考）：
   - `skill-architect` — skill 结构模式（orchestrator + references/assets 外置）
@@ -109,16 +109,15 @@
 
 ## C. 产出物（review 对象）
 
-- 教程：`E:\my-open-skills\migration-course\` 下 6 课 + glossary + cheatsheet + index（全部自包含、相对路径导航）
-- 方法论 meta-skill：`E:\my-open-skills\migration-reviewer-generate\`（生成侧）
-  `SKILL.md` + `README.md` + `references/{methodology,diagnosis-guide,self-check}.md` + `assets/{skill,rule,agent-topic}-template.md` + `assets/smoke-example/`（回归冒烟：fixtures + run-smoke.ps1）
-- 评审执行 skill：`E:\my-open-skills\migration-reviewer-audit\`
-  `SKILL.md` + `README.md` + `references/{methodology,self-check}.md` + `assets/report-template.md`
-- 依赖清单：`E:\my-open-skills\migration-course\RESOURCES.md`
+- ~~教程：`E:\my-open-skills\migration-course\`（已删除，2026-08）~~
+- 方法论 meta-skill：`E:\my-open-skills\migration-reviewer-generate\`（生成侧；**2026-08 起收窄为 A6 专用**：仅适配器搬迁/re-host 场景，其他迁移类型显式拒收）
+  `SKILL.md` + `README.md` + `references/{methodology,diagnosis-guide,self-check}.md` + `assets/{skill,rule,agent-topic,report}-template.md` + `assets/smoke-example/`（回归冒烟：fixtures + run-smoke.ps1）
+- ~~评审执行 skill：`E:\my-open-skills\migration-reviewer-audit\`（已删除，2026-08；其 report-template 已并入 generate 侧 `assets/report-template.md`）~~
+- ~~依赖清单：`E:\my-open-skills\migration-course\RESOURCES.md`（随课程删除；引用记录保留在本文件 A 节）~~
 
 ## D. 已知缺口 / 风险（review 时留意）
 
 - 教程外部链接指向中文社区较少，方法论以英文为主（`RESOURCES.md` Gaps 节）。
 - "Business Rules Inventory" 目前只依赖 CoreStory 一家，缺中性第三方佐证（Martin Fowler 的 Feature Parity 可作补充视角，但非专门论述业务规则清单）。
 - 适配器搬迁（A6）的外部来源已在"### 适配器搬迁 / re-host（A6 补充）"补录（六边形/结构判据、宿主-适配器契约、oracle 文献三类）；未入课程主线，仅生成侧使用。**2026-08 修正**：原稿"核心必须字节一致"过强，实际适配器耦合宿主（能力获取/时钟/env），re-host 时 seam 合法改写；核心段已改为"完整方法论 + 行为等价验证"，字节一致仅保留为"零宿主耦合特例"（须用 byte-oracle 证明），glue 判定保持"对 B 契约"不变。
-- 生成的 meta-skill 已做端到端冒烟：`migration-reviewer-generate/assets/smoke-example/` 的 fixtures 被跑通，当前产出 9 条纯 diff 不可见的具体发现（跨语言 5 条 + 适配器搬迁 A6 4 条：核心 seam 重指并验证 / 胶水按 B / A 残留泄漏 / B 契约缺失），`run-smoke.ps1` 可作回归。
+- 生成的 meta-skill 已做端到端冒烟：`migration-reviewer-generate/assets/smoke-example/` 的 fixtures 被跑通，当前产出 5 条纯 diff 不可见的具体发现（A6 五类病灶：seam 重指并验证 / 排序保证被悄悄委托给 B provider / 胶水按 B / A 残留泄漏 / B 契约缺失），`run-smoke.ps1` 可作回归。生成侧收窄为 A6-only 后，原跨语言场景 fixtures 已删除。

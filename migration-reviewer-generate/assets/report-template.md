@@ -3,7 +3,7 @@
 **Migration:** {{SOURCE}} → {{TARGET}}
 **Scope:** {{SCOPE}}
 **Date:** {{DATE}}
-**Auditor:** {{AUDITOR}} (agent: migration-reviewer-audit)
+**Auditor:** {{AUDITOR}}
 
 ## 1. Summary
 
@@ -24,13 +24,14 @@
 
 ## 2. Rule-by-rule verification
 
-| ID | Description | Legacy location | New location | Status |
-|---|---|---|---|---|
-| BR-001 | … | `file:line` | `file:line` | Equivalent |
-| BR-002 | … | `file:line` | not found | Missing |
-| BR-003 | … | `file:line` | `file:line` | Improved — deliberate, documented |
-| BR-004 | … | `file:line` | `file:line` | NotVerified — tier 2+ not reachable |
-| … | | | | Different |
+| ID | Description | Legacy location | New location | Oracle | Status |
+|---|---|---|---|---|---|
+| BR-001 | … | `file:line` | `file:line` | A-core | Equivalent |
+| BR-002 | … | `file:line` | not found | A-core | Missing |
+| BR-003 | … | `file:line` | `file:line` | A-core | Improved — deliberate, documented |
+| BR-004 | … | `file:line` | `file:line` | A-core | NotVerified — tier 2+ not reachable |
+| BR-005 | … | — | `file:line` | B-contract | Missing vs B — touchpoint absent |
+| … | | | | | Different |
 
 ## 3. Behaviour differences
 
@@ -49,7 +50,7 @@ Intentionality is only decided by a domain expert, not the auditor.
 ## 5. Edge cases & invariants
 
 | Case / invariant | Legacy behaviour | New behaviour | Status |
-|---|---|---|
+|---|---|---|---|
 | null input → | defaults | throws | different |
 | state machine: pending → shipped (skip confirmed) | blocked | allowed | regression |
 | mechanism change (app → DB constraint) | … | … | documented |

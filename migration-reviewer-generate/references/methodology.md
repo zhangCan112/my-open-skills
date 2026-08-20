@@ -1,6 +1,6 @@
 # Methodology — audit a migration before → after
 
-Six pieces, in order. This reference is the authority; SKILL.md only points here. Adapter relocation / re-host (type A6) runs the same six pieces under a dual oracle — see the variant section at the end.
+Six pieces, in order. This reference is the authority; SKILL.md only points here. This skill's only scene is adapter relocation / re-host (A6): the six pieces run under a dual oracle — see the variant section at the end.
 
 ## 1. Behavior inventory (行为清单)
 
@@ -86,7 +86,7 @@ Static review (pieces 1–4) says "looks complete". Truth lives in execution. Pi
 
 ## 6. Equivalence report + human gate (等价报告与人类闸门)
 
-The audit is not done until it is written down. Use the equivalence report template (source copy: `migration-reviewer-audit/assets/report-template.md`; a generated skill copies it into its own `assets/`). Structure:
+The audit is not done until it is written down. Use the equivalence report template (`assets/report-template.md`; a generated skill copies it into its own `assets/`). Structure:
 
 1. **Summary** — counts (verified / improved / different / missing / not-verified) + conclusion (release / fix-first / rewrite)
 2. **Rule-by-rule table** — ID, description, legacy location, new location, status
@@ -104,14 +104,14 @@ The audit is not done until it is written down. Use the equivalence report templ
 
 ## Adapter relocation / re-host (A6) — the dual-oracle variant
 
-When the scene is *the same adapter re-hosted from App A to App B* (the framework-facing side of the adapter is unchanged), run the six pieces **per partition** under two oracles. Partition first (`diagnosis-guide.md` A6): `adapter core` (pure logic + its host-acquisition seams) vs `host glue` (per-host wiring).
+When the scene is *the same adapter re-hosted from App A to App B* (the framework-facing side of the adapter is unchanged), run the six pieces **per partition** under two oracles. Partition first (`diagnosis-guide.md` B): `adapter core` (pure logic + its host-acquisition seams) vs `host glue` (per-host wiring).
 
 - **Oracle 1 — the legacy core**, for the adapter core. The core is NOT assumed byte-identical: an adapter is coupled to the host it lives in (env/config keys, DI, clock, downstream providers — the "fat adapter" reality), and re-hosting legitimately re-points those seams. Everything else must preserve behavior.
 - **Oracle 2 — host B's contract**, for the glue. Never legacy A's glue: a glue that diverges from A while conforming to B is the intended outcome. If B's contract is not written down, enumerating it (from B's docs, B's framework conventions, or sibling adapters already running in B) is a prerequisite deliverable — glue cannot be verified against an oracle that does not exist.
 
 | Piece | Adapter core (oracle: legacy core) | Host glue (oracle: B's contract) |
 |---|---|---|
-| 1 Inventory | enumerate core behaviors vs the legacy core; every host-acquisition seam is a first-class row | enumerate B's mandatory touchpoints (auth, metrics/telemetry, banner, lifecycle hooks, config keys, error payload shape) — the B-contract inventory |
+| 1 Inventory | enumerate core behaviors vs the legacy core. Partition per line with the heuristic "would this line change if the host were C?" — and enumerate seams by **scanning the code** (host-facility imports, env/config reads, DI lookups, clock calls, downstream endpoints), never from memory; every seam is a first-class row | enumerate B's mandatory touchpoints (auth, metrics/telemetry, banner, lifecycle hooks, config keys, error payload shape) — the B-contract inventory |
 | 2 Rules | extract what must be preserved from the legacy core, as usual | rules = B's conventions from the B contract; preserve/translate/degrade/drop decisions for unhostable behaviors are recorded here, not improvised later |
 | 3 Classification | vs the legacy core. Seam rewritten for B → `RE-POINTED` (expected change; still verify behavior). Behavior B cannot host → map **preserve / translate / degrade / drop**, each documented — an undocumented drop is `MISSING` | vs the B contract only. Glue diverging from A while conforming to B → `INTENDED`, never `DIFFERS`. Missing B touchpoint → `MISSING vs B`; surviving A-specific touchpoint → residue |
 | 4 Hidden behaviours | core invariants and error surface carry over — check them, don't assume | A-residue sweep: A's field names, env keys, error text, table/queue names, log prefixes leaking into B |

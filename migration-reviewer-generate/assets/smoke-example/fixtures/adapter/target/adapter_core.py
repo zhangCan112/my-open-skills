@@ -15,3 +15,11 @@ def normalize_currency(code):
     if c == "USDT":
         return "USD"
     return c
+
+
+def ordered_rates(raw):
+    # B:ORB_FX is documented to return pre-sorted rates — the seam re-point
+    # itself is correct, but the ordering guarantee silently moved from the
+    # core to the provider. Verifying a seam means verifying the behavior
+    # THROUGH it, not just the pointer: A sorted, B might not.
+    return list(raw)

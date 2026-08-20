@@ -14,3 +14,9 @@ def normalize_currency(code):
     if c == "USDT":
         return "USD"
     return c
+
+
+def ordered_rates(raw):
+    # A:ATLAS_FX returns rates UNSORTED — the core owns the ordering guarantee
+    # downstream consumers depend on (hidden behaviour, not a diff line).
+    return sorted(raw)
