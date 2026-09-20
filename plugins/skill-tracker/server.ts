@@ -24,12 +24,24 @@ export const PORT_SYMBOL = Symbol("skill-tracker-port")
 
 const sessionCtx = new Map<string, SessionCtx>()
 const records: SkillRecord[] = []
-const sseClients: Set<ServerResponse> = []
+const sseClients: Set<ServerResponse> = new Set()
 let logRoot = ""
 let loaded = false
+let gitignoreEnsured: Promise<void> | null = null
 
 function logPath(sessionID: string): string {
   return path.join(logRoot, "skill-tracker-log", sessionID, "skill-tracker.jsonl")
+}
+
+function ensureGitignore(): Promise<void> {
+  if (!gitignoreEnsured) {
+    const file = path.join(logRoot, "skill-tracker-log", ".gitignore")
+    gitignoreEnsured = fs.writeFile(file, "*\n", "utf-8").catch((err) => {
+      console.warn("[skill-tracker] failed to write .gitignore:", err)
+      gitignoreEnsured = null
+    }) as Promise<void>
+  }
+  return gitignoreEnsured
 }
 
 async function loadHistory() {
@@ -38,8 +50,10 @@ async function loadHistory() {
   try {
     const logDir = path.join(logRoot, "skill-tracker-log")
     await fs.access(logDir)
+    await ensureGitignore()
     const sessions = await fs.readdir(logDir)
     for (const sid of sessions) {
+      if (sid.startsWith(".")) continue
       const file = path.join(logDir, sid, "skill-tracker.jsonl")
       try {
         const content = await fs.readFile(file, "utf-8")
@@ -58,6 +72,7 @@ async function append(rec: SkillRecord) {
   const file = logPath(rec.sessionID)
   const dir = path.dirname(file)
   await fs.mkdir(dir, { recursive: true }).catch(() => {})
+  await ensureGitignore()
   const line = JSON.stringify(rec) + "\n"
   await fs.appendFile(file, line, "utf-8").catch((err) => {
     console.warn("[skill-tracker] failed to write log:", err)
