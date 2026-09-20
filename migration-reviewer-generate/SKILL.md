@@ -1,6 +1,6 @@
 ---
 name: migration-reviewer-generate
-description: Use when the user wants a review checklist, skill, or rule for an adapter relocation (re-host) - the same adapter moves from host App A to host App B. Triggers on "适配器要从 A 搬到 B 怎么查", "re-host / adapter 搬迁 review", "检查搬迁没漏 B 的要求". Not for other migration types (language rewrite, framework upgrade, service split, DB-to-app, library swap), not for generic code review, and not for executing the migration (use dependency-migrator).
+description: Use when the user wants a review checklist, skill, or rule for an adapter relocation (re-host) - the same adapter moves from host App A to host App B. Triggers on "适配器要从 A 搬到 B 怎么查", "re-host / adapter 搬迁 review", "检查搬迁没漏 B 的要求". Not for other migration types (language rewrite, framework upgrade, service split, DB-to-app, library swap), not for generic code review, and not for executing the migration itself.
 ---
 
 # Migration Reviewer — Generate

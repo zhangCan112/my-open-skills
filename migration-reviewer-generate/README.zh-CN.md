@@ -18,7 +18,7 @@
 | 给 agent 加迁移审查主题 | 一段 topic/persona | `assets/agent-topic-template.md` |
 | 这次迁移的检查清单 | 短文档，直接写 | 无需模板 |
 
-**不适用：** 其他迁移类型（跨语言重写、框架升级、服务拆分、DB→应用层、换库/换 API）、普通 code review、执行迁移本身（用 `dependency-migrator`）。用户想直接对真实前后代码跑 review 时：先按本 skill 生成清单，再把它应用到一个真实切片上（Phase 3 冒烟就是这次就地审查）。
+**不适用：** 其他迁移类型（跨语言重写、框架升级、服务拆分、DB→应用层、换库/换 API）、普通 code review、执行迁移本身。用户想直接对真实前后代码跑 review 时：先按本 skill 生成清单，再把它应用到一个真实切片上（Phase 3 冒烟就是这次就地审查）。
 
 **触发词：** "适配器要从 A 搬到 B 怎么查"、"re-host / adapter 搬迁 review"、"检查搬迁没漏 B 的要求"。
 

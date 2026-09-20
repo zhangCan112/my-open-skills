@@ -1,2 +1,0 @@
-// Avoid: raw framework usage bypasses the standard helper and conventions.
-var x = new {{INTERNAL_FRAMEWORK}}.{{CLASS}}();

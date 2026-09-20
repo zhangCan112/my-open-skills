@@ -100,7 +100,7 @@
 
 - **仓库惯例**（模式参考）：
   - `skill-architect` — skill 结构模式（orchestrator + references/assets 外置）
-  - `dependency-migrator` — 迁移类技能目录/模板风格
+  - ~~`dependency-migrator` — 迁移类技能目录/模板风格（已删除，2026-09）~~
   - `orchestrating-subagents` — grounded grilling 门控语气
 - **编写规范 skills（已加载并执行）**：
   - `writing-for-agents` — `C:\Users\A\.agents\skills\writing-for-agents\SKILL.md`：description 触发式不写流程摘要、progressive disclosure、skill 与 references 分离
