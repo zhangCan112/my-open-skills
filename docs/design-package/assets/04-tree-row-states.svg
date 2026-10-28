@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="560" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">04 · 树行状态矩阵</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">所有颜色绑定 tokens(INV-1)。焦点环 1px focusBorder;Stale 态整行 60% 不透明 + 视图顶部黄条。</text>
+
+  <g font-size="12">
+    <!-- default -->
+    <rect x="60" y="80" width="980" height="22" fill="#252526"/>
+    <text x="72" y="95" fill="#cccccc">≠ <tspan fill="#e7e7e7">maxSize</tspan></text>
+    <text x="1028" y="95" fill="#9d9d9d" text-anchor="end">20 ⇄ "20"</text>
+    <text x="1060" y="95" fill="#9d9d9d">→</text>
+    <text x="60" y="122" fill="#ffd43b" font-size="11">default · 背景 side.background,文字 foreground / descriptionForeground</text>
+
+    <!-- hover -->
+    <rect x="60" y="140" width="980" height="22" fill="#2a2d2e"/>
+    <text x="72" y="155" fill="#cccccc">≠ <tspan fill="#e7e7e7">maxSize</tspan></text>
+    <rect x="948" y="143" width="20" height="16" fill="#37373d"/><text x="953" y="155" fill="#cccccc" font-size="10">⧉</text>
+    <rect x="972" y="143" width="20" height="16" fill="#37373d"/><text x="977" y="155" fill="#cccccc" font-size="10">⊘</text>
+    <text x="60" y="182" fill="#ffd43b" font-size="11">hover · 背景 list.hoverBackground;摘要隐藏,行内动作浮现(⧉ ⊘)</text>
+
+    <!-- selected -->
+    <rect x="60" y="200" width="980" height="22" fill="#04395e"/>
+    <text x="72" y="215" fill="#ffffff" font-weight="600">≠ maxSize</text>
+    <text x="1028" y="215" fill="#c8ddff" text-anchor="end">20 ⇄ "20"</text>
+    <text x="60" y="242" fill="#ffd43b" font-size="11">selected · 背景 list.activeSelectionBackground,文字变白;与 diff 标签联动选中</text>
+
+    <!-- focus -->
+    <rect x="60" y="260" width="980" height="22" fill="#252526" stroke="#007fd4"/>
+    <text x="72" y="275" fill="#cccccc">≠ maxSize</text>
+    <text x="60" y="302" fill="#ffd43b" font-size="11">keyboard focus · 1px focusBorder 描边(INV-8,自绘控件同样适用)</text>
+
+    <!-- stale -->
+    <g opacity="0.6">
+      <rect x="60" y="320" width="980" height="22" fill="#252526"/>
+      <text x="72" y="335" fill="#cccccc">≠ maxSize</text>
+    </g>
+    <rect x="60" y="314" width="980" height="3" fill="#ffd43b"/>
+    <text x="60" y="362" fill="#ffd43b" font-size="11">stale · 整行 60% 透明;视图顶部黄条「结果已过期 · 刷新」;不自动重算(E12)</text>
+
+    <!-- ignored -->
+    <rect x="60" y="380" width="980" height="22" fill="#252526"/>
+    <text x="72" y="395" fill="#9d9d9d">⊘ <tspan fill="#9d9d9d">file.path</tspan></text>
+    <text x="1028" y="395" fill="#9d9d9d" text-anchor="end">./logs/dev</text>
+    <text x="60" y="422" fill="#ffd43b" font-size="11">ignored · 文字/图标全部 disabledForeground,仍可见可审计(INV-4)</text>
+
+    <!-- error file -->
+    <rect x="60" y="440" width="980" height="22" fill="#252526"/>
+    <text x="72" y="455" fill="#f14c4c">⚠ <tspan fill="#e7e7e7">broken.yaml</tspan></text>
+    <text x="1028" y="455" fill="#f14c4c" text-anchor="end">第 12 行缩进错误</text>
+    <text x="60" y="482" fill="#ffd43b" font-size="11">parse error · 文件级 ⚠ + 错误摘要;其余文件对正常比较(E1)</text>
+
+    <!-- empty section -->
+    <text x="60" y="512" fill="#ffd43b" font-size="11">empty section · 状态组计数为 0 时不渲染该行(不允许出现「0 条」空组)</text>
+    <text x="60" y="536" fill="#9d9d9d" font-size="11">校验:任何状态矩阵新增,必须同时更新 03 号图纸规格表与 tokens(INV-2)。</text>
+  </g>
+</svg>

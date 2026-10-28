@@ -1,0 +1,38 @@
+{
+  "$schema": "./rules.schema.json",
+  // ─────────────────────────────────────────────────────────────
+  // Config Diff 规则文件(JSONC,可写注释)
+  // 判定顺序 = 书写顺序,首个命中生效;ignore 优先于 equivalence。
+  // 所有命中在结果中透明标注(≈ / ⊘ + 规则说明),可随时开关。
+  // ─────────────────────────────────────────────────────────────
+
+  // 文件配对:指定 A 侧文件 ⇄ B 侧文件;未列出的按同名自动配对
+  "pairs": [
+    { "left": ".env.dev", "right": ".env.prod.example", "note": "环境文件配对" }
+  ],
+
+  // 值等价:命中规则的键值对视为一致,不计入差异
+  "equivalences": [
+    { "values": ["", null], "note": "空串与 null 等价" },
+    { "coerce": ["number", "string"], "note": "类型宽化:20 ≈ \"20\"" },
+    {
+      "key": "cache.redis.host",
+      "values": [["redis-dev.local", "redis-prod.internal"]],
+      "note": "Redis 主机:开发 ≈ 生产"
+    },
+    { "pattern": "feature.*", "values": [["on", true], ["off", false]], "note": "开关值书写习惯归一" }
+  ],
+
+  // 忽略:命中 glob 的键不参与比较(报告表格 ⊘ 也会写到这里)
+  "ignore": [
+    "logging.file.*",
+    "feature.beta.*",
+    "**/*.local"
+  ],
+
+  // 脚本规则:复杂判定逻辑,普通 JS 模块
+  // compare(left, right) 的入参:{path, value, type};返回 "equal" | "different" | "ignore"
+  "scripts": [
+    "rules/env-normalizer.js"
+  ]
+}

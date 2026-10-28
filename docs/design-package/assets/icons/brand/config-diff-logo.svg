@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="24" fill="#1e1e1e"/>
+  <rect x="18" y="18" width="40" height="40" rx="8" fill="#3794ff"/>
+  <rect x="70" y="70" width="40" height="40" rx="8" fill="#b180d7"/>
+  <g fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M62 38h16m0 0-8-8m8 8-8 8"/>
+    <path d="M66 90H50m0 0 8-8m-8 8 8 8"/>
+  </g>
+  <text x="24" y="112" fill="#9d9d9d" font-size="14" font-family="Segoe UI, sans-serif" font-weight="600">CONFIG DIFF</text>
+</svg>

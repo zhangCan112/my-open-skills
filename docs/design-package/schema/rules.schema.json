@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://config-diff.local/rules.schema.json",
+  "title": "Config Diff 规则文件 (.vscode/config-diff.rules.json)",
+  "description": "声明文件配对、值等价、忽略模式与脚本规则。判定顺序 = 数组书写顺序;ignore 优先于 equivalence;首个命中的规则生效。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "pairs": {
+      "description": "文件配对:把 A 侧文件与 B 侧文件配成一对比较。未列出的文件按同名自动配对。",
+      "type": "array",
+      "items": { "$ref": "#/definitions/pair" }
+    },
+    "equivalences": {
+      "description": "值等价:命中规则的键值对视为一致(状态 ≈),不计入差异。",
+      "type": "array",
+      "items": { "$ref": "#/definitions/equivalence" }
+    },
+    "ignore": {
+      "description": "忽略:命中 glob 的键不参与比较(状态 ⊘)。例: \"logging.file.*\"",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "scripts": {
+      "description": "脚本规则:普通 JS 模块,导出 compare(left, right) 返回 \"equal\" | \"different\" | \"ignore\"。路径相对工作区根。",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "definitions": {
+    "pair": {
+      "type": "object",
+      "required": ["left", "right"],
+      "additionalProperties": false,
+      "properties": {
+        "left": { "type": "string", "description": "A 侧(基准)文件路径,相对工作区根" },
+        "right": { "type": "string", "description": "B 侧(参照)文件路径" },
+        "note": { "type": "string", "description": "人类可读说明,显示在规则卡片" }
+      }
+    },
+    "equivalence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "values": {
+          "description": "等价值组:数组内任意两个值视为等价(跨 A/B 侧)。每项为数组,至少 2 个成员;成员可为 string/number/boolean/null。",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "items": { "type": ["string", "number", "boolean", "null"] }
+          }
+        },
+        "coerce": {
+          "description": "类型宽化:列出的类型之间互等,如 [\"number\",\"string\"] 表示 20 ≈ \"20\"。",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "enum": ["number", "string", "boolean"] }
+        },
+        "key": { "type": "string", "description": "限定单个键的完整路径,如 cache.redis.host" },
+        "keys": { "type": "array", "items": { "type": "string" }, "description": "限定多个键路径" },
+        "pattern": { "type": "string", "description": "限定键路径 glob,如 security.*" },
+        "note": { "type": "string", "description": "说明文字,展示在规则卡片与结果 tooltip" }
+      },
+      "allOf": [
+        { "not": { "required": ["values", "coerce"] }, "errorMessage": "\"values\" 与 \"coerce\" 不能同时设置" },
+        { "not": { "required": ["key", "keys"] }, "errorMessage": "\"key\" 与 \"keys\" 不能同时设置" },
+        { "not": { "required": ["key", "pattern"] }, "errorMessage": "\"key\" 与 \"pattern\" 不能同时设置" },
+        { "not": { "required": ["keys", "pattern"] }, "errorMessage": "\"keys\" 与 \"pattern\" 不能同时设置" }
+      ],
+      "anyOf": [
+        { "required": ["values"] },
+        { "required": ["coerce"] }
+      ]
+    }
+  }
+}

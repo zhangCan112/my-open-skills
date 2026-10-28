@@ -1,0 +1,62 @@
+/* ============================================================
+   Config Diff · 变量绑定层(variables.css)
+   规则(INV-1):本文件是唯一允许出现"回退 hex"的地方;
+   每个变量 = var(--vscode-*, 回退值),在 VS Code Webview 中自动适配主题。
+   独立浏览器预览时显示回退值(Dark)。
+   ============================================================ */
+:root{
+  /* 表面 */
+  --cd-editor-bg:    var(--vscode-editor-background, #1e1e1e);
+  --cd-side-bg:      var(--vscode-sideBar-background, #252526);
+  --cd-widget-bg:    var(--vscode-editorWidget-background, #252526);
+  /* 文字 */
+  --cd-fg:           var(--vscode-foreground, #cccccc);
+  --cd-fg-dim:       var(--vscode-descriptionForeground, #9d9d9d);
+  --cd-fg-strong:    var(--vscode-editor-foreground, #e7e7e7);
+  --cd-comment:      var(--vscode-editorGhostText-foreground, #6a9955);
+  /* 边框 / 分隔 */
+  --cd-border:       var(--vscode-panel-border, #3c3c3c);
+  --cd-border-subtle:#2e2e2e;
+  /* 强调 */
+  --cd-accent:       var(--vscode-button-background, #0e639c);
+  --cd-accent-hover: var(--vscode-button-hoverBackground, #1177bb);
+  --cd-accent-fg:    var(--vscode-button-foreground, #ffffff);
+  --cd-link:         var(--vscode-textLink-foreground, #3794ff);
+  /* 输入 / 列表 */
+  --cd-input-bg:     var(--vscode-input-background, #3c3c3c);
+  --cd-input-border: var(--vscode-input-border, #3c3c3c);
+  --cd-list-hover:   var(--vscode-list-hoverBackground, #2a2d2e);
+  --cd-list-active:  var(--vscode-list-activeSelectionBackground, #04395e);
+  --cd-badge-bg:     var(--vscode-badge-background, #4d4d4d);
+  --cd-badge-fg:     var(--vscode-badge-foreground, #ffffff);
+  /* 状态六态(INV-2 三重编码之"颜色"维) */
+  --cd-st-mod:       var(--vscode-gitDecoration-modifiedResourceForeground, #e2c08d);
+  --cd-st-type:      var(--vscode-charts-orange, #d18616);
+  --cd-st-onlya:     var(--vscode-gitDecoration-deletedResourceForeground, #c74e39);
+  --cd-st-onlyb:     var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+  --cd-st-equ:       var(--vscode-charts-purple, #b180d7);
+  --cd-st-ign:       var(--vscode-disabledForeground, #9d9d9d);
+  --cd-st-err:       var(--vscode-editorError-foreground, #f14c4c);
+  /* diff 底色 / 派生色 */
+  --cd-diff-ins:     var(--vscode-diffEditor-insertedTextBackground, rgba(89,168,105,.18));
+  --cd-diff-rem:     var(--vscode-diffEditor-removedTextBackground, rgba(240,113,120,.14));
+  --cd-diff-equ:     rgba(177,128,215,.16);            /* equ 无专属 token → 派生紫,HC/Light 覆盖 */
+  --cd-switch-on:    var(--vscode-charts-green, #2ea043);
+  --cd-stale-fg:     var(--vscode-editorWarning-foreground, #ffd43b);
+  --cd-stale-bg:     var(--vscode-editorWarning-background, rgba(255,212,59,.08));
+  --cd-focus:        var(--vscode-focusBorder, #007fd4);
+  --cd-scrollbar:    var(--vscode-scrollbarSlider-background, rgba(121,121,121,.4));
+  --cd-chip-bg:      var(--vscode-toolbar-hoverBackground, rgba(255,255,255,.06));
+  /* 字体(继承用户设置) */
+  --cd-font-ui:      var(--vscode-font-family, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif);
+  --cd-font-mono:    var(--vscode-editor-font-family, Consolas, Menlo, monospace);
+  --cd-font-size:    var(--vscode-font-size, 13px);
+  --cd-font-mono-size: var(--vscode-editor-font-size, 12px);
+}
+/* 主题类别修正(VS Code 会给 body 注入这三个类之一) */
+.vscode-light{ --cd-diff-equ: rgba(105,83,209,.12); }
+.vscode-high-contrast{
+  --cd-border-subtle: #6fc3df;
+  --cd-diff-equ: rgba(209,107,165,.28);
+  --cd-chip-bg: rgba(255,255,255,.10);
+}

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="620" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">08 · 状态徽标系统 — 六态三重编码(INV-2)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">每个状态 = 颜色 + 图标 + 文字,三者缺一不可。色值引 tokens(01 §五),此处为 Dark+ 参考值。</text>
+
+  <!-- pills -->
+  <g font-size="11">
+    <rect x="40" y="80" width="150" height="24" rx="12" fill="none" stroke="#e2c08d"/><text x="115" y="96" fill="#e2c08d" text-anchor="middle">≠ 值不同</text>
+    <text x="200" y="96" fill="#9d9d9d">codicon:edit · gitDecoration.modifiedResourceForeground · 同键值不等</text>
+
+    <rect x="40" y="116" width="150" height="24" rx="12" fill="none" stroke="#d18616"/><text x="115" y="132" fill="#d18616" text-anchor="middle">⇄ 类型不同</text>
+    <text x="200" y="132" fill="#9d9d9d">codicon:symbol-parameter · charts.orange · 同键类型不同(string↔number…)</text>
+
+    <rect x="40" y="152" width="150" height="24" rx="12" fill="none" stroke="#e0704f"/><text x="115" y="168" fill="#e0704f" text-anchor="middle">− 仅在 A</text>
+    <text x="200" y="168" fill="#9d9d9d">codicon:remove · gitDecoration.deletedResourceForeground · B 缺失(红=右删,符合内置 diff 直觉)</text>
+
+    <rect x="40" y="188" width="150" height="24" rx="12" fill="none" stroke="#81b88b"/><text x="115" y="204" fill="#81b88b" text-anchor="middle">+ 仅在 B</text>
+    <text x="200" y="204" fill="#9d9d9d">codicon:add · gitDecoration.addedResourceForeground · A 缺失(绿=右增)</text>
+
+    <rect x="40" y="224" width="150" height="24" rx="12" fill="none" stroke="#b180d7"/><text x="115" y="240" fill="#b180d7" text-anchor="middle">≈ 规则等价</text>
+    <text x="200" y="240" fill="#9d9d9d">codicon:check-all · charts.purple · 命中等价/脚本规则;紫色=刻意远离增删改语义</text>
+
+    <rect x="40" y="260" width="150" height="24" rx="12" fill="none" stroke="#9d9d9d"/><text x="115" y="276" fill="#9d9d9d" text-anchor="middle">⊘ 已忽略</text>
+    <text x="200" y="276" fill="#9d9d9d">codicon:eye-closed · disabledForeground · 规则跳过;仍可见可审计(INV-4)</text>
+
+    <rect x="40" y="296" width="150" height="24" rx="12" fill="none" stroke="#f14c4c"/><text x="115" y="312" fill="#f14c4c" text-anchor="middle">⚠ 解析失败</text>
+    <text x="200" y="312" fill="#9d9d9d">codicon:error · editorError.foreground · 文件级;仅真正的错误可用(E1)</text>
+  </g>
+
+  <!-- precedence -->
+  <rect x="40" y="340" width="1020" height="1" fill="#3c3c3c"/>
+  <text x="24" y="368" fill="#ffffff" font-size="14" font-weight="600">判定优先级(从上到下,命中即停 —— 01 §四同源)</text>
+  <g font-size="12" fill="#cccccc">
+    <text x="40" y="392">1 err 解析失败 → 2 ign 忽略 → 3 equ 规则等价 → 4 type 类型不同 → 5 mod 值不同 → 6 onlya/onlyb → 7 same(隐藏)</text>
+    <text x="40" y="414" fill="#9d9d9d">规则匹配 = rules.json 书写顺序,首个命中生效;ignore 类先于 equivalence 类检查(E13/E14)。</text>
+  </g>
+
+  <!-- badge anatomy -->
+  <rect x="40" y="436" width="1020" height="1" fill="#3c3c3c"/>
+  <text x="24" y="464" fill="#ffffff" font-size="14" font-weight="600">徽标解剖</text>
+  <rect x="40" y="478" width="130" height="24" rx="12" fill="none" stroke="#81b88b"/>
+  <text x="105" y="494" fill="#81b88b" text-anchor="middle" font-size="11">+ 仅在 B</text>
+  <g stroke="#ffd43b" fill="none">
+    <path d="M40 510 h130"/><path d="M40 504 v12"/><path d="M170 504 v12"/>
+    <path d="M178 478 v24"/><path d="M172 478 h12"/><path d="M172 502 h12"/>
+  </g>
+  <g font-size="10" fill="#ffd43b">
+    <text x="60" y="526">宽 130(随文字自适应,内容 + 2×8 padding)</text>
+    <text x="184" y="494">高 17(10.5px 文字 + 上下 3)</text>
+  </g>
+  <g font-size="11" fill="#cccccc">
+    <text x="40" y="552">圆角 999;描边 1px currentColor(透明底)——保证任意背景可读;Webview/树/diff 注释三处字形一致。</text>
+    <text x="40" y="572" fill="#9d9d9d">新增状态类型流程:补三件套 → 加 tokens 3 主题值 → 更新本图与 03 号图 → 决策日志登记。</text>
+    <text x="40" y="592" fill="#9d9d9d">禁止:只用色点/只用底色/复用 err 表达非错误(charts.* 中性色留给自定义分类)。</text>
+  </g>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="560" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">12 · 字体规格(Typography)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">UI 字体继承 VS Code(--vscode-font-family),等宽取 editor.fontFamily —— 用户改设置则自动跟随,禁止写死字体名。</text>
+
+  <!-- scale -->
+  <g fill="#cccccc">
+    <text x="60" y="112" font-size="16" font-weight="600">配置对比 <tspan font-size="11" fill="#9d9d9d" font-weight="400">← 页面标题 16/600(仅 Webview 报告;侧栏视图标题由 VS Code 托管)</tspan></text>
+    <text x="60" y="150" font-size="13">树行/表格行/正文 13px · regular —— 全局默认(--vscode-font-size)</text>
+    <text x="60" y="184" font-size="12" fill="#9d9d9d">次级说明 12px · 描述前景(descriptionForeground)</text>
+    <text x="60" y="214" font-size="11.5" fill="#9d9d9d">辅助注释 11.5px · 工具条提示/元信息</text>
+    <text x="60" y="244" font-size="10.5">徽标文字 10.5px · 状态 pill / 计数</text>
+    <text x="60" y="280" font-family="Consolas, Menlo, monospace" font-size="12">键路径与值一律等宽 12px:database.pool.maxSize · 8080 → 8081(--vscode-editor-font-*)</text>
+    <text x="60" y="312" font-size="13" font-weight="600">小节标题 12px/600 · letter-spacing 0.3 —— 视图内分区标题</text>
+  </g>
+
+  <rect x="40" y="336" width="1020" height="1" fill="#3c3c3c"/>
+  <text x="24" y="362" fill="#ffffff" font-size="14" font-weight="600">用法规则</text>
+  <g font-size="12" fill="#cccccc">
+    <text x="60" y="388">1. 字号层级仅这 6 档:16 / 13 / 12.5(表格可降)/ 12 / 11.5 / 10.5;出现第 7 档 = 设计事故。</text>
+    <text x="60" y="412">2. 等宽字体只用于「数据」:键路径、值、glob、文件名;中文说明永远用 UI 字体。</text>
+    <text x="60" y="436">3. 键路径高亮:末段 foreground.strong,前段段 dim(示例:<tspan fill="#9d9d9d">database.pool.</tspan><tspan fill="#e7e7e7">maxSize</tspan>)。</text>
+    <text x="60" y="460">4. 行内代码徽章(C7 条件值):等宽 11.5px + chip 底 + 1px 边框,不上语法色。</text>
+    <text x="60" y="484">5. 粗体仅三处:视图标题、小节标题、当前选中;正文禁止加粗强调(用结构或徽标)。</text>
+    <text x="60" y="508">6. 数字计数用 tabular-nums(等宽数字),防止跳动。</text>
+    <text x="60" y="540" fill="#9d9d9d">行高:正文 1.5;表格行内单行 nowrap 省略;diff 视图行高由编辑器决定,不改。</text>
+  </g>
+</svg>

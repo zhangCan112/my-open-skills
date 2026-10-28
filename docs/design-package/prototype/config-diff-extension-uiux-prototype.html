@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Config Diff for VS Code — UI/UX 设计原型</title>
+<style>
+/* ============================================================
+   页面层(文档)样式 —— 与原型无关,固定浅色文档外观
+   ============================================================ */
+:root{
+  --page-bg:#f6f7f9; --page-card:#ffffff; --page-fg:#1f2328; --page-dim:#57606a;
+  --page-border:#d8dee4; --page-accent:#0969da; --page-accent-soft:#ddf4ff;
+  --page-code:#f0f2f4;
+  /* 页面级回退色(原型规格表用);frame 内会被主题变量覆盖 */
+  --modified:#895503; --deleted:#ad0707; --added:#587c0c; --typec:#d18616; --err:#e51400; --equ:#6953d1; --fg-dim:#57606a; --fg:#1f2328;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+[hidden]{display:none !important;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  background:var(--page-bg); color:var(--page-fg); line-height:1.65; font-size:15px;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:32px 24px 80px;}
+a{color:var(--page-accent); text-decoration:none;}
+a:hover{text-decoration:underline;}
+h1{font-size:26px; letter-spacing:.2px; margin-bottom:6px;}
+h2{font-size:20px; margin:44px 0 14px; padding-top:18px; border-top:1px solid var(--page-border);}
+h3{font-size:15.5px; margin:18px 0 8px;}
+p.dim, .dim{color:var(--page-dim);}
+.subtitle{color:var(--page-dim); font-size:14.5px;}
+header.hero{padding:26px 0 6px;}
+.badge-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+.tag{font-size:12.5px; padding:3px 10px; border-radius:20px; background:var(--page-accent-soft); color:var(--page-accent); border:1px solid #b6e3ff;}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-top:18px;}
+.card{background:var(--page-card); border:1px solid var(--page-border); border-radius:10px; padding:16px 18px;}
+.card .ic{font-size:20px;}
+.card b{display:block; margin:6px 0 4px; font-size:14.5px;}
+.card p{font-size:13px; color:var(--page-dim); line-height:1.55;}
+/* 流程图 */
+.flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; margin-top:16px;}
+.flow-step{background:var(--page-card); border:1px solid var(--page-border); border-radius:10px; padding:12px 14px; flex:1 1 150px; min-width:150px; position:relative;}
+.flow-step .n{display:inline-flex; width:22px; height:22px; border-radius:50%; background:var(--page-accent); color:#fff; font-size:12px; align-items:center; justify-content:center; margin-bottom:6px;}
+.flow-step b{font-size:13.5px; display:block;}
+.flow-step span{font-size:12px; color:var(--page-dim); display:block; margin-top:3px; line-height:1.45;}
+.flow-arrow{align-self:center; color:var(--page-dim); font-size:18px;}
+/* 屏幕切换标签 */
+.screen-tabs{display:flex; gap:6px; flex-wrap:wrap; margin:18px 0 10px;}
+.screen-tab{border:1px solid var(--page-border); background:var(--page-card); color:var(--page-fg); padding:7px 14px; border-radius:8px; cursor:pointer; font-size:13.5px; font-family:inherit;}
+.screen-tab:hover{border-color:var(--page-accent);}
+.screen-tab.active{background:var(--page-accent); border-color:var(--page-accent); color:#fff;}
+/* 屏幕注释 */
+.screen-notes{background:var(--page-card); border:1px solid var(--page-border); border-radius:10px; padding:16px 20px; margin-top:12px;}
+.screen-notes li{margin:7px 0 7px 20px; font-size:13.5px;}
+.screen-notes .k{display:inline-flex; width:18px; height:18px; border-radius:50%; background:var(--page-fg); color:var(--page-bg); font-size:11px; align-items:center; justify-content:center; margin-right:6px; vertical-align:1px;}
+.screen-notes .src{color:var(--page-dim); font-size:12px;}
+/* 表格(设计决策 / token) */
+table.spec{width:100%; border-collapse:collapse; margin-top:12px; background:var(--page-card); font-size:13px;}
+table.spec th, table.spec td{border:1px solid var(--page-border); padding:8px 12px; text-align:left; vertical-align:top;}
+table.spec th{background:#eef1f4; font-size:12.5px;}
+code{font-family:Consolas,Menlo,monospace; font-size:12.5px; background:var(--page-code); padding:1px 6px; border-radius:4px;}
+.sw{display:inline-block; width:13px; height:13px; border-radius:3px; vertical-align:-2px; border:1px solid rgba(0,0,0,.15); margin-right:6px;}
+.note-box{background:#fff8e6; border:1px solid #f0d896; border-radius:8px; padding:10px 14px; font-size:13px; margin-top:14px;}
+kbd{font-family:Consolas,monospace; font-size:11.5px; background:#eef1f4; border:1px solid #c9d1d9; border-bottom-width:2px; border-radius:4px; padding:0 5px;}
+
+/* ============================================================
+   VS Code 原型框架 —— 三套主题 token (Dark+ / Light+ / High Contrast)
+   真实扩展中应使用 var(--vscode-*) 注入的主题变量
+   ============================================================ */
+.frame{
+  --bg-editor:#1e1e1e; --bg-side:#252526; --bg-activity:#333333; --bg-title:#3c3c3c;
+  --bg-tabbar:#252526; --bg-tab:#1e1e1e; --bg-tab-inactive:#2d2d2d; --bg-status:#007acc;
+  --fg:#cccccc; --fg-dim:#9d9d9d; --fg-strong:#e7e7e7; --border:#454545; --border-soft:#37373d;
+  --accent:#0e639c; --accent-hover:#1177bb; --btn-fg:#ffffff;
+  --input-bg:#3c3c3c; --input-fg:#cccccc; --input-border:#3c3c3c;
+  --list-hover:#2a2d2e; --list-active:#04395e; --list-inactive:#37373d; --badge-bg:#4d4d4d; --badge-fg:#ffffff;
+  --link:#3794ff; --chip:rgba(255,255,255,.06);
+  --added:#81b88b; --modified:#e2c08d; --deleted:#c74e39; --typec:#d18616; --err:#f14c4c;
+  --diff-ins:rgba(89,168,105,.18); --diff-rem:rgba(240,113,120,.14);
+  --comment:#6a9955; --focus:#007fd4; --scroll:#79797966; --shadow:rgba(0,0,0,.45);
+  --equ:#b180d7; --diff-equ:rgba(177,128,215,.14);
+  --tk-key:#9cdcfe; --tk-str:#ce9178; --tk-num:#b5cea8; --tk-kw:#569cd6; --tk-fn:#dcdcaa; --tk-punc:#d4d4d4;
+  --sep:#ffffff26;
+  width:100%; border-radius:10px; overflow:hidden; border:1px solid var(--page-border);
+  box-shadow:0 8px 30px rgba(0,0,0,.12); font-size:13px;
+  background:var(--bg-editor); color:var(--fg);
+  font-family:"Segoe UI","PingFang SC",system-ui,sans-serif;
+}
+.frame.light{
+  --bg-editor:#ffffff; --bg-side:#f3f3f3; --bg-activity:#2c2c2c; --bg-title:#dddddd;
+  --bg-tabbar:#f3f3f3; --bg-tab:#ffffff; --bg-tab-inactive:#ececec; --bg-status:#007acc;
+  --fg:#3b3b3b; --fg-dim:#717171; --fg-strong:#1b1b1b; --border:#e0e0e0; --border-soft:#e4e4e4;
+  --accent:#007acc; --accent-hover:#026bc1; --btn-fg:#ffffff;
+  --input-bg:#ffffff; --input-fg:#333333; --input-border:#cecece;
+  --list-hover:#e8e8e8; --list-active:#0060c0; --list-inactive:#e4e4e4; --badge-bg:#c4c4c4; --badge-fg:#333;
+  --link:#006ab1; --chip:rgba(0,0,0,.05);
+  --added:#587c0c; --modified:#895503; --deleted:#ad0707; --typec:#d18616; --err:#e51400;
+  --diff-ins:rgba(155,185,85,.28); --diff-rem:rgba(255,0,0,.10);
+  --comment:#008000; --focus:#1a85ff; --scroll:#64646466; --shadow:rgba(0,0,0,.2);
+  --equ:#6953d1; --diff-equ:rgba(105,83,209,.12);
+  --tk-key:#0451a5; --tk-str:#a31515; --tk-num:#098658; --tk-kw:#0000ff; --tk-fn:#795e26; --tk-punc:#3b3b3b;
+  --sep:#0000001a;
+}
+.frame.hc{
+  --bg-editor:#000000; --bg-side:#000000; --bg-activity:#000000; --bg-title:#000000;
+  --bg-tabbar:#000000; --bg-tab:#000000; --bg-tab-inactive:#000000; --bg-status:#000000;
+  --fg:#ffffff; --fg-dim:#ffffff; --fg-strong:#ffffff; --border:#6fc3df; --border-soft:#6fc3df;
+  --accent:#0e639c; --accent-hover:#1177bb; --btn-fg:#ffffff;
+  --input-bg:#000000; --input-fg:#ffffff; --input-border:#6fc3df;
+  --list-hover:#0e2c3c; --list-active:#0e4c68; --list-inactive:#0e2c3c; --badge-bg:#6fc3df; --badge-fg:#000000;
+  --link:#3794ff; --chip:rgba(255,255,255,.10);
+  --added:#3dd66f; --modified:#ffd700; --deleted:#ff5c5c; --typec:#ffb000; --err:#ff4d4d;
+  --diff-ins:rgba(61,214,111,.25); --diff-rem:rgba(255,92,92,.22);
+  --comment:#7ca668; --focus:#f38518; --scroll:#6fc3df88; --shadow:rgba(0,0,0,.6);
+  --equ:#d16ba5; --diff-equ:rgba(209,107,165,.28);
+  --tk-key:#9cdcfe; --tk-str:#f48771; --tk-num:#b5cea8; --tk-kw:#569cd6; --tk-fn:#dcdcaa; --tk-punc:#ffffff;
+  --sep:#6fc3df55;
+}
+.mono{font-family:var(--vscode-editor-font-family,Consolas,Menlo,monospace);}
+/* 标题栏 */
+.titlebar{height:34px; background:var(--bg-title); display:flex; align-items:center; padding:0 10px; gap:10px; color:var(--fg); font-size:12px; -webkit-user-select:none; user-select:none;}
+.titlebar .tb-title{flex:1; text-align:center; color:var(--fg-dim); overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
+.titlebar .tb-btn{width:40px; text-align:center; color:var(--fg-dim); font-size:12px;}
+/* 主体三栏 */
+.main{display:flex; height:600px; min-height:520px; background:var(--bg-editor);}
+.activitybar{width:46px; background:var(--bg-activity); display:flex; flex-direction:column; align-items:center; padding-top:2px; flex-shrink:0;}
+.act-item{width:46px; height:46px; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.4); cursor:default; position:relative;}
+.frame.light .act-item{color:rgba(255,255,255,.55);}
+.act-item.active{color:#fff; box-shadow:inset 2px 0 0 #fff;}
+.frame.light .act-item.active{color:#fff;}
+.act-item svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;}
+.act-spacer{flex:1;}
+/* 侧边栏 */
+.sidebar{width:315px; flex-shrink:0; background:var(--bg-side); border-right:1px solid var(--border-soft); display:flex; flex-direction:column; overflow:hidden;}
+.view-head{display:flex; align-items:center; gap:7px; padding:9px 10px 7px; font-size:12px; letter-spacing:.3px; color:var(--fg-strong); font-weight:600; flex-shrink:0;}
+.view-head svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.5;}
+.view-actions{margin-left:auto; display:flex; gap:2px;}
+.view-actions .va{width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--fg-dim); cursor:default; font-size:14px;}
+.view-actions .va:hover{background:var(--list-hover); color:var(--fg);}
+.view-actions .va.on{color:var(--fg); background:var(--list-inactive);}
+.view-sub{padding:0 12px 7px; font-size:11.5px; color:var(--fg-dim); flex-shrink:0;}
+.view-body{flex:1; overflow:auto;}
+.view-body::-webkit-scrollbar{width:10px;} .view-body::-webkit-scrollbar-thumb{background:var(--scroll);}
+/* Welcome 视图 */
+.welcome-view{padding:6px 20px 16px; font-size:13px; line-height:1.7;}
+.welcome-view p{margin-bottom:14px; color:var(--fg-dim);}
+.welcome-btn{display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:none; color:var(--link); font-size:13px; padding:5px 0; cursor:default; font-family:inherit;}
+.welcome-btn:hover{text-decoration:underline;}
+.welcome-btn::before{content:"›"; color:var(--link);}
+.welcome-sep{height:1px; background:var(--sep); margin:14px 0;}
+/* 树视图 */
+.tree-section{border-bottom:1px solid var(--sep);}
+.tree-row{display:flex; align-items:center; gap:5px; padding:4px 8px 4px 8px; cursor:default; white-space:nowrap; position:relative;}
+.tree-row:hover{background:var(--list-hover);}
+.tree-row.selected{background:var(--list-active)!important; color:#fff!important;}
+.tree-row.selected .preview,.tree-row.selected .cnt{color:rgba(255,255,255,.75)!important;}
+.tree-row .chev{width:14px; flex-shrink:0; text-align:center; color:var(--fg-dim); font-size:10px; transition:transform .12s;}
+.tree-row.closed .chev{transform:rotate(-90deg);}
+.tree-row .t-ic{flex-shrink:0; width:14px; text-align:center; font-size:11px; font-weight:700;}
+.tree-row .t-label{overflow:hidden; text-overflow:ellipsis;}
+.tree-row .cnt{margin-left:auto; font-size:10.5px; background:var(--badge-bg); color:var(--badge-fg); border-radius:9px; padding:0 7px; line-height:16px; flex-shrink:0;}
+.tree-row .preview{margin-left:auto; font-size:11px; color:var(--fg-dim); overflow:hidden; text-overflow:ellipsis; max-width:46%; flex-shrink:1;}
+.tree-row .inline-acts{display:none; margin-left:auto; gap:2px; flex-shrink:0;}
+.tree-row:hover .inline-acts{display:flex;}
+.tree-row:hover .inline-acts ~ .preview, .tree-row:hover .preview{display:none;}
+.tree-row:hover .cnt{display:none;}
+.tree-row:hover .inline-acts ~ .cnt{display:none;}
+.ia{width:20px; height:20px; display:flex; align-items:center; justify-content:center; border-radius:4px; color:var(--fg-dim); font-size:12px;}
+.ia:hover{background:var(--list-inactive); color:var(--fg);}
+.children{overflow:hidden;}
+.tree-row.closed + .children{display:none;}
+.tree-row.leaf{padding-left:8px;}
+.st-mod{color:var(--modified);} .st-type{color:var(--typec);} .st-onlya{color:var(--deleted);} .st-onlyb{color:var(--added);} .st-err{color:var(--err);}
+.st-equ{color:var(--equ);} .st-ign{color:var(--fg-dim);}
+.flash{animation:flashbg 1.6s ease-out;}
+@keyframes flashbg{0%{background:var(--list-active);}70%{background:var(--list-active);}100%{background:transparent;}}
+/* 编辑区 */
+.editor-area{flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; min-width:0;}
+.tabbar{display:flex; background:var(--bg-tabbar); flex-shrink:0; border-bottom:1px solid var(--border-soft);}
+.tab{display:flex; align-items:center; gap:7px; padding:8px 14px; font-size:12.5px; background:var(--bg-tab); color:var(--fg-strong); border-right:1px solid var(--border-soft); border-top:1px solid transparent; white-space:nowrap;}
+.tab .x{color:var(--fg-dim); font-size:13px; margin-left:4px;}
+.tab.italic .t-name{font-style:italic;}
+.tabbar-actions{margin-left:auto; display:flex; align-items:center; gap:10px; padding:0 12px; font-size:12px; color:var(--fg-dim); white-space:nowrap;}
+.editor-body{flex:1; overflow:auto; position:relative;}
+.editor-body::-webkit-scrollbar{width:12px; height:12px;}
+.editor-body::-webkit-scrollbar-thumb{background:var(--scroll);}
+/* 空状态页 */
+.empty-page{height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:30px; text-align:center;}
+.empty-folders{display:flex; align-items:center; gap:18px; margin-bottom:14px; color:var(--fg-dim);}
+.empty-folders svg{width:56px; height:56px; stroke:currentColor; fill:none; stroke-width:1.1;}
+.empty-folders .swap{font-size:26px; color:var(--typec);}
+.empty-page h4{color:var(--fg-strong); font-size:17px; font-weight:600; margin-bottom:4px;}
+.empty-page .sub{color:var(--fg-dim); font-size:12.5px; margin-bottom:22px;}
+.entry-cards{display:flex; gap:12px; flex-wrap:wrap; justify-content:center; max-width:780px;}
+.entry-card{background:var(--bg-side); border:1px solid var(--border); border-radius:8px; padding:14px 16px; width:230px; text-align:left;}
+.entry-card b{font-size:13px; color:var(--fg-strong); display:flex; align-items:center; gap:7px;}
+.entry-card p{font-size:11.5px; color:var(--fg-dim); margin-top:5px; line-height:1.55;}
+.entry-card .k{color:var(--fg); }
+/* 占位编辑器 */
+.placeholder-page{height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--fg-dim); text-align:center; padding:30px;}
+.placeholder-page .big{font-size:34px; opacity:.55;}
+.placeholder-page .btn{margin-top:8px;}
+.btn{display:inline-block; background:var(--accent); color:var(--btn-fg); border:none; border-radius:3px; padding:6px 14px; font-size:12.5px; cursor:default; font-family:inherit;}
+.btn.secondary{background:var(--chip); color:var(--fg); border:1px solid var(--border);}
+/* QuickPick 覆盖层 */
+.dim-editor{position:absolute; inset:0; opacity:.28; padding:14px 0 0 0; pointer-events:none;}
+.dim-line{height:7px; margin:11px 24px; border-radius:3px; background:var(--fg); opacity:.16;}
+.quickpick{position:absolute; left:50%; top:34px; transform:translateX(-50%); width:min(620px,88%); background:var(--bg-editor); border:1px solid var(--border); border-radius:7px; box-shadow:0 10px 34px var(--shadow); overflow:hidden; font-size:13px;}
+.qp-input{display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border-soft);}
+.qp-input .box{flex:1; background:var(--input-bg); border:1px solid var(--accent); border-radius:3px; padding:5px 9px; color:var(--input-fg); font-size:12.5px; display:flex; justify-content:space-between;}
+.qp-input .caret{display:inline-block; width:1px; height:13px; background:var(--fg); vertical-align:-2px; animation:blink 1s steps(1) infinite;}
+@keyframes blink{50%{opacity:0;}}
+.qp-list{max-height:264px; overflow:auto;}
+.qp-sep{padding:5px 12px 4px; font-size:11px; color:var(--fg-dim); border-top:1px solid var(--sep); margin-top:2px;}
+.qp-item{display:flex; align-items:center; gap:9px; padding:5px 12px 5px 20px;}
+.qp-item.hover{background:var(--list-hover);}
+.qp-item .cb{width:14px; height:14px; border:1px solid var(--fg-dim); border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff;}
+.qp-item .cb.on{background:var(--accent); border-color:var(--accent);}
+.qp-item .lbl{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.qp-item .desc{margin-left:auto; font-size:11px; color:var(--fg-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:45%;}
+.qp-foot{display:flex; gap:16px; padding:7px 12px; border-top:1px solid var(--border-soft); font-size:11px; color:var(--fg-dim);}
+/* 通知 toast */
+.toast{position:absolute; right:16px; bottom:14px; background:var(--bg-editor); border:1px solid var(--border); border-radius:6px; box-shadow:0 8px 26px var(--shadow); padding:10px 14px; font-size:12.5px; display:flex; align-items:center; gap:10px; width:300px;}
+.toast .spin{display:inline-block; width:13px; height:13px; border:2px solid var(--fg-dim); border-top-color:var(--link); border-radius:50%; animation:rot 1s linear infinite; flex-shrink:0;}
+@keyframes rot{to{transform:rotate(360deg);}}
+.toast .t-sub{color:var(--fg-dim); font-size:11px; margin-top:2px;}
+.toast .btn{padding:3px 10px; font-size:11.5px; flex-shrink:0;}
+/* 报告表格( Webview ) */
+.report-toolbar{display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--border-soft); flex-wrap:wrap; flex-shrink:0;}
+.chip{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--chip); color:var(--fg); border-radius:14px; padding:3px 11px; font-size:11.5px; cursor:default; user-select:none;}
+.chip .c{background:var(--badge-bg); color:var(--badge-fg); border-radius:8px; padding:0 6px; font-size:10px; line-height:15px;}
+.chip.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+.chip.active .c{background:rgba(255,255,255,.25); color:#fff;}
+.chip-toggle{border-style:dashed;}
+.report-search{margin-left:auto; display:flex; align-items:center; gap:6px;}
+.report-search .box{background:var(--input-bg); border:1px solid var(--input-border); border-radius:3px; color:var(--input-fg); padding:4px 9px; font-size:12px; width:200px; display:flex; justify-content:space-between; gap:8px;}
+.report-meta{padding:6px 14px; font-size:11px; color:var(--fg-dim); border-bottom:1px solid var(--border-soft); flex-shrink:0;}
+table.rtable{width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed;}
+table.rtable th{position:sticky; top:0; background:var(--bg-editor); text-align:left; font-weight:600; padding:7px 10px; border-bottom:1px solid var(--border); z-index:2; font-size:11.5px; color:var(--fg-dim);}
+table.rtable td{padding:6px 10px; border-bottom:1px solid var(--border-soft); vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+tr.rrow:hover td{background:var(--list-hover);}
+td.kpath{color:var(--fg-strong);} td.kpath .seg{color:var(--fg-dim);}
+td.val{font-family:Consolas,Menlo,monospace; font-size:11.5px; color:var(--fg);}
+td.absent{color:var(--fg-dim); font-style:italic;}
+.pill{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; padding:1px 8px; border-radius:9px; border:1px solid currentColor; white-space:nowrap;}
+td.act-cell{white-space:nowrap;}
+.ra{display:inline-flex; width:22px; height:22px; align-items:center; justify-content:center; border-radius:4px; color:var(--fg-dim); font-size:12px; margin-right:2px; border:1px solid transparent;}
+.ra:hover{background:var(--list-inactive); color:var(--fg); border-color:var(--border);}
+.cap-note td{color:var(--fg-dim); font-style:italic; font-size:11px;}
+/* 内置 Diff */
+.diff-wrap{height:100%; display:flex; flex-direction:column;}
+.diff-announce{padding:6px 14px; font-size:12px; border-bottom:1px solid var(--border-soft); color:var(--fg-dim); background:var(--chip); display:flex; gap:14px; align-items:center; flex-shrink:0;}
+.diff-announce .navb{border:1px solid var(--border); border-radius:4px; padding:2px 9px; font-size:11px; color:var(--fg);}
+.diff-announce .pos{color:var(--fg); font-size:11px;}
+.diff-panes{flex:1; display:grid; grid-template-columns:1fr 1fr; min-height:0;}
+.diff-pane{display:flex; flex-direction:column; min-width:0; border-right:1px solid var(--border-soft);}
+.diff-pane-head{padding:5px 12px; font-size:11px; color:var(--fg-dim); background:var(--bg-side); border-bottom:1px solid var(--border-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0;}
+.diff-code{flex:1; overflow:auto; position:relative; font-family:Consolas,Menlo,monospace; font-size:12.5px; line-height:19px; padding:4px 0;}
+.dl{display:flex; white-space:pre;}
+.dl .ln{width:44px; flex-shrink:0; text-align:right; padding-right:10px; color:var(--fg-dim); opacity:.65; user-select:none;}
+.dl .lc{flex:1; padding-right:30px;}
+.dl.ins{background:var(--diff-ins);} .dl.ins .ln{background:var(--added); color:#000; opacity:1; font-weight:600;}
+.frame.light .dl.ins .ln{color:#fff;}
+.dl.rem{background:var(--diff-rem);} .dl.rem .ln{background:var(--deleted); color:#fff; opacity:1; font-weight:600;}
+.dl.anno .lc{color:var(--comment); font-style:italic;}
+.dl.equ{background:var(--diff-equ);} .dl.equ .ln{background:var(--equ); color:#000; opacity:1; font-weight:600;}
+.frame.light .dl.equ .ln{color:#fff;}
+.dl.ignrow{background:var(--chip);} .dl.ignrow .lc{color:var(--fg-dim);}
+.ov-mark.equ{background:var(--equ);}
+.tk-key{color:var(--tk-key)} .tk-str{color:var(--tk-str)} .tk-num{color:var(--tk-num)} .tk-kw{color:var(--tk-kw)} .tk-fn{color:var(--tk-fn)} .tk-cmt{color:var(--comment); font-style:italic} .tk-punc{color:var(--tk-punc)}
+.hover-card{position:absolute; z-index:6; max-width:390px; background:var(--bg-editor); border:1px solid var(--border); border-radius:4px; box-shadow:0 6px 20px var(--shadow); padding:9px 12px; font-size:11.5px; line-height:1.6;}
+.hover-card .hct{color:var(--fg-strong); font-weight:600; margin-bottom:4px;}
+.param-hint{position:absolute; z-index:6; background:var(--bg-editor); border:1px solid var(--border); border-radius:4px; box-shadow:0 6px 20px var(--shadow); padding:6px 10px; font-size:11.5px; font-family:Consolas,Menlo,monospace; color:var(--fg);}
+.param-hint .ph-cur{background:var(--chip); outline:1px solid var(--border); border-radius:2px; padding:0 2px; color:var(--tk-key);}
+.param-hint .ph-doc{color:var(--fg-dim); margin-top:3px; font-size:11px;}
+.rule-chk{width:13px; height:13px; border:1px solid var(--fg-dim); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:9px; color:transparent; flex-shrink:0;}
+.rule-chk.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+.ok-badge{font-size:9.5px; border:1px solid var(--added); color:var(--added); border-radius:8px; padding:0 6px; line-height:14px; margin-left:6px; flex-shrink:0;}
+.tree-row.dimrow .t-label, .tree-row.dimrow .preview{color:var(--fg-dim);}
+tr.rrow.ignd td{opacity:.6;}
+.toast .ok{color:var(--added); font-size:15px; flex-shrink:0;}
+/* 规则卡片(可视化视图) */
+.st-pair{color:var(--link);} .st-scr{color:var(--tk-kw);}
+.rcard{background:var(--bg-side); border:1px solid var(--border); border-left:3px solid var(--border); border-radius:6px; padding:10px 13px; margin:0 14px 10px; font-size:12px;}
+.rcard-head{display:flex; align-items:center; gap:9px;}
+.rcard-head .rule-chk{margin-left:auto;}
+.rtitle{font-size:12px; color:var(--fg-strong); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.racts{display:flex; gap:2px; flex-shrink:0;}
+.rsentence{margin-top:8px; line-height:2; color:var(--fg);}
+.rcond{background:var(--chip); border:1px solid var(--border); border-radius:4px; padding:1px 6px; font-family:Consolas,Menlo,monospace; font-size:11.5px; color:var(--fg-strong); white-space:nowrap;}
+.rthen{font-weight:600; white-space:nowrap;}
+.rnote{font-size:11px; color:var(--fg-dim); margin-top:4px;}
+.rwarnline{font-size:11.5px; color:var(--err); margin-top:7px;}
+.dl.hl{background:var(--list-active);}
+.dl.hl .lc{color:#fff;}
+.dl.hl .tk-key,.dl.hl .tk-str,.dl.hl .tk-num,.dl.hl .tk-punc,.dl.hl .tk-kw,.dl.hl .tk-fn,.dl.hl .tk-cmt{color:#fff;}
+.ov-ruler{position:absolute; right:0; top:0; bottom:0; width:9px; background:var(--chip);}
+.ov-mark{position:absolute; right:0; width:9px; height:14px; background:var(--added);}
+.ov-mark.rem{background:var(--deleted);}
+.diff-empty{color:var(--fg-dim); font-style:italic;}
+/* 状态栏 */
+.statusbar{height:23px; background:var(--bg-status); color:#ffffff; display:flex; align-items:center; font-size:11.5px; padding:0 4px; flex-shrink:0;}
+.st-item{display:flex; align-items:center; gap:5px; padding:0 8px; height:100%;}
+.st-item:hover{background:rgba(255,255,255,.14);}
+.st-item.right{margin-left:auto;}
+.st-diff{font-weight:600;}
+/* 屏幕容器与主题切换 */
+.screens{position:relative;}
+.theme-bar{display:flex; align-items:center; gap:8px; margin:10px 0;}
+.theme-bar span{font-size:12.5px; color:var(--page-dim);}
+.theme-btn{border:1px solid var(--page-border); background:var(--page-card); border-radius:6px; padding:4px 12px; font-size:12px; cursor:pointer; color:var(--page-fg); font-family:inherit;}
+.theme-btn.active{background:var(--page-fg); color:var(--page-bg); border-color:var(--page-fg);}
+.screen{display:none;}
+.screen.active{display:block;}
+/* 设计稿内数字标注 */
+.co{display:inline-flex; width:17px; height:17px; border-radius:50%; background:#ffd43b; color:#1f2328; font-size:10.5px; font-weight:700; align-items:center; justify-content:center; vertical-align:-3px; margin:0 3px; border:1px solid #b8860b55; box-shadow:0 0 0 2px rgba(255,212,59,.25);}
+footer{margin-top:60px; padding-top:18px; border-top:1px solid var(--page-border); font-size:13px; color:var(--page-dim);}
+@media (max-width:900px){
+  .main{height:auto; flex-direction:column;}
+  .sidebar{width:100%; max-height:340px; border-right:none; border-bottom:1px solid var(--border);}
+  .editor-area{min-height:480px;}
+  .diff-panes{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Config Diff — VS Code 扩展 UI/UX 设计原型</h1>
+  <p class="subtitle">比较两个项目的配置文件:键缺失 / 键多余 / 值不同 / 类型不同;支持规则配置(文件配对 · 值等价 · 忽略 · JS 脚本)—— 交互式高保真原型</p>
+  <div class="badge-row">
+    <span class="tag">设计依据:官方 UX Guidelines 一手调研</span>
+    <span class="tag">树视图(导航)+ Webview(报告)+ 内置 Diff(详情)</span>
+    <span class="tag">主题变量驱动 · 无障碍三重编码</span>
+    <span class="tag">规则即代码 · 简单规则表单化,复杂逻辑脚本化</span>
+  </div>
+</header>
+
+<section>
+  <div class="cards">
+    <div class="card"><div class="ic">🧭</div><b>复用既有心智,零学习成本</b><p>沿用 VS Code 官方「Select for Compare → Compare with Selected」两步比较模型,命令面板 / Explorer 右键 / 活动栏三入口收敛到同一流程。</p></div>
+    <div class="card"><div class="ic">🌳</div><b>四分区结果树,先看全貌</b><p>值不同 / 类型不同 / 仅在 A / 仅在 B,分区标题带计数,视图标题徽标显示总数 —— 「显示数据用 Tree View」是官方规范。</p></div>
+    <div class="card"><div class="ic">🔍</div><b>键级详情交给内置 Diff</b><p>点击任一键,用 <code>vscode.diff</code> 打开两侧值的并排对比,免费获得 gutter 着色、变更跳转与无障碍差异查看器。</p></div>
+    <div class="card"><div class="ic">📊</div><b>Webview 只做原生做不到的</b><p>数千键的扁平表格 + 实时计数过滤条 + 防抖搜索,遵循官方「Webview 克制使用」红线,颜色全部取自主题变量。</p></div>
+    <div class="card"><div class="ic">🧩</div><b>规则:卡片化,不读 Schema</b><p>规则底层是 JSONC + JSON Schema(可校验、可共享),界面呈现为人话句子「当…且…→ 视为等价」;卡片 ⇄ 源码双视图双向同步,校验错误直接标在卡片上。</p></div>
+  </div>
+</section>
+
+<h2>用户主流程</h2>
+<div class="flow">
+  <div class="flow-step"><span class="n">1</span><b>选择两个项目</b><span>活动栏按钮式引导 / 右键两步标记;支持收藏项目对与历史</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step"><span class="n">2</span><b>选择配置文件组</b><span>自动嗅探两侧同名配置文件,QuickPick 多选</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step"><span class="n">3</span><b>比较(可取消)</b><span>视图内进度,不弹模态框</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step"><span class="n">4</span><b>四分区差异树</b><span>分区计数 + 视图徽标,嵌套键保持原层级</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step"><span class="n">5</span><b>键级对比 / 修复</b><span>内置 Diff 看值,支持忽略、复制、导出报告</span></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step" style="border-style:dashed;"><span class="n" style="background:var(--page-dim);">6</span><b>配置规则(可选)</b><span>文件配对 · 值等价 · 忽略 · JS 脚本;规则即代码,可提交可共享</span></div>
+</div>
+
+<h2>交互原型</h2>
+
+<div class="theme-bar">
+  <span>原型主题(模拟扩展自动跟随 VS Code 主题):</span>
+  <button class="theme-btn active" data-theme="">Dark+</button>
+  <button class="theme-btn" data-theme="light">Light+</button>
+  <button class="theme-btn" data-theme="hc">High Contrast</button>
+</div>
+
+<div class="screen-tabs">
+  <button class="screen-tab" data-screen="1">① 开始(空状态)</button>
+  <button class="screen-tab" data-screen="2">② 选择文件(QuickPick)</button>
+  <button class="screen-tab active" data-screen="3">③ 结果差异树</button>
+  <button class="screen-tab" data-screen="4">④ Webview 报告表格</button>
+  <button class="screen-tab" data-screen="5">⑤ 键级 Diff 详情</button>
+  <button class="screen-tab" data-screen="6">⑥ 规则中心</button>
+  <button class="screen-tab" data-screen="7">⑦ 新建规则向导</button>
+  <button class="screen-tab" data-screen="8">⑧ 脚本规则</button>
+</div>
+
+<div class="frame" id="frame">
+  <!-- 标题栏 -->
+  <div class="titlebar">
+    <span style="letter-spacing:2px; color:var(--fg-dim);">VS Code</span>
+    <div class="tb-title">order-service [Config Diff] — order-service-template — Visual Studio Code</div>
+    <span class="tb-btn">─</span><span class="tb-btn">▢</span><span class="tb-btn">✕</span>
+  </div>
+
+  <div class="main">
+    <!-- 活动栏 -->
+    <div class="activitybar">
+      <div class="act-item" title="资源管理器"><svg viewBox="0 0 24 24"><path d="M4 5h6l2 2h8v12H4z"/><path d="M4 9h16"/></svg></div>
+      <div class="act-item active" title="配置对比 (Config Diff)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/><path d="M11 7h4m0 0-2-2m2 2-2 2M13 17H9m0 0 2-2m-2 2 2 2"/></svg></div>
+      <div class="act-item" title="源代码管理"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M6 8.4v2.1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8.4M12 12.5v3"/></svg></div>
+      <div class="act-item" title="运行和调试"><svg viewBox="0 0 24 24"><path d="M7 5l11 7-11 7z"/></svg></div>
+      <div class="act-item" title="扩展"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><path d="M16.5 13v7M13 16.5h7"/></svg></div>
+      <div class="act-spacer"></div>
+      <div class="act-item" title="账户"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.4-3.2 4-4.8 7-4.8s5.6 1.6 7 4.8"/></svg></div>
+      <div class="act-item" title="管理"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></div>
+    </div>
+
+    <!-- ============ 侧边栏:两个变体 ============ -->
+    <div class="sidebar">
+      <!-- 变体 A:欢迎视图(屏幕①②) -->
+      <div id="sidebar-welcome" hidden>
+        <div class="view-head">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/><path d="M11 7h4m0 0-2-2m2 2-2 2M13 17H9m0 0 2-2m-2 2 2 2"/></svg>
+          配置对比
+        </div>
+        <div class="view-body welcome-view">
+          <p>比较两个项目的配置文件,找出<strong style="color:var(--fg)">键缺失、键多余、值不同、类型不同</strong>。</p>
+          <p style="margin-bottom:6px;">先选择一个<strong style="color:var(--fg)">基准项目</strong>,再选择一个<strong style="color:var(--fg)">参照项目</strong>。</p>
+          <button class="welcome-btn">选择两个项目…</button>
+          <button class="welcome-btn">从最近的比较中选择…</button>
+          <button class="welcome-btn">管理收藏的项目对…</button>
+          <div class="welcome-sep"></div>
+          <p style="font-size:12px;">也可以在资源管理器中右键项目文件夹:<br><span style="color:var(--fg)">Select for Config Diff</span> → <span style="color:var(--fg)">Compare with Selected</span></p>
+        </div>
+      </div>
+
+      <!-- 变体 B:结果树(屏幕③④⑤) -->
+      <div id="sidebar-tree" hidden>
+        <div class="view-head">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/><path d="M11 7h4m0 0-2-2m2 2-2 2M13 17H9m0 0 2-2m-2 2 2 2"/></svg>
+          配置对比 <span class="co" data-co="s3-1">1</span>
+          <div class="view-actions">
+            <div class="va on" id="va-group" title="切换分组:按文件 ⇄ 按状态">◫</div>
+            <div class="va" title="刷新比较">⟳</div>
+            <div class="va" title="对调两侧 (Swap Sides)">⇄</div>
+            <div class="va" title="切换 树/列表 布局">≡</div>
+            <div class="va" title="历史与收藏">…</div>
+          </div>
+        </div>
+        <div class="view-sub" id="tree-sub">order-service ⇄ order-service-template · 2 个文件 · 按文件分组</div>
+        <div class="view-body" id="tree-root"></div>
+      </div>
+      <!-- 变体 C:规则视图(屏幕⑥⑦⑧) -->
+      <div id="sidebar-rules" hidden>
+        <div class="view-head">
+          <svg viewBox="0 0 24 24"><path d="M4 6h9M4 12h16M4 18h6"/><path d="M17 4v4m-2-2h4"/></svg>
+          对比规则
+          <div class="view-actions">
+            <div class="va" id="va-addrule" title="新建规则(打开添加向导)">+</div>
+            <div class="va" title="打开规则文件(.vscode/config-diff.rules.json)">⌸</div>
+            <div class="va" title="更多操作">…</div>
+          </div>
+        </div>
+        <div class="view-sub">.vscode/config-diff.rules.json · 8 条规则 · 全部启用</div>
+        <div class="view-body">
+
+          <div class="tree-section">
+            <div class="tree-row" data-toggle="sec"><span class="chev">▼</span><span class="t-ic" style="color:var(--link)">⇄</span><span class="t-label">文件配对</span><span class="cnt">2</span></div>
+            <div class="children">
+              <div class="tree-row" style="padding-left:21px" title="A 侧 .env.dev 与 B 侧 .env.prod.example 配对比较">
+                <span class="rule-chk on">✓</span><span class="t-label mono" style="font-size:12px">.env.dev ⇄ .env.prod.example</span>
+                <span class="inline-acts"><span class="ia" title="编辑">✎</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+              <div class="tree-row" style="padding-left:21px" title="未列出名称的文件按同名自动配对(默认行为)">
+                <span class="rule-chk on">✓</span><span class="t-label" style="font-size:12px">application.yaml ⇄ 同名自动</span>
+                <span class="preview">默认</span>
+                <span class="inline-acts"><span class="ia" title="编辑">✎</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tree-section">
+            <div class="tree-row" data-toggle="sec"><span class="chev">▼</span><span class="t-ic st-equ">≈</span><span class="t-label">值等价</span><span class="cnt">3</span></div>
+            <div class="children">
+              <div class="tree-row" style="padding-left:21px" title="空串与 null 视为等价">
+                <span class="rule-chk on">✓</span><span class="t-label mono" style="font-size:12px">"" ≈ null</span>
+                <span class="preview">空值等价</span>
+                <span class="inline-acts"><span class="ia" title="编辑">✎</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+              <div class="tree-row" style="padding-left:21px" title="类型宽化:number 与 string 互等,如 20 ≈ &quot;20&quot;">
+                <span class="rule-chk on">✓</span><span class="t-label" style="font-size:12px">数字 ≈ 字符串</span>
+                <span class="preview">类型宽化</span>
+                <span class="inline-acts"><span class="ia" title="编辑">✎</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+              <div class="tree-row" style="padding-left:21px" title="键 cache.redis.host:redis-dev.local ≈ redis-prod.internal">
+                <span class="rule-chk on">✓</span><span class="t-label mono" style="font-size:12px">cache.redis.host</span>
+                <span class="preview">dev ≈ prod 主机</span>
+                <span class="inline-acts"><span class="ia" title="编辑">✎</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tree-section">
+            <div class="tree-row" data-toggle="sec"><span class="chev">▼</span><span class="t-ic st-ign">⊘</span><span class="t-label">忽略模式</span><span class="cnt">2</span></div>
+            <div class="children">
+              <div class="tree-row" style="padding-left:21px" title="命中 glob 的键不参与比较">
+                <span class="rule-chk on">✓</span><span class="t-label mono" style="font-size:12px">logging.file.*</span>
+                <span class="inline-acts"><span class="ia" title="编辑">✎</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+              <div class="tree-row" style="padding-left:21px" title="命中 glob 的键不参与比较">
+                <span class="rule-chk on">✓</span><span class="t-label mono" style="font-size:12px">feature.beta.*</span>
+                <span class="inline-acts"><span class="ia" title="编辑">✎</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tree-section">
+            <div class="tree-row" data-toggle="sec"><span class="chev">▼</span><span class="t-ic" style="color:var(--tk-kw)">ƒ</span><span class="t-label">脚本规则</span><span class="cnt">1</span></div>
+            <div class="children">
+              <div class="tree-row" style="padding-left:21px" title="普通 JS 模块,对每对键值调用 compare()">
+                <span class="rule-chk on">✓</span><span class="t-label mono" style="font-size:12px">rules/env-normalizer.js</span>
+                <span class="ok-badge">✓ 已验证</span>
+                <span class="inline-acts"><span class="ia" title="打开文件">⧉</span><span class="ia" title="删除">🗑</span></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    <div class="editor-area">
+
+      <!-- ① 欢迎页 -->
+      <div class="editor-body" id="ed-welcome" hidden>
+        <div class="empty-page">
+          <div class="empty-folders">
+            <svg viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>
+            <span class="swap">⇄</span>
+            <svg viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-dasharray="3 2"/></svg>
+          </div>
+          <h4>选择两个项目以开始比较</h4>
+          <div class="sub">基准项目(左)⇄ 参照项目(右)· 支持 JSON / YAML / TOML / .env / properties</div>
+          <div class="entry-cards">
+            <div class="entry-card" style="border-color:var(--focus);"><b><span class="pill" style="color:var(--link)">推荐</span>&nbsp;⊞ 活动栏视图</b><p>点击左侧「配置对比」图标,按钮式引导:<br><span class="k">选择两个项目…</span> / <span class="k">从最近的比较中选择…</span><br>零记忆成本,新手首选。</p></div>
+            <div class="entry-card"><b>🖱 资源管理器右键</b><p>右键项目 A → <span class="k">Select for Config Diff</span><br>右键项目 B → <span class="k">Compare with Selected</span><br>与内置文件比较完全同款的两步操作。</p></div>
+            <div class="entry-card"><b>⌘ 命令面板(进阶)</b><p><kbd>Ctrl+Shift+P</kbd><br><span class="k">Config Diff: Compare Two Projects…</span><br>面向熟练用户的快捷路径,界面上不作主动引导。</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② QuickPick 覆盖层 -->
+      <div class="editor-body" id="ed-quickpick" hidden>
+        <div class="dim-editor">
+          <div class="dim-line" style="width:46%"></div><div class="dim-line" style="width:70%"></div>
+          <div class="dim-line" style="width:62%"></div><div class="dim-line" style="width:74%"></div>
+          <div class="dim-line" style="width:38%"></div><div class="dim-line" style="width:66%"></div>
+          <div class="dim-line" style="width:55%"></div><div class="dim-line" style="width:69%"></div>
+          <div class="dim-line" style="width:43%"></div><div class="dim-line" style="width:60%"></div>
+          <div class="dim-line" style="width:71%"></div><div class="dim-line" style="width:49%"></div>
+        </div>
+        <div class="quickpick">
+          <div class="qp-input"><span>🔍</span><div class="box"><span>输入以过滤文件…</span><span class="caret"></span></div></div>
+          <div class="qp-list">
+            <div class="qp-sep">两侧均存在(推荐比较)</div>
+            <div class="qp-item hover"><span class="cb on">✓</span><span class="lbl mono">application.yaml</span><span class="desc">src/main/resources</span></div>
+            <div class="qp-item"><span class="cb on">✓</span><span class="lbl mono">.env</span><span class="desc">项目根目录</span></div>
+            <div class="qp-sep">仅在 order-service(基准)中</div>
+            <div class="qp-item"><span class="cb"></span><span class="lbl mono">.env.dev</span><span class="desc">E:\work\order-service</span></div>
+            <div class="qp-sep">仅在 order-service-template(参照)中</div>
+            <div class="qp-item"><span class="cb"></span><span class="lbl mono">.env.prod.example</span><span class="desc">E:\work\order-service-template</span></div>
+          </div>
+          <div class="qp-foot"><span><kbd style="background:var(--chip); border-color:var(--border); color:var(--fg);">Enter</kbd> 确认</span><span><kbd style="background:var(--chip); border-color:var(--border); color:var(--fg);">Esc</kbd> 取消</span><span style="margin-left:auto;">已选 2 个文件</span></div>
+        </div>
+        <div class="toast">
+          <span class="spin"></span>
+          <div style="flex:1;">正在比较 2 个文件…<div class="t-sub">application.yaml + .env · 展平 106 个键</div></div>
+          <button class="btn secondary">取消</button>
+        </div>
+      </div>
+
+      <!-- ③ 占位编辑器 -->
+      <div class="editor-body" id="ed-empty" hidden>
+        <div class="placeholder-page">
+          <div class="big">🌳</div>
+          <div style="font-size:13.5px;">从左侧差异树中选择一个键,<br>将用<strong style="color:var(--fg)">内置对比视图</strong>并排显示两侧的值。</div>
+          <button class="btn" data-goto="4">打开 Webview 报告表格 →</button>
+        </div>
+      </div>
+
+      <!-- ④ Webview 报告 -->
+      <div class="editor-body" id="ed-report" hidden style="display:flex; flex-direction:column;">
+        <div class="report-toolbar">
+          <span class="chip" style="border-style:solid;" title="切换 / 过滤文件(示意)">📄 全部文件 ▾</span>
+          <span style="width:1px; height:18px; background:var(--sep);"></span>
+          <span class="chip active" data-filter="all">全部 <span class="c" id="c-all">16</span></span>
+          <span class="chip" data-filter="mod">≠ 值不同 <span class="c" id="c-mod">6</span></span>
+          <span class="chip" data-filter="type">⇄ 类型不同 <span class="c" id="c-type">2</span></span>
+          <span class="chip" data-filter="onlya">− 仅在 A <span class="c" id="c-onlya">3</span></span>
+          <span class="chip" data-filter="onlyb">+ 仅在 B <span class="c" id="c-onlyb">5</span></span>
+          <span class="chip" data-filter="equ">≈ 规则等价 <span class="c" id="c-equ">1</span></span>
+          <span class="chip" data-filter="ign">⊘ 已忽略 <span class="c" id="c-ign">2</span></span>
+          <span class="chip chip-toggle" id="chip-same">✓ 显示一致项 <span class="c">87</span></span>
+          <div class="report-search">
+            <div class="box"><span>🔍 搜索键路径或值…</span><span style="color:var(--fg-dim);">⏎</span></div>
+          </div>
+        </div>
+        <div class="report-meta" id="report-meta">共 106 个键 · 16 处差异 · 1 项规则等价 · 2 项已忽略 · 比较于 14:32 · 搜索 180ms 防抖,超过 5000 行自动启用虚拟滚动</div>
+        <div style="flex:1; overflow:auto;" id="report-scroll">
+          <table class="rtable">
+            <colgroup><col style="width:96px"><col style="width:23%"><col style="width:96px"><col style="width:24%"><col style="width:24%"><col style="width:96px"></colgroup>
+            <thead><tr><th>状态</th><th>键路径</th><th>文件</th><th>A · order-service</th><th>B · order-service-template</th><th>操作 <span class="co">4</span></th></tr></thead>
+            <tbody id="report-body"></tbody>
+          </table>
+        </div>
+        <div class="toast" id="rule-toast" hidden style="position:absolute; right:16px; bottom:14px; z-index:8;">
+          <span class="ok">✓</span>
+          <div style="flex:1;" id="rule-toast-text"></div>
+        </div>
+      </div>
+
+      <!-- ⑤ 内置 Diff -->
+      <div class="editor-body" id="ed-diff" hidden style="display:flex; flex-direction:column;">
+        <div class="diff-wrap">
+          <div class="diff-announce">
+            <span style="color:var(--typec);">⇄</span>
+            <span id="diff-title" style="color:var(--fg-strong);">database.pool.maxSize</span>
+            <span id="diff-type-note" style="color:var(--typec);">类型不同: number (A) vs string (B)</span>
+            <span style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+              <span class="navb">⏮ 上一个差异</span><span class="navb">下一个差异 ⏭</span>
+              <span class="pos" id="diff-pos">1 / 1</span>
+              <span class="navb" title="无障碍差异查看器">F7 无障碍查看</span>
+            </span>
+          </div>
+          <div class="diff-panes">
+            <div class="diff-pane">
+              <div class="diff-pane-head" id="diff-head-a">A · order-service — application.yaml (虚拟文档)</div>
+              <div class="diff-code" id="diff-code-a"><div class="ov-ruler"><div class="ov-mark rem" style="top:82%"></div></div></div>
+            </div>
+            <div class="diff-pane">
+              <div class="diff-pane-head" id="diff-head-b">B · order-service-template — application.yaml (虚拟文档)</div>
+              <div class="diff-code" id="diff-code-b"><div class="ov-ruler"><div class="ov-mark" style="top:82%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑥ 规则可视化编辑器(卡片 ⇄ 源码) -->
+      <div class="editor-body" id="ed-rules" hidden style="display:flex; flex-direction:column;">
+        <div class="tabbar">
+          <div class="tab"><span style="color:var(--equ);">⚖</span><span class="t-name">对比规则 — 可视化编辑</span><span class="x">✕</span></div>
+          <div class="tabbar-actions">
+            <span id="rv-cards" class="chip active" style="padding:2px 10px;">▦ 卡片</span>
+            <span id="rv-src" class="chip" style="padding:2px 10px;">&lt;/&gt; 源码</span>
+            <span style="width:1px; height:16px; background:var(--sep);"></span>
+            <span style="color:var(--added);">✓ Schema 校验 · 8 条生效 / 1 条待修复</span>
+          </div>
+        </div>
+
+        <!-- 卡片视图(默认):人话句子 + 结构化条件 -->
+        <div class="editor-body" id="rule-cards-view">
+          <div class="report-toolbar">
+            <button class="btn" data-goto="7">+ 添加规则</button><span class="co" title="添加规则的三个入口,见下方说明⑥-6">6</span>
+            <span style="font-size:11px; color:var(--fg-dim);">每条规则以「当…且…→ 结论」呈现 · 底层为 JSONC + JSON Schema,与源码双向同步</span>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--link);">
+            <div class="rcard-head"><span class="pill st-pair">⇄ 文件配对</span><span class="rtitle mono">.env.dev ⇄ .env.prod.example</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l4" title="查看源码行">{}</span><span class="ia" title="编辑(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">A 侧 <span class="rcond">.env.dev</span> ⇄ B 侧 <span class="rcond">.env.prod.example</span> <span class="rthen" style="color:var(--link)">→ 配对比较</span></div>
+            <div class="rnote">屏幕②中"仅单侧存在"的文件,由此规则配成一对</div>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--link);">
+            <div class="rcard-head"><span class="pill st-pair">⇄ 文件配对</span><span class="rtitle">同名自动配对</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l3" title="查看源码行">{}</span><span class="ia" title="编辑(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">未显式配对的文件:A 侧 <span class="rcond">application.yaml</span> ⇄ B 侧 <span class="rcond">同名文件</span> <span class="rthen" style="color:var(--link)">→ 配对比较</span></div>
+            <div class="rnote">默认行为,可被显式配对覆盖</div>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--equ);">
+            <div class="rcard-head"><span class="pill st-equ">≈ 值等价</span><span class="rtitle mono">"" ≈ null</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l9" title="查看源码行">{}</span><span class="ia" title="编辑(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">当 A 值 <span class="rcond">""</span> 且 B 值 <span class="rcond">null</span> <span class="rthen" style="color:var(--equ)">→ 视为等价</span></div>
+            <div class="rnote">空值等价 · 全部键生效</div>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--equ);">
+            <div class="rcard-head"><span class="pill st-equ">≈ 值等价</span><span class="rtitle">类型宽化</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l10" title="查看源码行">{}</span><span class="ia" title="编辑(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">当 A 类型 <span class="rcond">number</span> 且 B 类型 <span class="rcond">string</span> <span class="rthen" style="color:var(--equ)">→ 宽化比较(20 ≈ "20")</span></div>
+            <div class="rnote">当前命中 2 处类型差异</div>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--equ);">
+            <div class="rcard-head"><span class="pill st-equ">≈ 值等价</span><span class="rtitle mono">cache.redis.host</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l11" title="查看源码行">{}</span><span class="ia" title="编辑(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">当 键 <span class="rcond">cache.redis.host</span> 且 A 值 <span class="rcond">redis-dev.local</span> 且 B 值 <span class="rcond">redis-prod.internal</span> <span class="rthen" style="color:var(--equ)">→ 视为等价</span></div>
+            <div class="rnote">Redis 主机:开发 ≈ 生产</div>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--fg-dim);">
+            <div class="rcard-head"><span class="pill st-ign">⊘ 忽略</span><span class="rtitle mono">logging.file.*</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l17" title="查看源码行">{}</span><span class="ia" title="编辑(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">当 键匹配 <span class="rcond">logging.file.*</span> <span class="rthen" style="color:var(--fg-dim)">→ 跳过比较(不计入差异)</span></div>
+            <div class="rnote">命中 1 键 · 报告表格 ⊘ 也会写到这里</div>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--fg-dim);">
+            <div class="rcard-head"><span class="pill st-ign">⊘ 忽略</span><span class="rtitle mono">feature.beta.*</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l17" title="查看源码行">{}</span><span class="ia" title="编辑(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">当 键匹配 <span class="rcond">feature.beta.*</span> <span class="rthen" style="color:var(--fg-dim)">→ 跳过比较(不计入差异)</span></div>
+            <div class="rnote">命中 1 键</div>
+          </div>
+
+          <div class="rcard" style="border-left-color:var(--tk-kw);">
+            <div class="rcard-head"><span class="pill st-scr">ƒ 脚本</span><span class="rtitle mono">rules/env-normalizer.js</span><span class="ok-badge">✓ 已验证</span><span class="rule-chk on" title="点击停用">✓</span><span class="racts"><span class="ia" data-src="src-l20" title="查看源码行">{}</span><span class="ia" title="打开文件">⧉</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence">对每对键值调用 <span class="rcond">rules/env-normalizer.js</span> <span class="rthen" style="color:var(--tk-kw)">→ 由脚本返回 equal / different / ignore</span></div>
+            <div class="rnote">保存即试运行,错误以诊断(红线)呈现</div>
+          </div>
+
+          <div class="rcard warn" style="border-left-color:var(--err); opacity:.88;">
+            <div class="rcard-head"><span class="pill st-equ">≈ 值等价</span><span class="rtitle" style="color:var(--fg-dim)">(无效规则 · 未生效)</span><span class="rule-chk" title="无效规则,不可启用">✓</span><span class="racts"><span class="ia" data-src="src-l10" title="在源码中查看">{}</span><span class="ia" title="修复(表单)">✎</span><span class="ia" title="删除">🗑</span></span></div>
+            <div class="rsentence" style="color:var(--fg-dim)">当 类型宽化 <span class="rcond">coerce</span> 且 值组 <span class="rcond">values</span> <span class="rthen" style="text-decoration:line-through; color:var(--fg-dim)">→ 视为等价</span></div>
+            <div class="rwarnline">⚠ Schema 校验失败:"values" 与 "coerce" 不能同时设置 —— 修复后规则才会生效(校验由 Schema 完成,无需人工比对 JSON)</div>
+          </div>
+        </div>
+
+        <!-- 源码视图(进阶) -->
+        <div class="editor-body" id="rule-src-view" hidden style="display:flex; flex-direction:column;">
+          <div class="report-meta">config-diff.rules.json · JSONC · Schema 提供补全(Ctrl+Space)与校验 · 与卡片视图双向同步</div>
+          <div class="editor-body" style="position:relative;">
+          <div class="dl"><span class="ln">1</span><span class="lc"><span class="tk-punc">{</span></span></div>
+          <div class="dl"><span class="ln">2</span><span class="lc">  <span class="tk-cmt">// 文件配对:指定 A 侧文件 ⇄ B 侧文件;未列出的按同名自动配对</span></span></div>
+          <div class="dl" id="src-l3"><span class="ln">3</span><span class="lc">  <span class="tk-punc">"</span><span class="tk-key">pairs</span><span class="tk-punc">": [</span></span></div>
+          <div class="dl" id="src-l4"><span class="ln">4</span><span class="lc">    <span class="tk-punc">{</span> <span class="tk-punc">"</span><span class="tk-key">left</span><span class="tk-punc">":</span> <span class="tk-str">".env.dev"</span><span class="tk-punc">,</span> <span class="tk-punc">"</span><span class="tk-key">right</span><span class="tk-punc">":</span> <span class="tk-str">".env.prod.example"</span> <span class="tk-punc">}</span></span></div>
+          <div class="dl"><span class="ln">5</span><span class="lc">  <span class="tk-punc">],</span></span></div>
+          <div class="dl"><span class="ln">6</span><span class="lc"></span></div>
+          <div class="dl"><span class="ln">7</span><span class="lc">  <span class="tk-cmt">// 值等价:命中规则的键值对视为一致,不计入差异</span></span></div>
+          <div class="dl"><span class="ln">8</span><span class="lc">  <span class="tk-punc">"</span><span class="tk-key">equivalences</span><span class="tk-punc">": [</span></span></div>
+          <div class="dl" id="src-l9"><span class="ln">9</span><span class="lc">    <span class="tk-punc">{</span> <span class="tk-punc">"</span><span class="tk-key">values</span><span class="tk-punc">":</span> <span class="tk-punc">[</span><span class="tk-str">""</span><span class="tk-punc">,</span> <span class="tk-kw">null</span><span class="tk-punc">],</span> <span class="tk-punc">"</span><span class="tk-key">note</span><span class="tk-punc">":</span> <span class="tk-str">"空串与 null 等价"</span> <span class="tk-punc">},</span></span></div>
+          <div class="dl" id="src-l10"><span class="ln">10</span><span class="lc">    <span class="tk-punc">{</span> <span class="tk-punc">"</span><span class="tk-key">coerce</span><span class="tk-punc">":</span> <span class="tk-punc">[</span><span class="tk-str">"number"</span><span class="tk-punc">,</span> <span class="tk-str">"string"</span><span class="tk-punc">],</span> <span class="tk-punc">"</span><span class="tk-key">note</span><span class="tk-punc">":</span> <span class="tk-str">"类型宽化:20 ≈ \"20\""</span> <span class="tk-punc">},</span></span></div>
+          <div class="dl" id="src-l11"><span class="ln">11</span><span class="lc">    <span class="tk-punc">{</span> <span class="tk-punc">"</span><span class="tk-key">key</span><span class="tk-punc">":</span> <span class="tk-str">"cache.redis.host"</span><span class="tk-punc">,</span></span></div>
+          <div class="dl"><span class="ln">12</span><span class="lc">      <span class="tk-punc">"</span><span class="tk-key">values</span><span class="tk-punc">":</span> <span class="tk-punc">[[</span><span class="tk-str">"redis-dev.local"</span><span class="tk-punc">,</span> <span class="tk-str">"redis-prod.internal"</span><span class="tk-punc">]],</span></span></div>
+          <div class="dl"><span class="ln">13</span><span class="lc">      <span class="tk-punc">"</span><span class="tk-key">note</span><span class="tk-punc">":</span> <span class="tk-str">"Redis 主机:开发 ≈ 生产"</span> <span class="tk-punc">}</span></span></div>
+          <div class="dl"><span class="ln">14</span><span class="lc">  <span class="tk-punc">],</span></span></div>
+          <div class="dl"><span class="ln">15</span><span class="lc"></span></div>
+          <div class="dl"><span class="ln">16</span><span class="lc">  <span class="tk-cmt">// 忽略:命中 glob 的键不参与比较(报告表格里 ⊘ 也会写到这里)</span></span></div>
+          <div class="dl" id="src-l17"><span class="ln">17</span><span class="lc">  <span class="tk-punc">"</span><span class="tk-key">ignore</span><span class="tk-punc">":</span> <span class="tk-punc">[</span><span class="tk-str">"logging.file.*"</span><span class="tk-punc">,</span> <span class="tk-str">"feature.beta.*"</span><span class="tk-punc">],</span></span></div>
+          <div class="dl"><span class="ln">18</span><span class="lc"></span></div>
+          <div class="dl"><span class="ln">19</span><span class="lc">  <span class="tk-cmt">// 脚本规则:复杂判定逻辑,普通 JS 模块</span></span></div>
+          <div class="dl" id="src-l20"><span class="ln">20</span><span class="lc">  <span class="tk-punc">"</span><span class="tk-key">scripts</span><span class="tk-punc">": [</span><span class="tk-str">"rules/env-normalizer.js"</span><span class="tk-punc">]</span></span></div>
+          <div class="dl"><span class="ln">21</span><span class="lc"><span class="tk-punc">}</span></span></div>
+          <div class="hover-card" style="top:118px; left:170px;">
+            <div class="hct">equivalences — 值等价规则</div>
+            命中的键值对视为一致,不计入差异。支持:<span class="tk-key">values</span>(等价值组)· <span class="tk-key">coerce</span>(类型宽化)· <span class="tk-key">key</span>/<span class="tk-key">keys</span>(作用范围)· <span class="tk-key">note</span>(说明)<br>
+            <span style="color:var(--fg-dim)">Ctrl+Space 查看完整 schema · 规则命中永远在结果中透明标注</span>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑦ 新建规则向导(QuickPick + InputBox) -->
+      <div class="editor-body" id="ed-newrule" hidden>
+        <div class="dim-editor">
+          <div class="dim-line" style="width:46%"></div><div class="dim-line" style="width:70%"></div>
+          <div class="dim-line" style="width:62%"></div><div class="dim-line" style="width:74%"></div>
+          <div class="dim-line" style="width:38%"></div><div class="dim-line" style="width:66%"></div>
+          <div class="dim-line" style="width:55%"></div><div class="dim-line" style="width:69%"></div>
+        </div>
+        <div class="quickpick" style="top:16px;">
+          <div class="qp-input"><span>⚖</span><div class="box"><span>选择要添加的规则类型</span><span class="caret"></span></div></div>
+          <div class="qp-list">
+            <div class="qp-sep">简单规则 · 表单输入即可,无需写代码</div>
+            <div class="qp-item"><span class="cb"></span><span class="lbl">⇄ 文件配对</span><span class="desc">指定 A 侧文件对应 B 侧哪个文件</span></div>
+            <div class="qp-item hover"><span class="cb on">✓</span><span class="lbl">≈ 值等价</span><span class="desc">声明哪些值视为相同</span></div>
+            <div class="qp-item"><span class="cb"></span><span class="lbl">⊘ 忽略模式</span><span class="desc">按键路径 glob 跳过比较</span></div>
+            <div class="qp-sep">进阶 · 编写 JavaScript</div>
+            <div class="qp-item"><span class="cb"></span><span class="lbl">ƒ 脚本规则</span><span class="desc">自定义复杂判定逻辑</span></div>
+          </div>
+          <div class="qp-foot"><span><kbd style="background:var(--chip); border-color:var(--border); color:var(--fg);">Enter</kbd> 下一步</span><span><kbd style="background:var(--chip); border-color:var(--border); color:var(--fg);">Esc</kbd> 取消</span><span style="margin-left:auto;">值等价 · 步骤 1 / 2</span></div>
+        </div>
+        <div class="quickpick" style="top:268px; width:min(480px,78%);">
+          <div class="qp-input"><span style="color:var(--equ)">≈</span><div class="box"><span>redis-dev.local<span class="caret"></span></span></div></div>
+          <div class="qp-foot"><span>第 2 步:输入 A 侧值(留空表示 null)</span><span style="margin-left:auto;"><kbd style="background:var(--chip); border-color:var(--border); color:var(--fg);">Enter</kbd> 继续输入 B 侧值</span></div>
+        </div>
+      </div>
+
+      <!-- ⑧ 脚本规则(普通 JS 模块) -->
+      <div class="editor-body" id="ed-script" hidden style="display:flex; flex-direction:column; position:relative;">
+        <div class="tabbar">
+          <div class="tab" style="background:var(--bg-tab-inactive); color:var(--fg-dim);"><span class="t-name">config-diff.rules.json</span><span class="x">✕</span></div>
+          <div class="tab"><span style="color:var(--tk-num); font-size:10px; font-weight:700;">JS</span><span class="t-name">rules/env-normalizer.js</span><span class="x">✕</span></div>
+          <div class="tabbar-actions"><span>ƒ 脚本规则 · 保存即验证</span></div>
+        </div>
+        <div class="editor-body">
+          <div class="dl"><span class="ln">1</span><span class="lc"><span class="tk-cmt">/**</span></span></div>
+          <div class="dl"><span class="ln">2</span><span class="lc"><span class="tk-cmt"> * Config Diff 脚本规则 · 值比较</span></span></div>
+          <div class="dl"><span class="ln">3</span><span class="lc"><span class="tk-cmt"> * 对每一对键值调用一次,返回判定结果。</span></span></div>
+          <div class="dl"><span class="ln">4</span><span class="lc"><span class="tk-cmt"> *</span></span></div>
+          <div class="dl"><span class="ln">5</span><span class="lc"><span class="tk-cmt"> * </span><span class="tk-kw">@param</span><span class="tk-cmt"> {{path: string, value: any, type: string}} left  A 侧键值</span></span></div>
+          <div class="dl"><span class="ln">6</span><span class="lc"><span class="tk-cmt"> * </span><span class="tk-kw">@param</span><span class="tk-cmt"> {{path: string, value: any, type: string}} right B 侧键值</span></span></div>
+          <div class="dl"><span class="ln">7</span><span class="lc"><span class="tk-cmt"> * </span><span class="tk-kw">@returns</span><span class="tk-cmt"> {"equal" | "different" | "ignore"}</span></span></div>
+          <div class="dl"><span class="ln">8</span><span class="lc"><span class="tk-cmt"> */</span></span></div>
+          <div class="dl"><span class="ln">9</span><span class="lc"><span class="tk-kw">module</span><span class="tk-punc">.</span><span class="tk-key">exports</span> <span class="tk-punc">=</span> <span class="tk-kw">function</span> <span class="tk-fn">compare</span><span class="tk-punc">(</span>left<span class="tk-punc">,</span> right<span class="tk-punc">) {</span></span></div>
+          <div class="dl"><span class="ln">10</span><span class="lc">  <span class="tk-cmt">// 端口类键:数字与字符串互等(8080 ≈ "8080")</span></span></div>
+          <div class="dl"><span class="ln">11</span><span class="lc">  <span class="tk-kw">if</span> <span class="tk-punc">(</span>left<span class="tk-punc">.</span><span class="tk-key">path</span><span class="tk-punc">.</span><span class="tk-fn">endsWith</span><span class="tk-punc">(</span><span class="tk-str">".port"</span><span class="tk-punc">) &amp;&amp;</span> right<span class="tk-punc">.</span><span class="tk-key">value</span> <span class="tk-punc">!==</span> <span class="tk-kw">undefined</span><span class="tk-punc">) {</span></span></div>
+          <div class="dl"><span class="ln">12</span><span class="lc">    <span class="tk-kw">return</span> <span class="tk-fn">Number</span><span class="tk-punc">(</span>left<span class="tk-punc">.</span><span class="tk-key">value</span><span class="tk-punc">)</span> <span class="tk-punc">===</span> <span class="tk-fn">Number</span><span class="tk-punc">(</span>right<span class="tk-punc">.</span><span class="tk-key">value</span><span class="tk-punc">)</span></span></div>
+          <div class="dl"><span class="ln">13</span><span class="lc">      <span class="tk-punc">?</span> <span class="tk-str">"equal"</span> <span class="tk-punc">:</span> <span class="tk-str">"different"</span><span class="tk-punc">;</span></span></div>
+          <div class="dl"><span class="ln">14</span><span class="lc">  <span class="tk-punc">}</span></span></div>
+          <div class="dl"><span class="ln">15</span><span class="lc"></span></div>
+          <div class="dl"><span class="ln">16</span><span class="lc">  <span class="tk-cmt">// 其余交回内置比较</span></span></div>
+          <div class="dl"><span class="ln">17</span><span class="lc">  <span class="tk-kw">return</span> <span class="tk-str">"different"</span><span class="tk-punc">;</span></span></div>
+          <div class="dl"><span class="ln">18</span><span class="lc"><span class="tk-punc">};</span></span></div>
+          <div class="param-hint" style="top:172px; left:240px;">
+            compare(<span class="ph-cur">left: KeyValue</span>, right: KeyValue): "equal" | "different" | "ignore"
+            <div class="ph-doc">left — A 侧键值 { path, value, type }</div>
+          </div>
+        </div>
+        <div class="toast" style="position:absolute; right:16px; bottom:14px;">
+          <span class="ok">✓</span>
+          <div style="flex:1;">脚本已保存并试运行<div class="t-sub">106 对键值 → equal 3 · different 18 · ignore 0 · 0 错误</div></div>
+        </div>
+      </div>
+
+    </div><!-- /editor-area -->
+  </div><!-- /main -->
+
+  <!-- 状态栏 -->
+  <div class="statusbar">
+    <div class="st-item">⎇ main*</div>
+    <div class="st-item">⊇ 2 个工作区</div>
+    <div class="st-item st-diff" id="st-diff" hidden title="点击聚焦「配置对比」视图">⇄ <span id="st-diff-n">16</span> 处差异</div>
+    <div class="st-item right">行 12, 列 30</div>
+    <div class="st-item">空格: 2</div>
+    <div class="st-item">UTF-8</div>
+    <div class="st-item">YAML</div>
+    <div class="st-item">🔔</div>
+  </div>
+</div><!-- /frame -->
+
+<!-- 每屏注释 -->
+<div class="screen-notes" data-notes="1" hidden>
+  <b style="font-size:13.5px;">① 开始(空状态)— 设计要点</b>
+  <ul>
+    <li><span class="k">1</span><b>三入口收敛到同一流程,优先级分明:</b>活动栏视图(按钮式引导,新手默认路径,标「推荐」)> Explorer 右键两步标记(复用官方「Select for Compare」心智)> 命令面板(进阶用户快捷路径,界面上不主动引导)。小白点图标就能走完全程,不需要记住任何命令名。</li>
+    <li><span class="k">2</span><b>欢迎视图按钮 = 独占一行的链接:</b>这是官方 Welcome View 的渲染规范(链接自动变按钮);「最近比较 / 收藏项目对」用 globalState 持久化,解决"两个项目反复比"的高频场景。<span class="src">(来源:Views UX / Welcome Views;Diff Folders 的 Favorites 模式)</span></li>
+    <li><span class="k">3</span><b>按需激活:</b>扩展声明视图后,用户点开视图才激活(onView 激活事件),符合官方"在语境合适的时机才激活"的要求。</li>
+  </ul>
+</div>
+<div class="screen-notes" data-notes="2" hidden>
+  <b style="font-size:13.5px;">② 选择文件(QuickPick)— 设计要点</b>
+  <ul>
+    <li><span class="k">1</span><b>自动嗅探 + 分组分隔:</b>扫描两侧同名配置文件,用 QuickPick 分隔符按「两侧均存在 / 仅在一侧」分组,首选推荐项默认勾选。<span class="src">(来源:Quick Picks UX / separators;Common Capabilities / Quick Pick canSelectMany)</span></li>
+    <li><span class="k">2</span><b>多选一次比较多对文件:</b>底部固定键位提示(Enter / Esc),已选计数实时反馈。</li>
+    <li><span class="k">3</span><b>进度不阻塞:</b>比较执行用 withProgress 显示在通知区(或视图内),提供「取消」;完成/异常才用通知,遵循官方通知决策树"能不弹就不弹"。<span class="src">(来源:Notifications UX;Common Capabilities / Progress API)</span></li>
+  </ul>
+</div>
+<div class="screen-notes" data-notes="3" hidden>
+  <b style="font-size:13.5px;">③ 结果差异树 — 设计要点(核心画面)</b>
+  <ul>
+    <li><span class="k">1</span><b>树视图是官方推荐的结果展示形态:</b>挂在活动栏自定义 View Container,打开才激活。<span class="src">(来源:Views UX「显示数据用 Tree View」)</span></li>
+    <li><span class="k">2</span><b>四分区 + 双重计数:</b>「值不同 / 类型不同 / 仅在 A / 仅在 B」分区标题带数量,视图标题徽标显示总数(16);这是 Compare Folders 验证过的三分区模型的扩展版。类型差异也可并回"值不同"区加徽标,二选一。</li>
+    <li><span class="k">3</span><b>嵌套键保持原始层级:</b>树层级 = 配置文件自身的嵌套结构,叶子节点显示「键: A值 → B值」单行摘要,避免官方警告的"不必要深层嵌套"(展示的是数据本身的层级)。</li>
+    <li><span class="k">4</span><b>视图工具栏 4 个动作:</b>刷新 ⟳ / 对调两侧 ⇄ / 树⇄列表切换 ≡ / 历史⋯;单条目内联动作不超过 3 个(官方红线),悬停才出现「打开对比 ⧉ / 忽略 ⊘」。<span class="src">(来源:Views UX Don't 清单)</span></li>
+    <li><span class="k">5</span><b>状态三重编码:</b>每条差异同时用 颜色(主题 token)+ 图标(≠ ⇄ − +)+ 文字,色盲与高对比度下仍可辨识。<span class="src">(来源:Accessibility / Color vision)</span></li>
+    <li><span class="k">6</span><b>数千键导航:</b>分区计数收敛全貌;「在树中定位」用 TreeView.reveal;QuickPick 模糊搜索键路径(Config Diff: Go to Key…)。<span class="src">(来源:TreeView API / reveal)</span></li>
+    <li><span class="k">7</span><b>按文件 / 按状态双分组:</b>默认<b>按文件</b>分组 —— 每个配置文件一个分区(含该文件的差异计数与状态小节),多文件时不迷路;工具栏 <b>◫</b> 一键切换为<b>按状态</b>(先看"哪些问题要修",文件嵌在其下)。两种模式的计数都从同一数据推导,永远一致。</li>
+  </ul>
+</div>
+<div class="screen-notes" data-notes="4" hidden>
+  <b style="font-size:13.5px;">④ Webview 报告表格 — 设计要点(第二期增强)</b>
+  <ul>
+    <li><span class="k">1</span><b>克制地用 Webview:</b>只做原生树做不到的「键级扁平表格 + 计数过滤 + 搜索」,定位与侧边树互补,不重复其功能 —— 符合官方"Webview 仅在原生 API 不足时使用"。<span class="src">(来源:Webview 指南 / Should I use a webview)</span></li>
+    <li><span class="k">2</span><b>过滤条带实时计数,一致项默认隐藏:</b>12 处差异直接可扫;「显示一致项」是显式开关,避免 87 行噪音淹没 12 行信号。规则等价与已忽略各自独立成片,规则的影响一眼可见、可随时关闭。</li>
+    <li><span class="k">3</span><b>大数据量策略:</b>搜索 180ms 防抖、行虚拟化、5000 行上限提示 —— 全部是 JSON Diff Studio 用真实用户验证过的参数。<span class="src">(来源:JSON Diff Studio Marketplace)</span></li>
+    <li><span class="k">4</span><b>行内四动作:</b>打开内置 Diff ⧉ / 在树中定位 ⊙(reveal 双向联动)/ <b>≈ 设为等价</b>(把眼前这对值写成值等价规则 —— 添加规则最常用的入口)/ 忽略 ⊘(写入忽略规则)。规则类动作即时生效,通知中确认。</li>
+    <li><span class="k">5</span><b>零硬编码颜色:</b>全部取自 <code>--vscode-*</code> CSS 变量(VS Code 自动注入 Webview),点上方「Light+ / High Contrast」即可验证自动适配。<span class="src">(来源:Webview Theming)</span></li>
+  </ul>
+</div>
+<div class="screen-notes" data-notes="5" hidden>
+  <b style="font-size:13.5px;">⑤ 键级 Diff 详情 — 设计要点</b>
+  <ul>
+    <li><span class="k">1</span><b>复用内置 diff 编辑器:</b>树/表格条目用官方推荐的 <code>vscode.diff</code> 打开两侧值的虚拟文档对比 —— 并排视图、行号槽着色、概览标尺、Next Change 跳转、F7 无障碍差异查看器全部免费获得,且与内置文件对比观感一致。<span class="src">(来源:VS Code API / TreeItem.command 官方建议)</span></li>
+    <li><span class="k">2</span><b>类型差异先声明再展示:</b>虚拟文档头部加注释行「⇄ 类型不同: number (A) vs string (B)」,用 charts.orange,不与 error/warning 语义混淆;值差异行用 diff 插入/删除底色高亮。</li>
+    <li><span class="k">3</span><b>连续排查:</b>顶部「上一步 / 下一个差异」在多个键之间顺序跳转,修完一个到下一个,不需要来回找树。</li>
+    <li><span class="k">4</span><b>单侧缺失:</b>「仅在 A / 仅在 B」的键打开时,缺失一侧显示说明注释行,而不是空白 —— 避免用户误以为渲染出错。</li>
+  </ul>
+</div>
+
+<div class="screen-notes" data-notes="6" hidden>
+  <b style="font-size:13.5px;">⑥ 规则中心 — 设计要点</b>
+  <ul>
+    <li><span class="k">1</span><b>Schema 是契约,不是界面:</b>规则底层用 JSONC + JSON Schema 表达(可校验、可补全、随 git 共享),但用户看到的是<b>人话句子</b>的规则卡片 ——「当 键 = … 且 A 值 = … → 视为等价」,永远不需要读 Schema。</li>
+    <li><span class="k">2</span><b>双视图,双向同步:</b>默认<b>卡片视图</b>;「源码」视图给进阶用户。卡片右上 <code>{}</code> 直达源码对应行并高亮;源码保存后卡片实时重渲染 —— 两个视图是同一份数据,不存在手工对齐。</li>
+    <li><span class="k">3</span><b>校验错误落在卡片上:</b>违反 Schema 的规则(如 <code>values</code> 与 <code>coerce</code> 互斥)在卡片上标红并给出原因与修复入口;无效规则不生效、不计入侧边栏计数 —— 运行中的规则永远可信。</li>
+    <li><span class="k">4</span><b>表单由 Schema 驱动:</b>「+ 添加规则」走 ⑦ 向导,字段、默认值、枚举选项都从 Schema 生成 —— Schema 写一次,表单与文档自动跟随,永不脱节。</li>
+    <li><span class="k">5</span><b>命中透明 + 闭环:</b>规则命中在结果区单独标注(≈ / ⊘ + 规则名,可随时停用);表格「忽略 ⊘」直接写回规则文件 —— 规则做了什么,随时可审计。</li>
+    <li><span class="k">6</span><b>添加规则的两个入口:</b>① 本屏「+ 添加规则」(侧边栏 + 或卡片工具栏)→ 打开 ⑦ 向导;② <b>结果驱动(最常用)</b>:报告表格行内「≈ 设为等价 / ⊘ 忽略」,从眼前的差异一键生成规则。刻意<b>不做命令面板入口</b> —— 小白用户靠看得见的按钮,而非记住命令名;规则为空时,规则视图直接展示"添加"按钮引导。</li>
+  </ul>
+</div>
+<div class="screen-notes" data-notes="7" hidden>
+  <b style="font-size:13.5px;">⑦ 新建规则向导 — 设计要点</b>
+  <ul>
+    <li><span class="k">1</span><b>全程 QuickPick + InputBox:</b>官方标准输入范式,简单规则 2-3 步串行输入完成,不需要打开编辑器、没有模态弹窗。</li>
+    <li><span class="k">2</span><b>类型先行,逐步引导:</b>先选规则类型(带"简单 / 进阶"分隔),再按步骤输入;作用范围默认全局,可用键路径模式限定。</li>
+    <li><span class="k">3</span><b>即时反馈:</b>完成后立即重新比较,并在结果中高亮"受此规则影响"的变化(≈ 紫色徽标 + 规则名),效果看得见。</li>
+    <li><span class="k">4</span><b>从哪里进入向导:</b>① 规则中心的「+ 添加规则」(侧边栏 + 或卡片工具栏);② 报告表格行内「≈ / ⊘」—— 带着差异上下文预填,最常用。刻意不做命令面板入口:小白用户靠看得见的按钮,而非记住命令名。</li>
+  </ul>
+</div>
+<div class="screen-notes" data-notes="8" hidden>
+  <b style="font-size:13.5px;">⑧ 脚本规则 — 设计要点(进阶,可选)</b>
+  <ul>
+    <li><span class="k">1</span><b>脚本就是普通 .js 文件:</b>放在工作区里,享受完整 IntelliSense、Lint、git 管理;JSDoc 类型标注让编辑器给出参数提示 —— 扩展不需要自建脚本编辑器。</li>
+    <li><span class="k">2</span><b>API 面刻意小:</b>入参只有 <code>{path, value, type}</code>,返回值只有 <code>equal / different / ignore</code> 三种 —— 心智负担最低,写错也不至于破坏比较流程。</li>
+    <li><span class="k">3</span><b>保存即验证:</b>自动对当前两侧结果"试运行",错误以诊断(红线)呈现,成功显示统计反馈;验证状态同步回规则中心的「✓ 已验证」徽标。</li>
+    <li><span class="k">4</span><b>默认路径仍然简单:</b>脚本规则排在向导最末位"进阶"分组,不用脚本的用户完全无感。</li>
+  </ul>
+</div>
+
+<h2>状态与颜色系统(主题 token 驱动)</h2>
+<p class="dim" style="font-size:13.5px;">绝不硬编码颜色 —— 全部使用 VS Code 主题变量,自动适配所有主题与高对比度主题。每类状态同时用「颜色 + 图标 + 文字」三重编码,保证色盲可用。</p>
+<table class="spec">
+  <tr><th>状态</th><th>语义</th><th>主题 token(实际取值由用户主题决定)</th><th>Dark+ 示意</th><th>Light+ 示意</th><th>图标 + 文字</th></tr>
+  <tr><td><span class="pill st-mod">≠ 值不同</span></td><td>同键、两侧值不相等</td><td><code>gitDecoration.modifiedResourceForeground</code></td><td><span class="sw" style="background:#e2c08d"></span>#e2c08d</td><td><span class="sw" style="background:#895503"></span>#895503</td><td>✏ ≠ 值不同</td></tr>
+  <tr><td><span class="pill st-type">⇄ 类型不同</span></td><td>同键、值类型不同(string vs number…)</td><td><code>charts.orange</code>(不占用 error/warning 语义)</td><td><span class="sw" style="background:#d18616"></span>#d18616</td><td><span class="sw" style="background:#d18616"></span>#d18616</td><td>⇄ string→number</td></tr>
+  <tr><td><span class="pill st-onlya">− 仅在 A</span></td><td>B 侧缺失该键</td><td><code>gitDecoration.deletedResourceForeground</code></td><td><span class="sw" style="background:#c74e39"></span>#c74e39</td><td><span class="sw" style="background:#ad0707"></span>#ad0707</td><td>− B 缺失</td></tr>
+  <tr><td><span class="pill st-onlyb">+ 仅在 B</span></td><td>A 侧缺失该键</td><td><code>gitDecoration.addedResourceForeground</code></td><td><span class="sw" style="background:#81b88b"></span>#81b88b</td><td><span class="sw" style="background:#587c0c"></span>#587c0c</td><td>+ A 缺失</td></tr>
+  <tr><td><span class="pill st-equ">≈ 规则等价</span></td><td>命中值等价 / 脚本规则,视为一致(不计入差异)</td><td><code>charts.purple</code>(与增删改语义区分)</td><td><span class="sw" style="background:#b180d7"></span>#b180d7</td><td><span class="sw" style="background:#6953d1"></span>#6953d1</td><td>≈ 按规则等价</td></tr>
+  <tr><td><span class="pill st-ign">⊘ 已忽略</span></td><td>命中忽略 glob,不参与比较</td><td><code>disabledForeground</code>(弱化,单独分区可审计)</td><td colspan="2" style="text-align:center;">—</td><td>⊘ 已忽略</td></tr>
+  <tr><td><span class="pill" style="color:var(--page-dim)">✓ 一致</span></td><td>同键同值同类型</td><td><code>disabledForeground</code>(降噪,默认隐藏)</td><td colspan="2" style="text-align:center;">—</td><td>✓ 一致</td></tr>
+  <tr><td><span class="pill st-err">⚠ 解析失败</span></td><td>文件语法错误等结构异常</td><td><code>editorError.foreground</code>(仅真正的错误)</td><td><span class="sw" style="background:#f14c4c"></span>#f14c4c</td><td><span class="sw" style="background:#e51400"></span>#e51400</td><td>⚠ 无法解析</td></tr>
+</table>
+<div class="note-box">💡 为什么「仅在 A」用红色、「仅在 B」用绿色?与内置 diff / 源代码管理视图的语义一致:<b>红 = 右侧没有(被删)</b>,<b>绿 = 右侧多出(新增)</b>。用户在 VS Code 里已经形成了这套直觉,不需要重新学习。</div>
+
+<h2>无障碍设计(发布前检查清单)</h2>
+<table class="spec">
+  <tr><th>要求</th><th>设计响应</th></tr>
+  <tr><td>键盘可达</td><td>报告表格过滤框 → 结果列表用官方 <code>widgetNavigation.focusNext/Previous</code> 惯例(↑↓);树/表格行可 Tab 聚焦,焦点环用 <code>focusBorder</code>。</td></tr>
+  <tr><td>屏幕阅读器</td><td>Webview 观察 <code>vscode-using-screen-reader</code> 类切换渲染;键值对比可切换为「F7 无障碍差异查看器」统一朗读。</td></tr>
+  <tr><td>色盲友好</td><td>状态 = 颜色 + 图标 + 文字徽标三重编码(见上表),不依赖红绿区分。</td></tr>
+  <tr><td>高对比度</td><td>三套主题(Dark+ / Light+ / High Contrast)全部走主题变量;发布前在 High Contrast 下实测。点上方按钮可预览。</td></tr>
+  <tr><td>减少动效</td><td>Webview 观察 <code>vscode-reduce-motion</code> 类,关闭过渡动画。</td></tr>
+</table>
+
+<h2>关键设计决策 × 调研依据</h2>
+<table class="spec">
+  <tr><th>需求</th><th>选型</th><th>依据(官方一手来源)</th></tr>
+  <tr><td>入口:怎么开始一次比较</td><td>命令面板 + Explorer 右键两步标记 + 活动栏视图(含收藏/历史)</td><td><a href="https://code.visualstudio.com/docs/editing/codebasics#compare-files">官方两步比较心智</a>;<a href="https://github.com/moshfeu/vscode-compare-folders">Compare Folders</a> 市场验证</td></tr>
+  <tr><td>结果总览与导航</td><td>活动栏自定义容器中的 Tree View(四分区)</td><td><a href="https://code.visualstudio.com/api/ux-guidelines/views">Views UX:「显示数据用 Tree View」</a></td></tr>
+  <tr><td>键级并排看值</td><td>内置 diff 编辑器(vscode.diff + 虚拟文档)</td><td><a href="https://code.visualstudio.com/api/references/vscode-api#TreeView">TreeItem.command 官方建议用 vscode.open / vscode.diff</a></td></tr>
+  <tr><td>键级扁平表格 / 过滤 / 搜索</td><td>Webview(原生 HTML/CSS + --vscode-* 变量;二期)</td><td><a href="https://code.visualstudio.com/api/extension-guides/webview#should-i-use-a-webview">Webview 克制使用</a>;<a href="https://github.com/microsoft/vscode-webview-ui-toolkit/issues/561">Toolkit 已弃用归档</a></td></tr>
+  <tr><td>选文件 / 进度 / 通知</td><td>QuickPick(分隔符分组多选)+ withProgress + 非阻塞通知</td><td><a href="https://code.visualstudio.com/api/ux-guidelines/quick-picks">Quick Picks UX</a>;<a href="https://code.visualstudio.com/api/ux-guidelines/notifications">Notifications UX</a></td></tr>
+  <tr><td>大结果导航(数千键)</td><td>分区计数 + reveal 定位 + QuickPick 搜键路径 + 表格虚拟化</td><td><a href="https://code.visualstudio.com/api/references/vscode-api#TreeView">TreeView.reveal</a>;JSON Diff Studio 上限策略</td></tr>
+  <tr><td>图标</td><td>Codicons(@vscode/codicons)</td><td><a href="https://code.visualstudio.com/api/ux-guidelines/views">「尽量使用既有图标」</a></td></tr>
+</table>
+
+<footer>
+  📚 完整调研(全部结论附官方来源链接):<a href="./vscode-config-diff-extension-uiux-research.md">docs/research/vscode-config-diff-extension-uiux-research.md</a>
+  · 本原型:<code>docs/research/config-diff-extension-uiux-prototype.html</code> · 生成于 2026-10-28
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+/* ================= 原型数据(application.yaml 模拟比较结果) ================= */
+const A_NAME = "order-service", B_NAME = "order-service-template";
+/* st: mod=值不同 type=类型不同 onlya=仅A有 onlyb=仅B有 */
+const DATA = [
+  {key:"server.port",                    a:"8080",                              b:"8081",                                st:"mod"},
+  {key:"server.http2.enabled",           a:null,                                b:"false",                               st:"onlyb"},
+  {key:"database.url",                   a:"jdbc:mysql://dev.db:3306/orders",   b:"jdbc:mysql://prod.db:3306/orders",    st:"mod"},
+  {key:"database.pool.maxSize",          a:"20",                                b:"\"20\"",                              st:"type", aT:"number", bT:"string"},
+  {key:"database.pool.minIdle",          a:"5",                                 b:null,                                  st:"onlya"},
+  {key:"database.replica.readHost",      a:null,                                b:"replica.prod.db:3306",                st:"onlyb"},
+  {key:"cache.redis.host",               a:"redis-dev.local",                   b:"redis-prod.internal",                 st:"equ", rule:"值等价 · Redis 主机映射"},
+  {key:"cache.ttlSeconds",               a:"3600",                              b:"\"3600\"",                            st:"type", aT:"number", bT:"string"},
+  {key:"logging.level.root",             a:"INFO",                              b:"DEBUG",                               st:"mod"},
+  {key:"logging.file.path",              a:"./logs/dev",                        b:null,                                  st:"ign", rule:"忽略 · logging.file.*"},
+  {key:"feature.checkout.enabled",       a:"true",                              b:"false",                               st:"mod"},
+  {key:"feature.beta.search",            a:"true",                              b:null,                                  st:"ign", rule:"忽略 · feature.beta.*"},
+  {key:"security.oauth.audience",        a:"orders-dev",                        b:null,                                  st:"onlya"},
+  {key:"metrics.export.interval",        a:null,                                b:"30s",                                 st:"onlyb"},
+  {key:"monitoring.tracing.sampleRate",  a:null,                                b:"0.1",                                 st:"onlyb"},
+];
+const SAME_SHOWN = [
+  {key:"app.name", a:"order-service", b:"order-service", st:"same"},
+  {key:"database.driver", a:"mysql", b:"mysql", st:"same"},
+  {key:"database.pool.timeout", a:"3000", b:"3000", st:"same"},
+  {key:"logging.level.app", a:"INFO", b:"INFO", st:"same"},
+  {key:"cache.redis.port", a:"6379", b:"6379", st:"same"},
+  {key:"security.cors.origins", a:"*", b:"*", st:"same"},
+];
+const SAME_TOTAL = 87;
+/* 第二个文件:.env(演示按文件分组;文件对规则已把两侧文件配对) */
+DATA.forEach(d=>{ d.f = "application.yaml"; });
+DATA.push(
+  {key:"DATABASE_HOST",      f:".env", a:"dev.db:3306",  b:"prod.db:3306", st:"mod"},
+  {key:"LOG_LEVEL",          f:".env", a:"debug",        b:"info",         st:"mod"},
+  {key:"API_KEY",            f:".env", a:"${API_KEY}",   b:null,           st:"onlya"},
+  {key:"FEATURE_DARK_MODE",  f:".env", a:null,           b:"true",         st:"onlyb"},
+);
+const STATUS_META = {
+  mod:   {icon:"≠", label:"值不同",   cls:"st-mod"},
+  type:  {icon:"⇄", label:"类型不同", cls:"st-type"},
+  onlya: {icon:"−", label:"仅在 A",  cls:"st-onlya"},
+  onlyb: {icon:"+", label:"仅在 B",  cls:"st-onlyb"},
+  equ:   {icon:"≈", label:"等价",    cls:"st-equ"},
+  ign:   {icon:"⊘", label:"已忽略",  cls:"st-ign"},
+  same:  {icon:"✓", label:"一致",    cls:""},
+};
+
+/* ================= 树视图渲染 ================= */
+function sectionRow(sec, count, pad){
+  const m = STATUS_META[sec.st];
+  return `<div class="tree-row" data-toggle="sec"${pad ? ` style="padding-left:${pad}px"` : ""}>
+    <span class="chev">▼</span>
+    <span class="t-ic ${m.cls}">${m.icon}</span>
+    <span class="t-label">${sec.title}</span>
+    <span class="cnt">${count}</span>
+  </div>`;
+}
+function fileIcon(f){ return f.endsWith(".env") ? "#" : "⚙"; }
+function fileRow(f, count, tip){
+  return `<div class="tree-row" data-toggle="file"${tip ? ` title="${esc(tip)}"` : ""}>
+    <span class="chev">▼</span>
+    <span class="t-ic" style="color:${f.endsWith(".env") ? "var(--typec)" : "var(--modified)"}">${fileIcon(f)}</span>
+    <span class="t-label mono" style="font-size:12px">${esc(f)}</span>
+    <span class="cnt">${count}</span>
+  </div>`;
+}
+function leafRow(item, depth){
+  const m = STATUS_META[item.st];
+  let preview = "";
+  if(item.st==="mod")   preview = `${item.a} → ${item.b}`;
+  if(item.st==="type")  preview = `${item.a} ⇄ ${item.b}`;
+  if(item.st==="onlya") preview = `${item.a}`;
+  if(item.st==="onlyb") preview = `${item.b}`;
+  if(item.st==="equ")   preview = `${item.a} ≈ ${item.b}`;
+  if(item.st==="ign")   preview = `${item.a !== null ? item.a : item.b}`;
+  const leafKey = item.key.split(".").pop();
+  return `<div class="tree-row leaf${item.st==="ign"?" dimrow":""}" style="padding-left:${depth*13+8}px" data-leaf="${esc(item.keyFull || item.key)}" data-st="${item.st}" title="${esc(item.keyFull || item.key)}${item.rule ? " — " + esc(item.rule) : ""} — 点击打开内置对比视图">
+    <span class="chev" style="opacity:0">▼</span>
+    <span class="t-ic ${m.cls}">${m.icon}</span>
+    <span class="t-label">${esc(leafKey)}</span>
+    <span class="inline-acts"><span class="ia" title="打开内置对比视图">⧉</span><span class="ia" title="忽略该键">⊘</span></span>
+    <span class="preview mono">${esc(preview)}</span>
+  </div>`;
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* 在渲染前给每个条目补 keyFull */
+function prepare(items, prefix){ return items.map(it=>({...it, keyFull: prefix ? prefix + "." + it.key : it.key})); }
+const DATA_FULL = prepare(DATA, "");
+/* 树渲染:两种分组模式 —— 按文件(默认)/ 按状态 */
+let groupMode = "file";
+function renderTree(){
+  const root = document.getElementById("tree-root");
+  const sections = [
+    {st:"mod",   title:"值不同"},
+    {st:"type",  title:"类型不同"},
+    {st:"onlya", title:"仅在 " + A_NAME + "(B 缺失)"},
+    {st:"onlyb", title:"仅在 " + B_NAME + "(A 缺失)"},
+    {st:"equ",   title:"规则等价(不计入差异)"},
+    {st:"ign",   title:"已忽略(规则)"},
+  ];
+  const files = [...new Set(DATA.map(d=>d.f))];
+  let html = "";
+  if(groupMode === "file"){
+    /* 顶层 = 文件对,内嵌各自的状态小节 */
+    for(const f of files){
+      const items = DATA.filter(d=>d.f===f);
+      const active = items.filter(d=>d.st!=="equ" && d.st!=="ign").length;
+      const eq = items.filter(d=>d.st==="equ").length;
+      const ig = items.filter(d=>d.st==="ign").length;
+      const tip = `${active} 处差异` + (eq ? ` · ${eq} 规则等价` : "") + (ig ? ` · ${ig} 已忽略` : "");
+      html += `<div class="tree-section">${fileRow(f, active, tip)}<div class="children">`;
+      for(const sec of sections){
+        const sItems = items.filter(d=>d.st===sec.st);
+        if(!sItems.length) continue;
+        html += sectionRow(sec, sItems.length, 14) + `<div class="children">${buildLevel(sItems, "", 1)}</div>`;
+      }
+      html += `</div></div>`;
+    }
+  } else {
+    /* 顶层 = 状态分区,内嵌文件(Compare Folders 验证过的模型) */
+    for(const sec of sections){
+      const items = DATA.filter(d=>d.st===sec.st);
+      if(!items.length) continue;
+      html += `<div class="tree-section">${sectionRow(sec, items.length)}<div class="children">`;
+      const byFile = {};
+      for(const it of items) (byFile[it.f] = byFile[it.f] || []).push(it);
+      for(const f of Object.keys(byFile)){
+        html += fileRow(f, byFile[f].length, sec.title + " · " + f) + `<div class="children">${buildLevel(byFile[f], "", 1)}</div>`;
+      }
+      html += `</div></div>`;
+    }
+  }
+  root.innerHTML = html;
+}
+function buildLevel(items, prefix, base){
+  const groups = {}; const order = [];
+  for(const it of items){
+    const rest = prefix ? it.keyFull.slice(prefix.length+1) : it.keyFull;
+    const i = rest.indexOf(".");
+    const head = i === -1 ? null : rest.slice(0, i);
+    if(head){ (groups[head] = groups[head] || []).push(it); if(!order.includes(head)) order.push(head); }
+    else { (groups[""] = groups[""] || []).push({...it, leafName: rest}); }
+  }
+  let html = ""; const depth = (base||0) + (prefix ? prefix.split(".").length : 0);
+  for(const head of order){
+    const kids = groups[head];
+    html += `<div class="tree-row closed" style="padding-left:${depth*13+8}px" data-toggle="grp">
+      <span class="chev">▼</span><span class="t-ic">▸</span>
+      <span class="t-label">${esc(head)}</span><span class="cnt">${kids.length}</span></div>
+      <div class="children">${buildLevel(kids, prefix ? prefix+"."+head : head)}</div>`;
+  }
+  for(const leaf of (groups[""]||[])) html += leafRow(leaf, depth);
+  return html;
+}
+
+/* 树交互:折叠/展开 + 叶子点击打开 diff */
+document.addEventListener("click", function(e){
+  const row = e.target.closest(".tree-row");
+  if(!row) return;
+  if(row.dataset.toggle){ row.classList.toggle("closed"); const ch = row.nextElementSibling; if(ch) ch.style.display = row.classList.contains("closed") ? "none" : ""; return; }
+  if(row.dataset.leaf){ openDiff(row.dataset.leaf); markTreeSelected(row); }
+});
+function markTreeSelected(row){
+  document.querySelectorAll(".tree-row.selected").forEach(r=>r.classList.remove("selected"));
+  row.classList.add("selected");
+}
+function revealKey(keyFull){
+  /* 找到叶子并展开其祖先 */
+  const target = document.querySelector(`.tree-row.leaf[data-leaf="${CSS.escape(keyFull)}"]`);
+  if(!target) return;
+  let el = target;
+  const chain = [];
+  while(el && el.id !== "tree-root"){ chain.unshift(el); el = el.parentElement; }
+  for(const node of chain){
+    if(node.classList && node.classList.contains("tree-row") && node.classList.contains("closed")){
+      node.classList.remove("closed");
+      const ch = node.nextElementSibling; if(ch) ch.style.display = "";
+    }
+  }
+  target.scrollIntoView({block:"center"});
+  target.classList.add("selected","flash");
+  setTimeout(()=>target.classList.remove("flash"), 1700);
+}
+
+/* ================= 报告表格 ================= */
+let filterSt = "all", showSame = false;
+function statusPill(st, it){
+  const m = STATUS_META[st];
+  if(st==="same") return `<span class="pill" style="color:var(--fg-dim)">✓ 一致</span>`;
+  const tip = it && it.rule ? ` title="命中规则: ${esc(it.rule)}"` : "";
+  return `<span class="pill ${m.cls}"${tip}>${m.icon} ${m.label}</span>`;
+}
+function typeNote(it){
+  if(it.st==="type") return ` <span style="color:var(--typec); font-size:10px;">⇄ ${it.aT}→${it.bT}</span>`;
+  return "";
+}
+function renderReport(){
+  const tbody = document.getElementById("report-body");
+  let rows = DATA.filter(it => filterSt==="all" ? (it.st!=="equ" && it.st!=="ign") : it.st===filterSt);
+  let html = rows.map(it=>{
+    const aCell = it.a===null ? `<td class="val absent">— 不存在 —</td>` : `<td class="val" title="${esc(it.a)}">${esc(it.a)}${typeNote(it)}</td>`;
+    const bCell = it.b===null ? `<td class="val absent">— 不存在 —</td>` : `<td class="val" title="${esc(it.b)}">${esc(it.b)}${typeNote(it)}</td>`;
+    return `<tr class="rrow${it.st==="ign"?" ignd":""}"><td>${statusPill(it.st, it)}</td>
+      <td class="kpath mono">${highlightPath(it.key)}</td>
+      <td class="val" style="color:var(--fg-dim); font-size:11px;">${esc(it.f)}</td>${aCell}${bCell}
+      <td class="act-cell">${it.st==="mod" ? `<span class="ra st-equ" data-equiv="${esc(it.keyFull)}" title="添加值等价规则:此键 A 值 ≈ B 值">≈</span>` : ""}<span class="ra" data-open="${esc(it.keyFull)}" title="打开内置对比视图">⧉</span><span class="ra" data-locate="${esc(it.keyFull)}" title="在树中定位">⊙</span><span class="ra" title="${it.st==="ign"?"取消忽略":"忽略该键(写入忽略规则)"}">${it.st==="ign"?"↺":"⊘"}</span></td></tr>`;
+  }).join("");
+  if(showSame){
+    html += SAME_SHOWN.map(it=>`<tr class="rrow"><td>${statusPill("same")}</td>
+      <td class="kpath mono" style="color:var(--fg-dim)">${esc(it.key)}</td>
+      <td class="val" style="color:var(--fg-dim); font-size:11px;">application.yaml</td>
+      <td class="val" style="color:var(--fg-dim)">${esc(it.a)}</td><td class="val" style="color:var(--fg-dim)">${esc(it.b)}</td>
+      <td class="act-cell"></td></tr>`).join("");
+    html += `<tr class="cap-note"><td colspan="6">… 仅显示 6 项示例,其余 ${SAME_TOTAL-6} 项一致键已折叠(虚拟滚动加载)</td></tr>`;
+  }
+  if(!rows.length && !showSame) html = `<tr class="cap-note"><td colspan="6">当前过滤条件下没有条目</td></tr>`;
+  tbody.innerHTML = html;
+}
+function highlightPath(key){
+  const i = key.lastIndexOf(".");
+  if(i===-1) return esc(key);
+  return `<span class="seg">${esc(key.slice(0,i+1))}</span>${esc(key.slice(i+1))}`;
+}
+document.querySelectorAll(".chip[data-filter]").forEach(ch=>{
+  ch.addEventListener("click", ()=>{
+    document.querySelectorAll(".chip[data-filter]").forEach(c=>c.classList.remove("active"));
+    ch.classList.add("active");
+    filterSt = ch.dataset.filter; renderReport();
+  });
+});
+document.getElementById("chip-same").addEventListener("click", function(){
+  showSame = !showSame; this.classList.toggle("active", showSame); renderReport();
+});
+document.getElementById("report-body").addEventListener("click", function(e){
+  const open = e.target.closest("[data-open]"); const loc = e.target.closest("[data-locate]"); const eq = e.target.closest("[data-equiv]");
+  if(open){ openDiff(open.dataset.open); }
+  if(loc){ showScreen(3); revealKey(loc.dataset.locate); }
+  if(eq){
+    const it = DATA.find(d=>d.keyFull===eq.dataset.equiv);
+    const t = document.getElementById("rule-toast");
+    document.getElementById("rule-toast-text").innerHTML = `已添加值等价规则<div class="t-sub">键 ${esc(it.keyFull)} · A 值 ≈ B 值 · 下次比较此键显示为「≈ 规则等价」</div>`;
+    t.hidden = false;
+    clearTimeout(t._tm); t._tm = setTimeout(()=>{ t.hidden = true; }, 3400);
+  }
+});
+
+/* ================= 内置 Diff ================= */
+function openDiff(keyFull){
+  const it = DATA_FULL.find(d=>d.keyFull===keyFull);
+  if(!it) return;
+  document.getElementById("diff-title").textContent = keyFull;
+  const note = document.getElementById("diff-type-note");
+  if(it.st==="type"){ note.textContent = `类型不同: ${it.aT} (A) vs ${it.bT} (B)`; note.style.display = ""; note.style.color = "var(--typec)"; }
+  else if(it.st==="mod"){ note.textContent = "值不同:两侧值不相等"; note.style.display = ""; note.style.color = ""; }
+  else if(it.st==="equ"){ note.textContent = `≈ 视为等价 —— 命中规则: ${it.rule}`; note.style.display = ""; note.style.color = "var(--equ)"; }
+  else if(it.st==="ign"){ note.textContent = `⊘ 已忽略 —— 命中规则: ${it.rule}`; note.style.display = ""; note.style.color = ""; }
+  else if(it.st==="onlya"){ note.textContent = `该键在 ${B_NAME}(B 侧)缺失`; note.style.display = ""; note.style.color = ""; }
+  else { note.textContent = `该键在 ${A_NAME}(A 侧)缺失`; note.style.display = ""; note.style.color = ""; }  const pathParts = keyFull.split(".");
+  const indentLines = [];
+  for(let i=0;i<pathParts.length-1;i++){
+    indentLines.push({ind:i, text: pathParts[i] + ":"});
+  }
+  const leaf = pathParts[pathParts.length-1];
+  function pane(value, side){
+    let lines = indentLines.map(l=>({cls:"", ind:l.ind, text:l.text}));
+    if(value===null){
+      lines.push({cls:"anno", ind:indentLines.length, text:`# 该键仅存在于${side==="a"?"左侧("+A_NAME+")":"右侧("+B_NAME+")"},此处缺失`});
+    } else {
+      lines.push({cls:"changed", ind:indentLines.length, text: leaf + ": " + value});
+    }
+    return lines;
+  }
+  let aLines = pane(it.a, "a"), bLines = pane(it.b, "b");
+  if(it.st==="type"){
+    const anno = {cls:"anno", ind:0, text:`# ⇄ 类型不同: ${it.aT} (A) vs ${it.bT} (B)`};
+    aLines = [anno, {cls:"", ind:0, text:""}, ...aLines];
+    bLines = [anno, {cls:"", ind:0, text:""}, ...bLines];
+  }
+  /* 左侧:修改/删除(红),右侧:修改/新增(绿);规则等价(紫);已忽略(弱化) */
+  function htmlSide(lines, side){
+    return lines.map((l,i)=>{
+      let cls = "dl"; if(l.cls==="anno") cls += " anno";
+      if(l.cls==="changed"){
+        if(it.st==="equ") cls += " equ";
+        else if(it.st==="ign") cls += " ignrow";
+        else cls += side==="a" ? " rem" : " ins";
+      }
+      return `<div class="${cls}"><span class="ln">${i+1}</span><span class="lc">${"  ".repeat(l.ind)}${esc(l.text)}</span></div>`;
+    }).join("");
+  }
+  const topA = (aLines.length-1)/Math.max(aLines.length,1)*100;
+  const topB = (bLines.length-1)/Math.max(bLines.length,1)*100;
+  const markA = it.st==="equ" ? `<div class="ov-mark equ" style="top:${topA}%"></div>` : it.st==="ign" ? "" : `<div class="ov-mark rem" style="top:${topA}%"></div>`;
+  const markB = it.st==="equ" ? `<div class="ov-mark equ" style="top:${topB}%"></div>` : it.st==="ign" ? "" : `<div class="ov-mark" style="top:${topB}%"></div>`;
+  document.getElementById("diff-code-a").innerHTML = `<div class="ov-ruler">${markA}</div>` + htmlSide(aLines,"a");
+  document.getElementById("diff-code-b").innerHTML = `<div class="ov-ruler">${markB}</div>` + htmlSide(bLines,"b");
+  document.getElementById("diff-head-a").textContent = `A · ${A_NAME} — ${it.f}(虚拟文档)`;
+  document.getElementById("diff-head-b").textContent = `B · ${B_NAME} — ${it.f}(虚拟文档)`;
+  document.getElementById("diff-pos").textContent = "1 / 1";
+  showScreen(5);
+}
+
+/* ================= 屏幕切换 ================= */
+const SIDEBAR = {1:"welcome", 2:"welcome", 3:"tree", 4:"tree", 5:"tree", 6:"rules", 7:"rules", 8:"rules"};
+const EDITOR  = {1:"ed-welcome", 2:"ed-quickpick", 3:"ed-empty", 4:"ed-report", 5:"ed-diff", 6:"ed-rules", 7:"ed-newrule", 8:"ed-script"};
+function showScreen(n){
+  document.querySelectorAll(".screen-tab").forEach(t=>t.classList.toggle("active", +t.dataset.screen===n));
+  document.getElementById("sidebar-welcome").hidden = SIDEBAR[n]!=="welcome";
+  document.getElementById("sidebar-tree").hidden = SIDEBAR[n]!=="tree";
+  ["ed-welcome","ed-quickpick","ed-empty","ed-report","ed-diff","ed-rules","ed-newrule","ed-script"].forEach(id=>{
+    document.getElementById(id).hidden = EDITOR[n]!==id;
+  });
+  document.getElementById("st-diff").hidden = n < 3;
+  document.querySelectorAll(".screen-notes").forEach(nt=>nt.hidden = +nt.dataset.notes!==n);
+}
+document.querySelectorAll(".screen-tab").forEach(t=>t.addEventListener("click", ()=>showScreen(+t.dataset.screen)));
+document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click", ()=>showScreen(+b.dataset.goto)));
+
+/* ================= 主题切换 ================= */
+document.querySelectorAll(".theme-btn").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll(".theme-btn").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    const f = document.getElementById("frame");
+    f.classList.remove("light","hc");
+    if(b.dataset.theme) f.classList.add(b.dataset.theme);
+  });
+});
+
+/* ================= 计数刷新(全部由数据推导,保持一致) ================= */
+function refreshCounts(){
+  const cnt = st => DATA.filter(d=>d.st===st).length;
+  const active = DATA.filter(d=>d.st!=="equ" && d.st!=="ign").length;
+  const set = (id,v)=>{ const el = document.getElementById(id); if(el) el.textContent = v; };
+  set("c-all", active); set("c-mod", cnt("mod")); set("c-type", cnt("type"));
+  set("c-onlya", cnt("onlya")); set("c-onlyb", cnt("onlyb"));
+  set("c-equ", cnt("equ")); set("c-ign", cnt("ign"));
+  set("st-diff-n", active);
+  set("report-meta", `共 ${DATA.length + SAME_TOTAL} 个键 · ${active} 处差异 · ${cnt("equ")} 项规则等价 · ${cnt("ign")} 项已忽略 · 比较于 14:32 · 搜索 180ms 防抖,超过 5000 行自动启用虚拟滚动`);
+}
+
+/* ================= 初始化 ================= */
+renderTree();
+renderReport();
+refreshCounts();
+showScreen(3);
+
+/* 规则开关(勾选即启停) */
+document.getElementById("sidebar-rules").addEventListener("click", function(e){
+  const chk = e.target.closest(".rule-chk");
+  if(chk) chk.classList.toggle("on");
+});
+
+/* 分组切换:按文件 ⇄ 按状态 */
+document.getElementById("va-group").addEventListener("click", function(){
+  groupMode = groupMode === "file" ? "status" : "file";
+  this.classList.toggle("on", groupMode === "file");
+  renderTree();
+  document.getElementById("tree-sub").textContent = `order-service ⇄ order-service-template · 2 个文件 · ${groupMode==="file"?"按文件分组":"按状态分组"}`;
+});
+
+/* 添加规则入口:侧边栏 + → 向导 */
+document.getElementById("va-addrule").addEventListener("click", ()=>showScreen(7));
+
+/* 规则编辑器:卡片 ⇄ 源码 双视图(同一份数据) */
+function showRuleView(v){
+  document.getElementById("rule-cards-view").hidden = v !== "cards";
+  document.getElementById("rule-src-view").hidden = v !== "src";
+  document.getElementById("rv-cards").classList.toggle("active", v === "cards");
+  document.getElementById("rv-src").classList.toggle("active", v === "src");
+}
+document.getElementById("rv-cards").addEventListener("click", ()=>showRuleView("cards"));
+document.getElementById("rv-src").addEventListener("click", ()=>showRuleView("src"));
+/* 卡片上的 {} → 跳到源码对应行并高亮 */
+document.querySelectorAll("[data-src]").forEach(b=>b.addEventListener("click", ()=>{
+  showRuleView("src");
+  const el = document.getElementById(b.dataset.src);
+  if(el){ el.scrollIntoView({block:"center"}); el.classList.add("hl"); setTimeout(()=>el.classList.remove("hl"), 1600); }
+}));
+</script>
+</body>
+</html>

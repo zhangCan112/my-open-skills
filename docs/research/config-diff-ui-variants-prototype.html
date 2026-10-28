@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROTOTYPE — Config Diff 差异结果页 · 3 变体</title>
+<!--
+  PROTOTYPE(用完即弃)
+  问题: 差异结果页应该长什么样?
+  3 个结构不同的变体: ?variant=a(三栏工作台) | b(单页仪表盘) | c(向导流)
+  底部浮条 或 ←/→ 方向键切换 · 数据为演示子集 · 只读,无持久化
+-->
+<style>
+*{box-sizing:border-box; margin:0; padding:0;}
+body{background:#1e1e1e; color:#cccccc; font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif; font-size:13px; padding-bottom:90px;}
+.mono{font-family:Consolas,Menlo,monospace;}
+.dim{color:#9d9d9d;}
+code{font-family:Consolas,Menlo,monospace; font-size:12px;}
+
+/* 顶部问题声明 */
+#proto-note{background:#3a2f14; border-bottom:1px solid #6b5a1e; color:#e8c96a; padding:9px 20px; font-size:12.5px; line-height:1.6;}
+#proto-note b{color:#ffd97a;}
+
+/* 状态徽标 */
+.pill{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; padding:1px 8px; border-radius:9px; border:1px solid currentColor; white-space:nowrap; vertical-align:1px;}
+.st-mod{color:#e2c08d;} .st-type{color:#d18616;} .st-onlya{color:#e0704f;} .st-onlyb{color:#81b88b;}
+.st-equ{color:#b180d7;} .st-ign{color:#9d9d9d;} .st-scr{color:#569cd6;}
+.absent{color:#9d9d9d; font-style:italic;}
+.cnt{background:#4d4d4d; color:#fff; border-radius:9px; padding:0 7px; font-size:10.5px; line-height:16px;}
+.chev{color:#9d9d9d; font-size:10px; width:12px; display:inline-block;}
+
+/* 变体注释条 */
+.vnote{background:#252526; border-bottom:1px solid #3c3c3c; padding:8px 20px; font-size:12px; color:#9d9d9d; line-height:1.6;}
+.vnote b{color:#e7e7e7;}
+
+/* ============ 变体 A:三栏工作台 ============ */
+.wb{border:1px solid #3c3c3c; border-radius:8px; overflow:hidden; margin:14px 20px;}
+.wb-title{height:32px; background:#3c3c3c; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9d9d9d;}
+.wb-main{display:flex; min-height:480px; background:#1e1e1e;}
+.wb-side{width:300px; flex-shrink:0; background:#252526; border-right:1px solid #3c3c3c; overflow:auto; max-height:560px;}
+.wb-side::-webkit-scrollbar{width:10px;} .wb-side::-webkit-scrollbar-thumb{background:#79797966;}
+.wb-sidehead{display:flex; align-items:center; gap:8px; padding:10px 12px; font-weight:600; font-size:12px; color:#e7e7e7; border-bottom:1px solid #3c3c3c;}
+.wb-sidehead .cnt{margin-left:auto;}
+.wb-editor{flex:1; min-width:0; display:flex; flex-direction:column;}
+.atabs{display:flex; background:#252526; border-bottom:1px solid #3c3c3c;}
+.atab{padding:8px 16px; font-size:12px; color:#9d9d9d; cursor:default; border-right:1px solid #3c3c3c;}
+.atab.on{background:#1e1e1e; color:#e7e7e7;}
+.abody{flex:1; overflow:auto; padding:14px; max-height:520px;}
+.tfile{display:flex; align-items:center; gap:6px; padding:6px 10px; cursor:default; font-weight:600; background:#2d2d2d; margin-top:2px; white-space:nowrap;}
+.tfile:hover{background:#37373d;}
+.tfile .ficon{color:#e2c08d;}
+.tfile.closed .chev{transform:rotate(-90deg); display:inline-block;}
+.tsec{display:flex; align-items:center; gap:6px; padding:5px 10px 5px 24px; color:#cccccc; white-space:nowrap; font-size:12px;}
+.tsec .cnt{margin-left:auto;}
+.tleaf{display:flex; align-items:center; gap:6px; padding:3px 10px 3px 40px; cursor:default; white-space:nowrap;}
+.tleaf:hover{background:#2a2d2e;}
+.tleaf.sel{background:#04395e;}
+.tleaf.sel .prev,.tleaf.sel .dim{color:rgba(255,255,255,.75);}
+.tleaf .k{overflow:hidden; text-overflow:ellipsis;}
+.tleaf .prev{margin-left:auto; font-size:11px; color:#9d9d9d; max-width:45%; overflow:hidden; text-overflow:ellipsis;}
+.dhead{display:flex; align-items:center; gap:10px; padding:8px 0; flex-wrap:wrap;}
+.dgrid{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:#3c3c3c; border:1px solid #3c3c3c;}
+.dpane{background:#1e1e1e;}
+.dph{padding:5px 10px; font-size:11px; color:#9d9d9d; background:#252526; border-bottom:1px solid #3c3c3c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.dc{padding:8px 10px; font-family:Consolas,Menlo,monospace; font-size:12.5px; line-height:1.7; word-break:break-all;}
+.dc .ln{color:#9d9d9d; opacity:.6; margin-right:10px; user-select:none;}
+.dc.rem{background:rgba(240,113,120,.14);} .dc.ins{background:rgba(89,168,105,.18);}
+.dfoot{padding:10px 0; font-size:11.5px; color:#9d9d9d;}
+.rtab{width:100%; border-collapse:collapse; font-size:12px;}
+.rtab td{padding:5px 8px; border-bottom:1px solid #333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px;}
+.rtab tr:hover td{background:#2a2d2e;}
+.hintline{padding:10px 2px; color:#9d9d9d; font-size:11.5px;}
+
+/* ============ 变体 B:单页仪表盘 ============ */
+.bp{max-width:1150px; margin:14px auto; border:1px solid #3c3c3c; border-radius:8px; overflow:hidden; background:#1e1e1e;}
+.bp-head{padding:14px 18px 0;}
+.bp-title{font-size:15px; font-weight:600; color:#e7e7e7; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.bp-sub{color:#9d9d9d; font-size:12px; margin-top:4px;}
+.bp-tools{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding:12px 0; border-bottom:1px solid #3c3c3c;}
+.chip{display:inline-flex; align-items:center; gap:6px; border:1px solid #454545; background:rgba(255,255,255,.05); color:#ccc; border-radius:14px; padding:3px 11px; font-size:11.5px; cursor:default; user-select:none;}
+.chip.active{background:#0e639c; border-color:#0e639c; color:#fff;}
+.chip .c{background:#4d4d4d; color:#fff; border-radius:8px; padding:0 6px; font-size:10px; line-height:15px;}
+.chip.active .c{background:rgba(255,255,255,.25);}
+.bsearch{margin-left:auto; background:#3c3c3c; border:1px solid #454545; color:#ccc; border-radius:4px; padding:4px 10px; font-size:12px; width:210px; font-family:inherit;}
+.bsearch:focus{outline:1px solid #007fd4;}
+.bp-body{max-height:520px; overflow:auto;}
+.bp-body::-webkit-scrollbar{width:10px;} .bp-body::-webkit-scrollbar-thumb{background:#79797966;}
+.ghead{padding:7px 18px; background:#252526; font-weight:600; font-size:12px; color:#e7e7e7; display:flex; gap:8px; align-items:center; position:sticky; top:0;}
+.brow{display:grid; grid-template-columns:104px minmax(200px,1.2fr) 110px 1fr 1fr 22px; gap:10px; align-items:center; padding:6px 18px; border-bottom:1px solid #2a2a2a; cursor:default; font-size:12px;}
+.brow:hover{background:#2a2d2e;}
+.brow .k{color:#e7e7e7; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.brow .f{font-size:11px;}
+.brow .v{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11.5px;}
+.brow .chev{text-align:right;}
+.bdetail{grid-column:1 / -1; background:#252526; border-bottom:1px solid #3c3c3c; padding:10px 18px 12px;}
+.bd-vals{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.bd-v{background:#1e1e1e; border:1px solid #3c3c3c; border-radius:4px; overflow:hidden;}
+.bd-v .h{padding:4px 10px; font-size:10.5px; color:#9d9d9d; background:#2d2d2d;}
+.bd-v code{display:block; padding:7px 10px; font-size:12px; word-break:break-all;}
+.bd-v.code-a code{background:rgba(240,113,120,.10);} .bd-v.code-b code{background:rgba(89,168,105,.12);}
+.bd-acts{margin-top:9px; display:flex; gap:8px;}
+.btn{background:#0e639c; color:#fff; border:none; border-radius:3px; padding:4px 12px; font-size:11.5px; cursor:default; font-family:inherit;}
+.btn.sec{background:rgba(255,255,255,.08); border:1px solid #454545; color:#ccc;}
+.emptyrow{padding:20px; text-align:center; color:#9d9d9d;}
+
+/* ============ 变体 C:向导流 ============ */
+.wz{max-width:980px; margin:14px auto; border:1px solid #3c3c3c; border-radius:8px; background:#1e1e1e; overflow:hidden;}
+.wz-steps{display:flex; align-items:center; gap:6px; padding:16px 22px 12px; flex-wrap:wrap;}
+.wstep{display:flex; align-items:center; gap:7px; font-size:12.5px; color:#9d9d9d; cursor:default;}
+.wstep .n{width:22px; height:22px; border-radius:50%; background:#3c3c3c; color:#ccc; display:inline-flex; align-items:center; justify-content:center; font-size:11.5px;}
+.wstep.done .n{background:#1a4a2e; color:#81b88b;}
+.wstep.cur{color:#e7e7e7; font-weight:600;}
+.wstep.cur .n{background:#0e639c; color:#fff;}
+.wstep-sep{color:#555; padding:0 2px;}
+.wz-body{padding:8px 22px 20px; min-height:330px;}
+.wz-h{font-size:16px; font-weight:600; color:#e7e7e7; margin-bottom:4px;}
+.wz-sub{color:#9d9d9d; font-size:12px; margin-bottom:16px;}
+.foldercards{display:flex; gap:14px; flex-wrap:wrap;}
+.fcard{flex:1; min-width:250px; border:1px solid #454545; border-radius:8px; padding:14px 16px; background:#252526;}
+.fcard b{display:flex; align-items:center; gap:8px; color:#e7e7e7;}
+.fcard p{font-size:11.5px; color:#9d9d9d; margin-top:6px; line-height:1.6; word-break:break-all;}
+.pickline{display:flex; align-items:center; gap:9px; padding:8px 4px; border-bottom:1px solid #2e2e2e; font-size:12.5px;}
+.pickline .cb{width:14px; height:14px; border:1px solid #0e639c; background:#0e639c; color:#fff; border-radius:3px; display:inline-flex; align-items:center; justify-content:center; font-size:10px;}
+.ruleline{display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid #2e2e2e; font-size:12.5px;}
+.ruleline .rl-d{color:#9d9d9d; font-size:11.5px; margin-left:auto; text-align:right;}
+.rcb{width:32px; height:17px; border-radius:9px; background:#555; position:relative; cursor:default; flex-shrink:0; transition:background .15s;}
+.rcb.on{background:#2ea043;}
+.rcb::after{content:""; position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:50%; background:#fff; transition:left .15s;}
+.rcb.on::after{left:17px;}
+.ccard{border:1px solid #454545; border-radius:8px; padding:14px 16px; background:#252526;}
+.cc-top{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px;}
+.cc-top .cpos{margin-left:auto; color:#9d9d9d; font-size:11.5px;}
+.cc-vals{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
+.cv{background:#1e1e1e; border:1px solid #3c3c3c; border-radius:5px; overflow:hidden;}
+.cvh{padding:4px 10px; font-size:10.5px; color:#9d9d9d; background:#2d2d2d;}
+.cv code{display:block; padding:9px 10px; font-size:12.5px; word-break:break-all;}
+.cv.va code{background:rgba(240,113,120,.10);} .cv.vb code{background:rgba(89,168,105,.12);}
+.cc-rule{margin-top:10px; font-size:11.5px; color:#b180d7;}
+.cc-acts{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;}
+.cnav{display:flex; gap:10px; margin-top:14px; align-items:center;}
+.cnav .pos{color:#9d9d9d; font-size:11.5px; margin-left:auto;}
+.cmini{margin-top:16px; display:flex; flex-wrap:wrap; gap:6px;}
+.mchip{border:1px solid #454545; background:rgba(255,255,255,.04); border-radius:12px; padding:2px 10px; font-size:11px; color:#ccc; cursor:default; font-family:Consolas,Menlo,monospace;}
+.mchip.cur{background:#04395e; border-color:#0e639c; color:#fff;}
+.wz-foot{display:flex; gap:10px; padding:12px 22px; border-top:1px solid #3c3c3c; background:#252526; align-items:center;}
+.wz-foot .sp{flex:1;}
+.done-note{color:#81b88b; font-size:12px;}
+
+/* 规则入口(A 标签页 / B 抽屉 / C 流程步) */
+.svtabs{display:flex; background:#252526; border-bottom:1px solid #3c3c3c;}
+.svt{flex:1; text-align:center; padding:7px 4px; font-size:12px; color:#9d9d9d; cursor:default;}
+.svt.on{color:#e7e7e7; background:#1e1e1e; box-shadow:inset 0 -2px 0 #0e639c;}
+.brules{padding:10px 18px; background:#252526; border-bottom:1px solid #3c3c3c;}
+.wlink{color:#3794ff; cursor:default;}
+.wlink:hover{text-decoration:underline;}
+
+/* ============ 底部切换浮条 ============ */
+#switcher{position:fixed; left:50%; transform:translateX(-50%); bottom:18px; display:flex; align-items:center; gap:10px; background:#111; border:1px solid #666; border-radius:999px; padding:8px 16px; box-shadow:0 10px 34px rgba(0,0,0,.65); z-index:99; font-size:12.5px; color:#ddd;}
+#switcher .arr{width:28px; height:28px; border-radius:50%; border:1px solid #666; background:#222; color:#ddd; cursor:pointer; font-size:12px; line-height:1;}
+#switcher .arr:hover{background:#333;}
+#switcher .lab b{color:#ffd97a; font-size:13px;}
+#switcher .lab span{color:#999;}
+#switcher .dots{display:flex; gap:4px; margin-left:4px;}
+#switcher .dot{width:22px; height:22px; border-radius:50%; border:1px solid #666; background:#222; color:#ccc; font-size:11px; cursor:pointer;}
+#switcher .dot.cur{background:#ffd97a; color:#111; border-color:#ffd97a; font-weight:700;}
+#switcher .kbs{color:#777; font-size:10.5px; border-left:1px solid #444; padding-left:10px;}
+@media (max-width:760px){
+  .wb-side{display:none;}
+  .dgrid,.bd-vals,.cc-vals{grid-template-columns:1fr;}
+  .brow{grid-template-columns:90px 1fr 1fr; }
+  .brow .f,.brow .v:nth-of-type(2),.brow .chev{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div id="proto-note">
+  🧪 <b>PROTOTYPE(用完即弃)</b> · 问题:<b>差异结果页应该长什么样?</b> · 三个结构不同的变体:A 三栏工作台 / B 单页仪表盘 / C 向导流 · 用底部浮条或 <b>← →</b> 方向键切换,地址栏 <b>?variant=a|b|c</b> 可分享 · 数据为演示子集,只读无持久化 · 看完告诉我"选哪个 / 要谁家的哪一块"
+</div>
+
+<div id="stage"></div>
+
+<div id="switcher">
+  <button class="arr" data-dir="-1" title="上一个变体">◀</button>
+  <div class="lab" id="sw-label"></div>
+  <div class="dots" id="sw-dots"></div>
+  <button class="arr" data-dir="1" title="下一个变体">▶</button>
+  <div class="kbs">← → 切换</div>
+</div>
+
+<script>
+/* ================= 共享数据(演示子集) ================= */
+const A_NAME = "order-service", B_NAME = "order-service-template";
+const DATA = [
+  {f:"application.yaml", key:"server.port",               a:"8080",                            b:"8081",                              st:"mod"},
+  {f:"application.yaml", key:"server.http2.enabled",      a:null,                              b:"false",                             st:"onlyb"},
+  {f:"application.yaml", key:"database.url",              a:"jdbc:mysql://dev.db:3306/orders", b:"jdbc:mysql://prod.db:3306/orders",  st:"mod"},
+  {f:"application.yaml", key:"database.pool.maxSize",     a:"20",                              b:"\"20\"",                            st:"type", aT:"number", bT:"string"},
+  {f:"application.yaml", key:"database.pool.minIdle",     a:"5",                               b:null,                                st:"onlya"},
+  {f:"application.yaml", key:"cache.redis.host",          a:"redis-dev.local",                 b:"redis-prod.internal",               st:"equ", orig:"mod", rule:"值等价 · Redis 主机映射"},
+  {f:"application.yaml", key:"cache.ttlSeconds",          a:"3600",                            b:"\"3600\"",                          st:"type", aT:"number", bT:"string"},
+  {f:"application.yaml", key:"logging.level.root",        a:"INFO",                            b:"DEBUG",                             st:"mod"},
+  {f:"application.yaml", key:"logging.file.path",         a:"./logs/dev",                      b:null,                                st:"ign", orig:"onlya", rule:"忽略 · logging.file.*"},
+  {f:"application.yaml", key:"feature.checkout.enabled",  a:"true",                            b:"false",                             st:"mod"},
+  {f:"application.yaml", key:"feature.beta.search",       a:"true",                            b:null,                                st:"ign", orig:"onlya", rule:"忽略 · feature.beta.*"},
+  {f:"application.yaml", key:"security.oauth.audience",   a:"orders-dev",                      b:null,                                st:"onlya"},
+  {f:"application.yaml", key:"metrics.export.interval",   a:null,                              b:"30s",                               st:"onlyb"},
+  {f:".env",             key:"DATABASE_HOST",             a:"dev.db:3306",                     b:"prod.db:3306",                      st:"mod"},
+  {f:".env",             key:"LOG_LEVEL",                 a:"debug",                           b:"info",                              st:"mod"},
+  {f:".env",             key:"API_KEY",                   a:"${API_KEY}",                      b:null,                                st:"onlya"},
+  {f:".env",             key:"FEATURE_DARK_MODE",         a:null,                              b:"true",                              st:"onlyb"},
+];
+const ST = {
+  mod:  {i:"≠", l:"值不同",   c:"st-mod"},
+  type: {i:"⇄", l:"类型不同", c:"st-type"},
+  onlya:{i:"−", l:"仅在 A",  c:"st-onlya"},
+  onlyb:{i:"+", l:"仅在 B",  c:"st-onlyb"},
+  equ:  {i:"≈", l:"规则等价", c:"st-equ"},
+  ign:  {i:"⊘", l:"已忽略",  c:"st-ign"},
+};
+const SECS = ["mod","type","onlya","onlyb","equ","ign"];
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const pill = st => { const m = ST[st]; return `<span class="pill ${m.c}">${m.i} ${m.l}</span>`; };
+const valOrNone = v => v===null ? `<span class="absent">— 不存在 —</span>` : esc(v);
+function note(text){ return `<div class="vnote">${text}</div>`; }
+
+/* ================= 变体 A:三栏工作台(当前定稿方向) ================= */
+const S = {
+  a: {open:{}, sel:null, tab:"report", view:"diff"},
+  b: {filter:"all", group:"file", q:"", exp:new Set(), showRules:false},
+  c: {step:4, idx:0, done:false},
+};
+function renderA(){
+  const view = S.a.view || "diff";
+  const files = [...new Set(DATA.map(d=>d.f))];
+  let tree = "";
+  for(const f of files){
+    const open = S.a.open[f] !== false;
+    const items = DATA.filter(d=>d.f===f);
+    const active = items.filter(d=>{const e=eff(d); return e!=="equ" && e!=="ign";}).length;
+    tree += `<div class="tfile${open?"":" closed"}" data-act="a-file" data-f="${esc(f)}"><span class="chev">▼</span><span class="ficon">⚙</span> <span class="mono">${esc(f)}</span> <span class="cnt" style="margin-left:auto">${active}</span></div>`;
+    if(!open) continue;
+    for(const st of SECS){
+      const its = items.filter(d=>eff(d)===st);
+      if(!its.length) continue;
+      tree += `<div class="tsec"><span class="${ST[st].c}">${ST[st].i}</span> ${ST[st].l} <span class="cnt">${its.length}</span></div>`;
+      for(const it of its){
+        const prev = st==="mod" ? `${it.a} → ${it.b}` : st==="type" ? `${it.a} ⇄ ${it.b}` : st==="equ" ? `${it.a} ≈ ${it.b}` : valOrNone(it.a ?? it.b);
+        tree += `<div class="tleaf${S.a.sel===it?" sel":""}" data-act="a-sel" data-k="${esc(it.key)}" title="${esc(it.f)} / ${esc(it.key)}"><span class="${ST[st].c}">${ST[st].i}</span><span class="k">${esc(it.key.split(".").pop())}</span><span class="prev mono">${esc(prev)}</span></div>`;
+      }
+    }
+  }
+  const sel = S.a.sel;
+  let editor;
+  if(S.a.tab==="diff" && sel){
+    const v = {a:valOrNone(sel.a), b:valOrNone(sel.b)};
+    const changed = sel.st!=="equ" && sel.st!=="ign";
+    const noteTxt = sel.st==="type" ? `⇄ 类型不同: ${sel.aT} (A) vs ${sel.bT} (B)` : sel.st==="equ" ? `≈ 视为等价 —— 命中规则: ${sel.rule}` : sel.st==="ign" ? `⊘ 已忽略 —— 命中规则: ${sel.rule}` : sel.st==="mod" ? "值不同:两侧值不相等" : sel.a===null ? `该键仅存在于 B(A 侧缺失)` : `该键仅存在于 A(B 侧缺失)`;
+    editor = `<div class="abody">
+      <div class="dhead"><b class="mono">${esc(sel.f)} / ${esc(sel.key)}</b> ${pill(sel.st)} <span class="dim">${esc(noteTxt)}</span></div>
+      <div class="dgrid">
+        <div class="dpane"><div class="dph">A · ${A_NAME}(虚拟文档)</div><div class="dc${changed&&sel.a!==null?" rem":""}"><span class="ln">1</span>${v.a}</div></div>
+        <div class="dpane"><div class="dph">B · ${B_NAME}(虚拟文档)</div><div class="dc${changed&&sel.b!==null?" ins":""}"><span class="ln">1</span>${v.b}</div></div>
+      </div>
+      <div class="dfoot">真实扩展中由 <code>vscode.diff</code> 打开 —— 并排视图、gutter 着色、F7 无障碍查看器都是原生能力,扩展零成本获得</div>
+    </div>`;
+  } else {
+    editor = `<div class="abody">
+      <div class="hintline">点击左侧树中的任意键 → 右侧切换到键级 Diff。下面是紧凑报告表(真实实现中由 Webview 承载,带过滤与搜索):</div>
+      <table class="rtab"><tbody>
+      ${DATA.map(it=>`<tr data-act="a-sel" data-k="${esc(it.key)}" style="cursor:default"><td style="width:90px">${pill(it.st)}</td><td class="mono">${esc(it.f)}</td><td class="mono">${esc(it.key)}</td><td class="mono dim">${valOrNone(it.a)}</td><td class="mono dim">${valOrNone(it.b)}</td></tr>`).join("")}
+      </tbody></table>
+    </div>`;
+  }
+  return note(`<b>A · 三栏工作台</b> —— 哲学:<b>做 VS Code 的原生公民</b>:活动栏视图 + 四分区树导航 + 内置 Diff。适合:每天处理配置的熟练用户。代价:新手要理解「树 ↔ 编辑器」两个区域的联动。<b>规则入口:</b>侧边栏顶部「差异 / ⚙ 规则」标签页 —— 规则是常驻视图,开关即时反映到树。`) +
+`<div class="wb">
+  <div class="wb-title">order-service [Config Diff] — Visual Studio Code</div>
+  <div class="wb-main">
+    <div class="wb-side">
+      <div class="wb-sidehead">⚖ 配置对比 <span class="cnt">${activeCount()} 处差异</span></div>
+      <div class="svtabs">
+        <span class="svt${view==="diff"?" on":""}" data-act="a-view" data-v="diff">差异</span>
+        <span class="svt${view==="rules"?" on":""}" data-act="a-view" data-v="rules">⚙ 规则(${RULES.length})</span>
+      </div>
+      ${view==="rules" ? rulesView() : tree}
+    </div>
+    <div class="wb-editor">
+      <div class="atabs">
+        <span class="atab${S.a.tab!=="diff"?" on":""}" data-act="a-tab" data-t="report">对比报告(17 键)</span>
+        <span class="atab${S.a.tab==="diff"?" on":""}" data-act="a-tab" data-t="diff">键级 Diff${sel?" · "+esc(sel.key):""}</span>
+      </div>
+      ${editor}
+    </div>
+  </div>
+</div>`;
+}
+
+/* ================= 变体 B:单页仪表盘 ================= */
+function renderB(){
+  const q = (S.b.q||"").toLowerCase();
+  const active = DATA.filter(d=>{const e=eff(d); return e!=="equ" && e!=="ign";});
+  const cnt = st => DATA.filter(d=>eff(d)===st).length;
+  let rows = DATA.filter(it => { const e = eff(it); return S.b.filter==="all" ? (e!=="equ" && e!=="ign") : e===S.b.filter; });
+  if(q) rows = rows.filter(it => (it.key+" "+it.a+" "+it.b+" "+it.f).toLowerCase().includes(q));
+  rows = [...rows].sort((x,y)=> x.f<y.f?-1 : x.f>y.f?1 : 0);
+  const groups = {}; const order = [];
+  for(const it of rows){
+    const g = S.b.group==="file" ? it.f : eff(it);
+    if(!groups[g]){ groups[g] = []; order.push(g); }
+    groups[g].push(it);
+  }
+  let body = "";
+  for(const g of order){
+    body += `<div class="ghead">${S.b.group==="file" ? "📄 "+esc(g) : pill(g)} <span class="cnt">${groups[g].length}</span></div>`;
+    for(const it of groups[g]){
+      const ex = S.b.exp.has(it.key);
+      body += `<div class="brow" data-act="b-exp" data-k="${esc(it.key)}">
+        ${pill(eff(it))}<span class="k mono">${esc(it.key)}</span><span class="f dim">${esc(it.f)}</span>
+        <span class="v mono">${valOrNone(it.a)}</span><span class="v mono">${valOrNone(it.b)}</span><span class="chev">${ex?"▾":"▸"}</span></div>`;
+      if(ex){
+        const ruleLine = (it.rule && eff(it)===it.st) ? `<div class="dim" style="margin-top:8px; font-size:11.5px;">命中规则: ${esc(it.rule)}</div>` : "";
+        body += `<div class="bdetail">
+          <div class="bd-vals">
+            <div class="bd-v code-a"><div class="h">A · ${A_NAME}</div><code>${valOrNone(it.a)}</code></div>
+            <div class="bd-v code-b"><div class="h">B · ${B_NAME}</div><code>${valOrNone(it.b)}</code></div>
+          </div>${ruleLine}
+          <div class="bd-acts"><button class="btn">⧉ 打开内置 Diff</button><button class="btn sec">⊘ 忽略此键</button>${it.st==="mod"?'<button class="btn sec">≈ 设为等价</button>':""}</div>
+        </div>`;
+      }
+    }
+  }
+  if(!rows.length) body = `<div class="emptyrow">没有匹配的条目</div>`;
+  const chip = (k,label,n) => `<span class="chip${S.b.filter===k?" active":""}" data-act="b-filter" data-f="${k}">${label} <span class="c">${n}</span></span>`;
+  return note(`<b>B · 单页仪表盘</b> —— 哲学:<b>一页看全部</b>:搜索 + 可展开表格(类 GitHub PR 的 Files changed),不要侧边树。适合:总览、审查、导出报告。代价:「边看树边修」的上下文感弱;全部押在 Webview 上。试试:点行展开、切分组、搜索。<b>规则入口:</b>工具栏「⚙ 规则」抽屉,随手开关,表格实时变化。`) +
+`<div class="bp">
+  <div class="bp-head">
+    <div class="bp-title">配置对比报告 <span class="pill st-mod">≠ ${active.length} 处差异</span> <span class="pill st-equ">≈ ${cnt("equ")} 规则等价</span> <span class="pill st-ign">⊘ ${cnt("ign")} 已忽略</span></div>
+    <div class="bp-sub">${A_NAME} ⇄ ${B_NAME} · application.yaml + .env · 2 个文件 · 共 ${DATA.length} 个差异键 · 87 个一致键已折叠</div>
+    <div class="bp-tools">
+      <span class="chip${S.b.showRules?" active":""}" data-act="b-rules" title="查看 / 开关规则">⚙ 规则 <span class="c">${enabledRules()}/${RULES.length}</span></span>
+      <span style="width:1px; height:18px; background:#3c3c3c;"></span>
+      ${chip("all","全部",active.length)}${chip("mod","≠ 值不同",cnt("mod"))}${chip("type","⇄ 类型",cnt("type"))}${chip("onlya","− 仅在 A",cnt("onlya"))}${chip("onlyb","+ 仅在 B",cnt("onlyb"))}
+      <span class="chip${S.b.group==="file"?" active":""}" data-act="b-group" data-g="file">按文件</span>
+      <span class="chip${S.b.group==="status"?" active":""}" data-act="b-group" data-g="status">按状态</span>
+      <input class="bsearch" placeholder="🔍 搜索键路径或值…" value="${esc(S.b.q||"")}">
+    </div>
+    ${S.b.showRules ? `<div class="brules"><div class="dim" style="font-size:11px; padding-bottom:4px;">开关立即影响下方表格(试试关掉 Redis 主机等价):</div>${rulesRows("b-rule")}<div style="padding-top:8px;"><button class="btn" data-act="goto-wizard">+ 添加规则(打开向导)</button></div></div>` : ""}
+  </div>
+  <div class="bp-body" id="b-body">${body}</div>
+</div>`;
+}
+
+/* ================= 变体 C:向导流 ================= */
+const RULES = [
+  {r:"envPair", t:"⇄ 文件配对", cls:"st-onlyb", d:".env.dev ⇄ .env.prod.example", lock:true},
+  {r:"empty",   t:"≈ 值等价",  cls:"st-equ",  d:'"" ≈ null(空值等价)'},
+  {r:"coerce",  t:"≈ 值等价",  cls:"st-equ",  d:"数字 ≈ 字符串(类型宽化,20 ≈ \"20\")"},
+  {r:"redis",   t:"≈ 值等价",  cls:"st-equ",  d:"cache.redis.host: redis-dev.local ≈ redis-prod.internal"},
+  {r:"ign",     t:"⊘ 忽略",    cls:"st-ign",  d:"logging.file.* 与 feature.beta.* 不参与比较"},
+  {r:"script",  t:"ƒ 脚本",    cls:"st-scr",  d:"rules/env-normalizer.js(自定义判定)"},
+];
+const RULE_ON = {redis:true, ign:true}; // 其余规则在本原型中不影响结果判定
+function eff(it){
+  if(it.st==="equ" && RULE_ON.redis===false) return "mod";
+  if(it.st==="ign" && RULE_ON.ign===false) return it.orig;
+  return it.st;
+}
+const enabledRules = () => RULES.filter(r=>r.lock || RULE_ON[r.r]!==false).length;
+const activeCount = () => DATA.filter(d=>{const e=eff(d); return e!=="equ" && e!=="ign";}).length;
+function rulesRows(act){
+  return RULES.map(r=>`<div class="ruleline"><span class="pill ${r.cls}">${r.t}</span><span style="flex:1; font-size:11.5px;">${esc(r.d)}</span><span class="rcb${r.lock||RULE_ON[r.r]!==false?" on":""}" data-act="${act}" data-r="${r.r}" title="${r.lock?"由文件选择生成,不可关":"点击开关此规则"}"></span></div>`).join("");
+}
+function rulesView(){
+  return `<div class="dim" style="padding:9px 12px 2px; font-size:11px;">开关立即生效:关掉「Redis 主机」,回差异页它就显示为 值不同。</div>` +
+    rulesRows("a-rule") +
+    `<div style="padding:12px"><button class="btn" data-act="goto-wizard">+ 添加规则(打开向导)</button></div>`;
+}
+function renderC(){
+  const steps = ["选择项目","选择文件","规则","查看差异"];
+  const stepper = steps.map((s,i)=>{
+    const n = i+1, cls = n<S.c.step ? "done" : n===S.c.step ? "cur" : "";
+    return `<span class="wstep ${cls}" data-act="c-step" data-n="${n}"><span class="n">${n<S.c.step?"✓":n}</span> ${s}</span>${n<4?'<span class="wstep-sep">———</span>':""}`;
+  }).join("");
+  let body = "";
+  if(S.c.step===1){
+    body = `<div class="wz-h">选择要比较的两个项目</div><div class="wz-sub">左边是基准(A),右边是参照(B)。之后可随时对调。</div>
+    <div class="foldercards">
+      <div class="fcard"><b>📁 A · 基准</b><p>E:\\work\\order-service<br><span style="color:#81b88b">✓ 已选择</span></p></div>
+      <div class="fcard"><b>📁 B · 参照</b><p>E:\\work\\order-service-template<br><span style="color:#81b88b">✓ 已选择</span></p></div>
+    </div>`;
+  } else if(S.c.step===2){
+    body = `<div class="wz-h">选择要对比的配置文件</div><div class="wz-sub">已按配对规则自动勾选;可增减。</div>
+    <div class="pickline"><span class="cb">✓</span> <span class="mono">application.yaml</span> <span class="dim" style="margin-left:auto">两侧均存在</span></div>
+    <div class="pickline"><span class="cb">✓</span> <span class="mono">.env.dev ⇄ .env.prod.example</span> <span class="dim" style="margin-left:auto">由文件配对规则组成</span></div>`;
+  } else if(S.c.step===3){
+    body = `<div class="wz-h">比较规则</div><div class="wz-sub">全部可选。开关会实时影响下一步的结果 —— 试试关掉「Redis 主机等价」再进第 4 步。变体 A / B 的「添加规则」按钮也落到这一步。</div>
+    ${RULES.map(r=>`<div class="ruleline"><span class="pill ${r.cls}">${r.t}</span> <span>${esc(r.d)}</span><span class="rl-d">${r.lock?'<span class="pill st-onlyb">向导中创建</span>':""}</span><span class="rcb${r.lock||RULE_ON[r.r]!==false?" on":""}" data-act="c-rule" data-r="${r.r}" title="${r.lock?"由第 2 步的选择生成":"点击开关此规则"}"></span></div>`).join("")}`;
+  } else {
+    const list = DATA.filter(it=>{ const e = eff(it); return e!=="equ" && e!=="ign"; });
+    S.c.idx = Math.max(0, Math.min(S.c.idx, list.length-1));
+    const it = list[S.c.idx];
+    const e = eff(it);
+    const changed = e!=="equ" && e!=="ign";
+    body = `<div class="wz-h">逐处查看差异</div>
+    <div class="wz-sub">结果由第 3 步的规则实时决定 · <span class="wlink" data-act="c-step" data-n="3">⚙ 调整规则</span> · 关掉规则后,对应的键会回落为普通差异</div>
+    <div class="ccard">
+      <div class="cc-top">${pill(e)} <span class="dim">${esc(it.f)}</span> · <b class="mono">${esc(it.key)}</b>${it.rule && e===it.st ? `<span class="cc-rule" style="margin:0 0 0 auto">命中: ${esc(it.rule)}</span>`:""} <span class="cpos">${S.c.idx+1} / ${list.length}</span></div>
+      <div class="cc-vals">
+        <div class="cv va"><div class="cvh">A · ${A_NAME}</div><code>${valOrNone(it.a)}</code></div>
+        <div class="cv vb"><div class="cvh">B · ${B_NAME}</div><code>${valOrNone(it.b)}</code></div>
+      </div>
+      <div class="cc-acts"><button class="btn">⧉ 打开内置 Diff</button><button class="btn sec">⊘ 忽略此键</button>${e==="mod"?'<button class="btn sec">≈ 设为等价</button>':""}</div>
+    </div>
+    <div class="cnav">
+      <button class="btn sec" data-act="c-prev">← 上一处</button>
+      <button class="btn" data-act="c-next">下一处 →</button>
+      <span class="pos">差异共 ${list.length} 处 · 已看 ${S.c.idx+1} 处</span>
+    </div>
+    <div class="cmini">${list.map((x,i)=>`<span class="mchip${i===S.c.idx?" cur":""}" data-act="c-jump" data-i="${i}" title="${esc(x.f)}">${esc(x.key)}</span>`).join("")}</div>`;
+  }
+  const foot = `<div class="wz-foot">
+    ${S.c.step>1?'<button class="btn sec" data-act="c-back">← 上一步</button>':"<span></span>"}
+    <span class="sp"></span>
+    ${S.c.step<4 ? '<button class="btn" data-act="c-next2">下一步 →</button>' : (S.c.done ? '<span class="done-note">✓ 报告已导出(示意)</span>' : '<button class="btn" data-act="c-done">完成 · 导出报告</button>')}
+  </div>`;
+  return note(`<b>C · 向导流</b> —— 哲学:<b>手把手,一次只做一件事</b>:步骤条 + 每步一个焦点,规则开关实时影响结果。适合:小白 / 首次使用。代价:熟练用户嫌步骤多余(所以向导只是入口之一,结果态与 A/B 殊途同归)。试试:第 3 步开关规则 → 第 4 步看变化;<b>规则入口:</b>向导第 3 步,第 4 步有「⚙ 调整规则」直达链接。`) +
+`<div class="wz">
+  <div class="wz-steps">${stepper}</div>
+  <div class="wz-body">${body}</div>
+  ${foot}
+</div>`;
+}
+
+/* ================= 变体注册与切换 ================= */
+const Variants = {
+  a: {name:"三栏工作台", render:renderA},
+  b: {name:"单页仪表盘", render:renderB},
+  c: {name:"向导流",     render:renderC},
+};
+const KEYS = Object.keys(Variants);
+let current = (new URLSearchParams(location.search).get("variant") || "a").toLowerCase();
+if(!Variants[current]) current = "a";
+const stage = document.getElementById("stage");
+
+function render(){
+  stage.innerHTML = Variants[current].render();
+  document.getElementById("sw-label").innerHTML = `<b>${current.toUpperCase()}</b> · ${Variants[current].name}`;
+  document.getElementById("sw-dots").innerHTML = KEYS.map(k=>`<button class="dot${k===current?" cur":""}" data-v="${k}" title="${Variants[k].name}">${k.toUpperCase()}</button>`).join("");
+  try{ history.replaceState(null, "", `?variant=${current}`); }catch(_){}
+  window.scrollTo(0,0);
+}
+function cycle(dir){
+  const i = KEYS.indexOf(current);
+  current = KEYS[(i + dir + KEYS.length) % KEYS.length];
+  render();
+}
+function setVariant(v){ if(Variants[v]){ current = v; render(); } }
+
+/* 交互:全部委托,状态存在 S 里,整段重渲染 */
+stage.addEventListener("click", e=>{
+  const t = e.target.closest("[data-act]");
+  if(!t) return;
+  const act = t.dataset.act;
+  if(act==="a-file"){ const f = t.dataset.f; S.a.open[f] = S.a.open[f]===false; render(); }
+  else if(act==="a-sel"){ S.a.sel = DATA.find(d=>d.key===t.dataset.k); S.a.tab = "diff"; render(); }
+  else if(act==="a-tab"){ S.a.tab = t.dataset.t; render(); }
+  else if(act==="b-filter"){ S.b.filter = t.dataset.f; render(); }
+  else if(act==="b-group"){ S.b.group = t.dataset.g; render(); }
+  else if(act==="b-exp"){ const k = t.dataset.k; S.b.exp.has(k) ? S.b.exp.delete(k) : S.b.exp.add(k); render(); }
+  else if(act==="c-step"){ S.c.step = +t.dataset.n; render(); }
+  else if(act==="c-back"){ S.c.step = Math.max(1, S.c.step-1); render(); }
+  else if(act==="c-next2"){ S.c.step = Math.min(4, S.c.step+1); render(); }
+  else if(act==="c-next"){ S.c.idx++; render(); }
+  else if(act==="c-prev"){ S.c.idx = Math.max(0, S.c.idx-1); render(); }
+  else if(act==="c-jump"){ S.c.idx = +t.dataset.i; render(); }
+  else if(act==="a-rule" || act==="b-rule" || act==="c-rule"){
+    const r = t.dataset.r; const rule = RULES.find(x=>x.r===r);
+    if(rule && !rule.lock){ RULE_ON[r] = !(RULE_ON[r]!==false); render(); }
+  }
+  else if(act==="a-view"){ S.a.view = t.dataset.v; render(); }
+  else if(act==="b-rules"){ S.b.showRules = !S.b.showRules; render(); }
+  else if(act==="goto-wizard"){ setVariant("c"); S.c.step = 3; S.c.done = false; render(); }
+  else if(act==="c-done"){ S.c.done = true; render(); }
+});
+stage.addEventListener("input", e=>{
+  if(e.target.classList && e.target.classList.contains("bsearch")){
+    S.b.q = e.target.value;
+    /* 只重渲染表格区,保持输入框焦点 */
+    const keep = e.target;
+    render();
+    const inp = document.querySelector(".bsearch");
+    if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  }
+});
+
+/* 浮条 + 键盘 */
+document.getElementById("switcher").addEventListener("click", e=>{
+  const arr = e.target.closest("[data-dir]");
+  if(arr) cycle(+arr.dataset.dir);
+  const dot = e.target.closest("[data-v]");
+  if(dot) setVariant(dot.dataset.v);
+});
+document.addEventListener("keydown", e=>{
+  if(/input|textarea/i.test(e.target.tagName) || e.target.isContentEditable) return;
+  if(e.key==="ArrowLeft") cycle(-1);
+  if(e.key==="ArrowRight") cycle(1);
+});
+
+render();
+</script>
+</body>
+</html>

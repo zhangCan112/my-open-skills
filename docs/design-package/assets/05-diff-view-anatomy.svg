@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="640" viewBox="0 0 1100 640" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="640" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">05 · 键级 Diff 视图解剖(vscode.diff + 只读虚拟文档)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">不自建对比 UI。扩展生成两个虚拟文档,交给 vscode.diff —— gutter、Next Change、F7 全部原生。</text>
+
+  <!-- tab -->
+  <rect x="40" y="76" width="1020" height="24" fill="#252526"/>
+  <rect x="40" y="76" width="240" height="24" fill="#1e1e1e"/>
+  <text x="50" y="93" fill="#e7e7e7" font-size="11">database.pool.maxSize(值对比) ✕</text>
+
+  <!-- announce -->
+  <rect x="40" y="100" width="1020" height="26" fill="#262626" stroke="#3c3c3c"/>
+  <text x="52" y="118" fill="#d18616" font-size="11">⇄ 类型不同: number (A) vs string (B)</text>
+  <rect x="790" y="104" width="88" height="17" rx="3" fill="none" stroke="#454545"/><text x="834" y="116" fill="#cccccc" font-size="10" text-anchor="middle">⏮ 上一个</text>
+  <rect x="884" y="104" width="88" height="17" rx="3" fill="none" stroke="#454545"/><text x="928" y="116" fill="#cccccc" font-size="10" text-anchor="middle">下一个 ⏭</text>
+  <text x="984" y="117" fill="#9d9d9d" font-size="10">1 / 1 · F7</text>
+
+  <!-- left pane -->
+  <rect x="40" y="126" width="508" height="20" fill="#252526"/>
+  <text x="50" y="140" fill="#9d9d9d" font-size="10.5">A · order-service — application.yaml(虚拟文档)</text>
+  <rect x="40" y="146" width="508" height="300" fill="#1e1e1e" stroke="#3c3c3c"/>
+  <g font-family="Consolas, Menlo, monospace" font-size="12">
+    <text x="54" y="168" fill="#6a9955">// Config Diff · application.yaml · database.pool.maxSize</text>
+    <text x="54" y="190" fill="#6a9955">// ⇄ 类型不同: number (A) vs string (B)</text>
+    <text x="54" y="212" fill="#cccccc">database:</text>
+    <text x="78" y="234" fill="#cccccc">pool:</text>
+    <rect x="44" y="244" width="490" height="18" fill="rgba(240,113,120,0.14)"/>
+    <rect x="44" y="246" width="4" height="14" fill="#c74e39"/>
+    <text x="60" y="258" fill="#cccccc">maxSize: 20</text>
+    <text x="54" y="280" fill="#cccccc">minIdle: 5</text>
+    <text x="54" y="302" fill="#9d9d9d">url: jdbc:mysql://…(上下文行)</text>
+  </g>
+  <rect x="538" y="150" width="6" height="290" fill="#262626"/>
+  <rect x="538" y="246" width="6" height="14" fill="#c74e39"/>
+  <text x="546" y="290" fill="#ffd43b" font-size="10" transform="rotate(90 546 290)">概览标尺(overview ruler)</text>
+
+  <!-- right pane -->
+  <rect x="552" y="126" width="508" height="20" fill="#252526"/>
+  <text x="562" y="140" fill="#9d9d9d" font-size="10.5">B · order-service-template — application.yaml(虚拟文档)</text>
+  <rect x="552" y="146" width="508" height="300" fill="#1e1e1e" stroke="#3c3c3c"/>
+  <g font-family="Consolas, Menlo, monospace" font-size="12">
+    <text x="566" y="168" fill="#6a9955">// Config Diff · application.yaml · database.pool.maxSize</text>
+    <text x="566" y="190" fill="#6a9955">// ⇄ 类型不同: number (A) vs string (B)</text>
+    <text x="566" y="212" fill="#cccccc">database:</text>
+    <text x="590" y="234" fill="#cccccc">pool:</text>
+    <rect x="556" y="244" width="490" height="18" fill="rgba(89,168,105,0.18)"/>
+    <rect x="556" y="246" width="4" height="14" fill="#81b88b"/>
+    <text x="572" y="258" fill="#cccccc">maxSize: "20"</text>
+    <text x="566" y="280" fill="#cccccc">minIdle: 5</text>
+    <text x="566" y="302" fill="#9d9d9d">url: jdbc:mysql://…(上下文行)</text>
+  </g>
+  <rect x="1050" y="150" width="6" height="290" fill="#262626"/>
+  <rect x="1050" y="246" width="6" height="14" fill="#81b88b"/>
+
+  <!-- annotations -->
+  <g font-size="10" fill="#ffd43b">
+    <text x="46" y="470">① 标签:键名(值对比);虚拟文档语言 id 跟随源文件</text>
+    <text x="46" y="488">② 注释行固定文法(T054–T058):第 1 行路径,第 2 行状态说明(类型/等价/忽略才出现)</text>
+    <text x="46" y="506">③ 上下文行 = 键路径逐层缩进;变化行底色:左 rem 右 ins;equ 两侧紫;ign 灰</text>
+    <text x="46" y="524">④ 行号槽色条 + 概览标尺:由 vscode.diff 原生渲染,扩展零成本</text>
+    <text x="46" y="542">⑤ 缺失侧:叶子位置放注释行「该键仅存在于左/右侧」,不加 diff 底色(防误导)</text>
+    <text x="46" y="560">⑥ 打开时:树中对应叶子 selected(联动);关闭 diff 不清除选中</text>
+  </g>
+  <rect x="40" y="576" width="1020" height="1" fill="#3c3c3c"/>
+  <g font-size="11" fill="#9d9d9d">
+    <text x="40" y="600">实现要点:VirtualDocument 用 uri scheme config-diff-diff:/A|B/…;每次内容变化用同一 uri + onDidChange 节流更新;文档只读。</text>
+    <text x="40" y="618">规则开关重算后,已打开的 diff 文档内容同步刷新(INV-3 同源)。</text>
+  </g>
+</svg>

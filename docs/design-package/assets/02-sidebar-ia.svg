@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="620" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">02 · 侧栏信息架构 — 同容器双视图堆叠</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">原型中的「差异 / 规则」标签页,落地为 VS Code 原生同容器双视图(可各自折叠/拖高),语义不变。决策日志已登记。</text>
+
+  <!-- container box -->
+  <rect x="40" y="80" width="520" height="500" fill="#252526" stroke="#3c3c3c"/>
+  <text x="56" y="104" fill="#e7e7e7" font-size="13" font-weight="600">容器:配置对比(config-diff-explorer)</text>
+  <rect x="56" y="116" width="488" height="1" fill="#3c3c3c"/>
+
+  <!-- view 1 -->
+  <rect x="56" y="130" width="488" height="230" fill="#1e1e1e" stroke="#454545"/>
+  <text x="68" y="150" fill="#e7e7e7" font-size="12" font-weight="600">视图 1「差异」 TreeView</text>
+  <text x="528" y="150" fill="#9d9d9d" font-size="10" text-anchor="end">badge: 活跃差异总数</text>
+  <rect x="68" y="160" width="464" height="1" fill="#333"/>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="76" y="182">工具栏:◫ 分组切换 · ⟳ 刷新 · ⇄ 对调 · ⏱ 历史(title actions)</text>
+    <text x="88" y="206">▾ 文件对行:application.yaml</text><text x="530" y="206" fill="#9d9d9d" text-anchor="end">[12]</text>
+    <text x="104" y="226">▾ 状态行:<tspan fill="#e2c08d">≠ 值不同</tspan></text><text x="530" y="226" fill="#9d9d9d" text-anchor="end">[4]</text>
+    <text x="120" y="246">叶子:port · 8080 → 8081(行内:⧉ ⊘)</text>
+    <text x="104" y="266">▸ 状态行:<tspan fill="#d18616">⇄ 类型不同</tspan> [2]</text>
+    <text x="104" y="286">▸ 状态行:<tspan fill="#e0704f">− 仅在 A</tspan> [2] / <tspan fill="#81b88b">+ 仅在 B</tspan> [4]</text>
+    <text x="88" y="306">▸ 文件对行:.env [4]</text>
+    <text x="88" y="330" fill="#9d9d9d" font-size="10.5">空态:Welcome 三入口(见图纸 19);0 差异:「✓ 完全一致」</text>
+  </g>
+
+  <!-- view 2 -->
+  <rect x="56" y="372" width="488" height="190" fill="#1e1e1e" stroke="#454545"/>
+  <text x="68" y="392" fill="#e7e7e7" font-size="12" font-weight="600">视图 2「对比规则」 TreeView</text>
+  <text x="528" y="392" fill="#9d9d9d" font-size="10" text-anchor="end">启用 n / 总数</text>
+  <rect x="68" y="402" width="464" height="1" fill="#333"/>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="76" y="424"><tspan fill="#81b88b">⇄ 文件配对</tspan> · .env.dev ⇄ .env.prod.example</text>
+    <text x="76" y="446"><tspan fill="#b180d7">≈ 值等价</tspan> · "" ≈ null(空值等价)</text>
+    <text x="76" y="468"><tspan fill="#b180d7">≈ 值等价</tspan> · 数字 ≈ 字符串(类型宽化)</text>
+    <text x="76" y="490"><tspan fill="#9d9d9d">⊘ 忽略</tspan> · logging.file.*</text>
+    <text x="76" y="512">脚部动作:+ 添加规则… · &lt;/&gt; 编辑源码</text>
+    <text x="76" y="540" fill="#9d9d9d" font-size="10.5">无效规则(违反 Schema)不出现在此列表 → Webview 编辑器标红</text>
+  </g>
+
+  <!-- right notes -->
+  <rect x="590" y="80" width="470" height="500" fill="#202020" stroke="#3c3c3c"/>
+  <text x="606" y="104" fill="#e7e7e7" font-size="13" font-weight="600">规则约束(违反 = 打回)</text>
+  <g font-size="12" fill="#cccccc">
+    <text x="606" y="134">1. 差异视图永远是容器内第一个视图</text>
+    <text x="606" y="158">2. 两视图均为原生 TreeView(勿用 Webview 仿制,</text>
+    <text x="620" y="176">否则丢失 reveal / 原生键盘 / 主题联动)</text>
+    <text x="606" y="200">3. 工具栏动作 ≤4 个,顺序固定:◫ ⟳ ⇄ ⏱</text>
+    <text x="606" y="224">4. 行内动作每行 ≤2 个(官方红线)</text>
+    <text x="606" y="248">5. 计数唯一来源 DiffResult.stats(INV-3)</text>
+    <text x="606" y="272">6. 规则开关即时重算(纯函数,≤100ms)</text>
+    <text x="606" y="296">7. 空态必须给「可视按钮」而非纯文字</text>
+  </g>
+  <rect x="606" y="316" width="438" height="1" fill="#3c3c3c"/>
+  <text x="606" y="340" fill="#e7e7e7" font-size="12" font-weight="600">按状态分组模式(◫ 切换后)</text>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="606" y="364">顶层 = 状态(≠ 值不同 [6] …),文件嵌在状态下</text>
+    <text x="606" y="386">两种模式共用 DiffResult,计数恒一致(INV-3)</text>
+    <text x="606" y="408">用户上次选择需记忆(workspaceState)</text>
+  </g>
+  <rect x="606" y="430" width="438" height="1" fill="#3c3c3c"/>
+  <text x="606" y="454" fill="#e7e7e7" font-size="12" font-weight="600">历史(⏱)QuickPick</text>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="606" y="478">· 最近 10 次比较(A ⇄ B + 时间 + 差异数)</text>
+    <text x="606" y="500">· 收藏置顶(⭐ 固定,二期)</text>
+    <text x="606" y="522">· 失效路径置灰 +「重新选择…」(E19)</text>
+  </g>
+</svg>

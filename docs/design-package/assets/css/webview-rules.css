@@ -1,0 +1,47 @@
+/* ============================================================
+   Config Diff · Webview 规则编辑器组件样式(webview-rules.css,二期 P1)
+   依赖:variables.css。对照图纸 07;规则卡片句文法见 02 文档 C7。
+   ============================================================ */
+
+/* ── 规则卡片 ── */
+.cd-rulecard{border:1px solid var(--cd-border);border-left:3px solid var(--cd-st-onlyb);border-radius:6px;padding:10px 13px;margin-bottom:10px;background:var(--cd-side-bg)}
+.cd-rulecard[data-type="pair"]{border-left-color:var(--cd-st-onlyb)}
+.cd-rulecard[data-type="equ"]{border-left-color:var(--cd-st-equ)}
+.cd-rulecard[data-type="ign"]{border-left-color:var(--cd-st-ign)}
+.cd-rulecard[data-type="scr"]{border-left-color:#569cd6}
+.cd-rulecard.invalid{border-left-color:var(--cd-st-err);opacity:.88}
+.cd-rule-head{display:flex;align-items:center;gap:9px}
+.cd-rule-head .cd-title{font-size:12px;color:var(--cd-fg-strong);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cd-rule-head .cd-switch{margin-left:auto}
+.cd-sentence{margin-top:8px;line-height:2;color:var(--cd-fg)}
+.cd-cond{font-family:var(--cd-font-mono);font-size:11.5px;border:1px solid var(--cd-border);background:var(--cd-chip-bg);border-radius:4px;padding:1px 6px;color:var(--cd-fg-strong);white-space:nowrap}
+.cd-then{font-weight:600;white-space:nowrap}
+.cd-then.t-pair{color:var(--cd-st-onlyb)} .cd-then.t-equ{color:var(--cd-st-equ)}
+.cd-then.t-ign{color:var(--cd-fg-dim)} .cd-then.t-scr{color:#569cd6}
+.cd-rule-note{font-size:11px;color:var(--cd-fg-dim);margin-top:4px}
+.cd-invalid-msg{font-size:11.5px;color:var(--cd-st-err);margin-top:7px}
+
+/* ── 开关 switch(自绘;焦点环必配,INV-8)── */
+.cd-switch{width:32px;height:17px;border-radius:9px;background:var(--cd-badge-bg);position:relative;display:inline-block;flex:none;transition:background .15s;border:none;padding:0;cursor:default}
+.cd-switch::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--cd-accent-fg);transition:left .15s}
+.cd-switch.on{background:var(--cd-switch-on)}
+.cd-switch.on::after{left:17px}
+.cd-switch[aria-checked="false"]::after{background:var(--cd-fg-dim)}
+
+/* ── 源码视图 token(rules.json 展示)── */
+.cd-src{font-family:var(--cd-font-mono);font-size:var(--cd-font-mono-size);line-height:1.7;padding:8px 0}
+.cd-src .ln{display:inline-block;width:34px;text-align:right;margin-right:12px;color:var(--cd-fg-dim);opacity:.65;user-select:none}
+.cd-src .tk-key{color:var(--vscode-symbolIcon-variableForeground, #9cdcfe)}
+.cd-src .tk-str{color:var(--vscode-symbolIcon-stringForeground, #ce9178)}
+.cd-src .tk-num{color:var(--vscode-symbolIcon-numberForeground, #b5cea8)}
+.cd-src .tk-kw{color:var(--vscode-symbolIcon-keywordForeground, #569cd6)}
+.cd-src .tk-cmt{color:var(--cd-comment);font-style:italic}
+.cd-src .hl{background:var(--cd-list-active);color:#fff}
+.cd-src .hl .tk-key,.cd-src .hl .tk-str,.cd-src .hl .tk-num,.cd-src .hl .tk-kw,.cd-src .hl .tk-cmt{color:#fff}
+
+/* ── 悬浮卡(hover 文档)── */
+.cd-hovercard{position:absolute;z-index:6;max-width:380px;background:var(--cd-widget-bg);border:1px solid var(--cd-border);border-radius:4px;box-shadow:0 6px 20px rgba(0,0,0,.45);padding:9px 12px;font-size:11.5px;line-height:1.6;color:var(--cd-fg)}
+.cd-hovercard .hct{color:var(--cd-fg-strong);font-weight:600;margin-bottom:4px}
+
+@media (prefers-reduced-motion: reduce){.cd-switch,.cd-switch::after{transition:none!important}}
+body.vscode-reduce-motion .cd-switch,.cd-switch::after{transition:none!important}

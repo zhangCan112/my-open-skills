@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="600" viewBox="0 0 1100 600" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="600" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">14 · 主比较流程(时序)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">泳道:用户 / 扩展 / VS Code。入口三选一(活动栏推荐),出口收敛到 DiffResult → 三处展示。</text>
+
+  <!-- lanes -->
+  <g font-size="12" font-weight="600" fill="#9d9d9d">
+    <text x="120" y="90" text-anchor="middle">用户</text>
+    <text x="520" y="90" text-anchor="middle">扩展</text>
+    <text x="920" y="90" text-anchor="middle">VS Code</text>
+  </g>
+  <g stroke="#2e2e2e"><path d="M120 100 v460"/><path d="M520 100 v460"/><path d="M920 100 v460"/></g>
+
+  <g font-size="11.5">
+    <!-- steps -->
+    <rect x="50" y="116" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="120" y="131" fill="#cccccc" text-anchor="middle">① 点击活动栏图标</text><text x="120" y="145" fill="#9d9d9d" text-anchor="middle">(推荐入口;或右键两步)</text>
+    <path d="M190 133 h70" stroke="#3794ff"/><polygon points="260,133 252,129 252,137" fill="#3794ff"/>
+
+    <rect x="262" y="116" width="516" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="520" y="131" fill="#cccccc" text-anchor="middle">打开容器 → Welcome 视图(无比较时)</text>
+    <text x="520" y="145" fill="#9d9d9d" text-anchor="middle">激活 onView;读取收藏/历史</text>
+    <path d="M778 133 h70" stroke="#3794ff"/><polygon points="848,133 840,129 840,137" fill="#3794ff"/>
+    <rect x="850" y="116" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="920" y="138" fill="#cccccc" text-anchor="middle">reveal 差异视图</text>
+
+    <rect x="50" y="180" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="120" y="195" fill="#cccccc" text-anchor="middle">② 点「选择两个项目…」</text><text x="120" y="209" fill="#9d9d9d" text-anchor="middle">或右键 A → B 两步标记</text>
+    <path d="M190 197 h70" stroke="#3794ff"/><polygon points="260,197 252,193 252,201" fill="#3794ff"/>
+    <rect x="262" y="180" width="516" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="520" y="195" fill="#cccccc" text-anchor="middle">showOpenDialog ×2(可收藏)→ 嗅探两侧同名配置文件</text>
+    <text x="520" y="209" fill="#9d9d9d" text-anchor="middle">应用文件配对规则;按 两侧均有/仅A/仅B 分组</text>
+    <path d="M778 197 h70" stroke="#3794ff"/><polygon points="848,197 840,193 840,201" fill="#3794ff"/>
+    <rect x="850" y="180" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="920" y="202" fill="#cccccc" text-anchor="middle">QuickPick 多选</text>
+
+    <rect x="50" y="244" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="120" y="259" fill="#cccccc" text-anchor="middle">③ Enter 确认</text><text x="120" y="273" fill="#9d9d9d" text-anchor="middle">(可 Esc 取消)</text>
+    <path d="M190 261 h70" stroke="#3794ff"/><polygon points="260,261 252,257 252,265" fill="#3794ff"/>
+    <rect x="262" y="244" width="516" height="52" rx="4" fill="#2a2313" stroke="#6b5a1e"/>
+    <text x="520" y="263" fill="#ffd97a" text-anchor="middle">解析 → 展平键 → 规则判定(纯函数)→ DiffResult</text>
+    <text x="520" y="281" fill="#ffd97a" text-anchor="middle">withProgress 可取消 · 单飞行任务(E20)· 失败降级 E1/E16</text>
+    <path d="M778 270 h70" stroke="#3794ff"/><polygon points="848,270 840,266 840,274" fill="#3794ff"/>
+    <rect x="850" y="252" width="140" height="36" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="920" y="267" fill="#cccccc" text-anchor="middle">渲染:树 + badge</text><text x="920" y="281" fill="#cccccc" text-anchor="middle">+ 状态栏</text>
+
+    <rect x="50" y="326" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="120" y="341" fill="#cccccc" text-anchor="middle">④ 浏览树 / ◫ 切分组</text><text x="120" y="355" fill="#9d9d9d" text-anchor="middle">计数全部同源 INV-3</text>
+    <path d="M190 343 h70" stroke="#3794ff"/><polygon points="260,343 252,339 252,347" fill="#3794ff"/>
+    <rect x="262" y="326" width="516" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="520" y="341" fill="#cccccc" text-anchor="middle">点叶子 → 生成两个虚拟文档 → vscode.diff</text>
+    <text x="520" y="355" fill="#9d9d9d" text-anchor="middle">树中叶子 selected;关闭 diff 保留选中</text>
+    <path d="M778 343 h70" stroke="#3794ff"/><polygon points="848,343 840,339 840,347" fill="#3794ff"/>
+    <rect x="850" y="326" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="920" y="348" fill="#cccccc" text-anchor="middle">打开只读 diff</text>
+
+    <rect x="50" y="390" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="120" y="405" fill="#cccccc" text-anchor="middle">⑤ 行内 ≈ / ⊘(可选)</text><text x="120" y="419" fill="#9d9d9d" text-anchor="middle">或报告表格动作</text>
+    <path d="M190 407 h70" stroke="#3794ff"/><polygon points="260,407 252,403 252,411" fill="#3794ff"/>
+    <rect x="262" y="390" width="516" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="520" y="405" fill="#cccccc" text-anchor="middle">写 rules.json → 重算(INV-3/4)→ 刷新 + 通知可撤销</text>
+    <text x="520" y="419" fill="#9d9d9d" text-anchor="middle">受影响键高亮 flash 1.6s;规则视图同步勾选态</text>
+    <path d="M778 407 h70" stroke="#3794ff"/><polygon points="848,407 840,403 840,411" fill="#3794ff"/>
+    <rect x="850" y="390" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="920" y="412" fill="#cccccc" text-anchor="middle">rules.json 落盘</text>
+
+    <rect x="50" y="454" width="140" height="34" rx="4" fill="#252526" stroke="#3c3c3c"/>
+    <text x="120" y="469" fill="#cccccc" text-anchor="middle">⑥ 编辑源文件…</text><text x="120" y="483" fill="#9d9d9d" text-anchor="middle">watcher 监听</text>
+    <path d="M190 471 h70" stroke="#3794ff"/><polygon points="260,471 252,467 252,475" fill="#3794ff"/>
+    <rect x="262" y="454" width="516" height="34" rx="4" fill="#2a2313" stroke="#6b5a1e"/>
+    <text x="520" y="469" fill="#ffd97a" text-anchor="middle">mtime &gt; generatedAt → Stale 态</text>
+    <text x="520" y="487" fill="#ffd97a" text-anchor="middle">顶部黄条「结果已过期 · 刷新」;树降透明;不自动重算(E12)</text>
+  </g>
+  <text x="24" y="560" fill="#9d9d9d" font-size="11">对照:状态机(16 号图);边界决策表 E1–E20(03 文档 §三)。任何新交互先画进本图再写代码。</text>
+</svg>

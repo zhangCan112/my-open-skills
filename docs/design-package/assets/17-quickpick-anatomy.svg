@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="640" viewBox="0 0 1100 640" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="640" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">17 · 添加规则向导解剖(QuickPick + InputBox)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">全程键盘可完成;Esc 任意时刻退出且不落盘;每步即时校验。</text>
+
+  <!-- quickpick -->
+  <rect x="60" y="80" width="560" height="330" rx="7" fill="#1e1e1e" stroke="#454545"/>
+  <rect x="76" y="94" width="528" height="26" fill="#3c3c3c"/>
+  <text x="86" y="112" fill="#cccccc" font-size="12">选择规则类型<tspan fill="#9d9d9d">(输入以过滤)</tspan><tspan fill="#ffffff">|</tspan></text>
+  <text x="80" y="144" fill="#9d9d9d" font-size="10.5">── 简单规则 · 表单输入即可,无需写代码 ──</text>
+  <rect x="72" y="154" width="536" height="26" fill="#2a2d2e"/>
+  <circle cx="88" cy="167" r="2.5" fill="#cccccc"/>
+  <text x="100" y="171" fill="#cccccc" font-size="12">⇄ 文件配对 <tspan fill="#9d9d9d">指定 A 侧文件对应 B 侧哪个文件</tspan></text>
+  <rect x="72" y="182" width="536" height="26" fill="#04395e"/>
+  <circle cx="88" cy="195" r="2.5" fill="#ffffff"/>
+  <text x="100" y="199" fill="#ffffff" font-size="12">≈ 值等价 <tspan fill="#c8ddff">声明哪些值视为相同</tspan></text>
+  <rect x="72" y="210" width="536" height="26" fill="none"/>
+  <circle cx="88" cy="223" r="2.5" fill="none" stroke="#cccccc"/>
+  <text x="100" y="227" fill="#cccccc" font-size="12">⊘ 忽略模式 <tspan fill="#9d9d9d">按键路径 glob 跳过比较</tspan></text>
+  <text x="80" y="258" fill="#9d9d9d" font-size="10.5">── 进阶 · 编写 JavaScript ──</text>
+  <circle cx="88" cy="277" r="2.5" fill="none" stroke="#cccccc"/>
+  <text x="100" y="281" fill="#cccccc" font-size="12">ƒ 脚本规则 <tspan fill="#9d9d9d">自定义复杂判定逻辑</tspan></text>
+  <rect x="60" y="386" width="560" height="24" fill="#252526"/>
+  <text x="76" y="402" fill="#9d9d9d" font-size="10.5">Enter 下一步 · Esc 取消 · 值等价 · 步骤 1/2</text>
+  <g font-size="10" fill="#ffd43b">
+    <text x="640" y="112">← 1px 高亮光标(示意)</text>
+    <text x="640" y="196">← 选中项:list.activeSelection 背景 + 白字</text>
+    <text x="640" y="258">分隔线文字不可选中</text>
+    <text x="640" y="402">底栏常驻:键位提示 + 步骤进度</text>
+  </g>
+
+  <!-- inputbox -->
+  <rect x="60" y="440" width="560" height="70" rx="7" fill="#1e1e1e" stroke="#454545"/>
+  <rect x="76" y="454" width="528" height="26" fill="#3c3c3c"/>
+  <text x="86" y="472" fill="#cccccc" font-size="12" font-family="Consolas">redis-dev.local<tspan fill="#ffffff">|</tspan></text>
+  <text x="76" y="500" fill="#9d9d9d" font-size="10.5">值等价 · 第 2 步:输入 B 侧等价值(留空表示 null)· Enter 继续</text>
+
+  <!-- validation example -->
+  <rect x="660" y="80" width="400" height="200" rx="7" fill="#252526" stroke="#3c3c3c"/>
+  <text x="676" y="104" fill="#e7e7e7" font-size="12" font-weight="600">即时校验示例(忽略模式)</text>
+  <rect x="676" y="118" width="368" height="26" fill="#3c3c3c"/>
+  <text x="686" y="136" font-family="Consolas" font-size="12" fill="#cccccc">logging.file*[</text>
+  <text x="676" y="164" fill="#f14c4c" font-size="11">✖ glob 语法错误:未闭合的 "["</text>
+  <text x="676" y="186" fill="#9d9d9d" font-size="11">修正后 Enter 可继续;错误不阻塞回退修改</text>
+  <text x="676" y="210" fill="#9d9d9d" font-size="11">校验规则由 Schema 提供(INV-9),提示文案可执行</text>
+  <text x="676" y="248" fill="#9d9d9d" font-size="10.5">校验通过 → 灰色预览"将写入: ignore: [ … ]"</text>
+
+  <!-- context prefill -->
+  <rect x="660" y="300" width="400" height="180" rx="7" fill="#252526" stroke="#3c3c3c"/>
+  <text x="676" y="324" fill="#e7e7e7" font-size="12" font-weight="600">入口② 上下文预填(报告行 ≈)</text>
+  <g font-size="11" fill="#cccccc">
+    <text x="676" y="348">· 类型已选:值等价(跳过步骤 1)</text>
+    <text x="676" y="370">· A 值预填:该行当前值(可改)</text>
+    <text x="676" y="392">· 作用范围预填:该键完整路径</text>
+    <text x="676" y="414">· 用户通常只需按 2 次 Enter</text>
+  </g>
+  <text x="676" y="448" fill="#9d9d9d" font-size="10.5">完成后:重比较 → 受影响键 flash + 通知可撤销(T050)</text>
+
+  <text x="24" y="600" fill="#9d9d9d" font-size="11">实现:QuickPick/InputBox 原生 API;禁用模态;向导期间后台无任务;取消不留半成品(仅在最终确认时写 rules.json)。</text>
+</svg>

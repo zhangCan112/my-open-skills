@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="620" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">19 · 空状态 / 错误态 / 过期态</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">空态必须给「可视按钮」(官方 Welcome 规范:独占一行链接渲染为按钮);错误 = 原因 + 建议。</text>
+
+  <!-- welcome -->
+  <rect x="40" y="80" width="480" height="240" fill="#252526" stroke="#3c3c3c"/>
+  <text x="56" y="104" fill="#e7e7e7" font-size="12" font-weight="600">Welcome(无比较)</text>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="56" y="128">比较两个项目的配置文件,找出键缺失、键多余、</text>
+    <text x="56" y="146">值不同、类型不同。</text>
+  </g>
+  <rect x="56" y="160" width="448" height="1" fill="#3c3c3c"/>
+  <g font-size="12" fill="#3794ff">
+    <text x="66" y="184">› 选择两个项目…</text>
+    <text x="66" y="208">› 从最近的比较中选择…</text>
+    <text x="66" y="232">› 管理收藏的项目对…</text>
+  </g>
+  <text x="56" y="264" fill="#9d9d9d" font-size="10.5">右键入口提示:Select for Config Diff → Compare with Selected</text>
+  <text x="56" y="296" fill="#ffd43b" font-size="10">主按钮=推荐路径;不出现命令面板引导(INV-10)</text>
+
+  <!-- no rules -->
+  <rect x="560" y="80" width="500" height="240" fill="#252526" stroke="#3c3c3c"/>
+  <text x="576" y="104" fill="#e7e7e7" font-size="12" font-weight="600">规则为空(规则视图)</text>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="576" y="128">还没有规则。规则决定"什么算一致"。</text>
+    <text x="576" y="146">示例:数字与字符串视为等价;忽略 *.local。</text>
+  </g>
+  <rect x="576" y="162" width="468" height="1" fill="#3c3c3c"/>
+  <g font-size="12" fill="#3794ff">
+    <text x="586" y="186">› 添加规则…</text>
+    <text x="586" y="210">› 创建规则文件(rules.json)</text>
+  </g>
+  <text x="576" y="244" fill="#9d9d9d" font-size="10.5">没有规则时比较照常运行(同名键严格比对)—— 空态不阻塞主流程</text>
+  <text x="576" y="296" fill="#ffd43b" font-size="10">空态 ≠ 错误:语气是邀请,不是报警</text>
+
+  <!-- parse error -->
+  <rect x="40" y="340" width="480" height="220" fill="#252526" stroke="#f14c4c"/>
+  <text x="56" y="364" fill="#f14c4c" font-size="12" font-weight="600">解析错误(文件级降级)</text>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="56" y="388">⚠ broken.yaml — 无法解析:第 12 行缩进错误。</text>
+    <text x="56" y="406" fill="#9d9d9d">请修复后点「刷新」。其余 2 个文件对已正常比较。</text>
+  </g>
+  <rect x="56" y="420" width="110" height="22" rx="3" fill="#0e639c"/><text x="111" y="435" fill="#fff" font-size="11" text-anchor="middle">打开文件</text>
+  <rect x="176" y="420" width="90" height="22" rx="3" fill="none" stroke="#454545"/><text x="221" y="435" fill="#ccc" font-size="11" text-anchor="middle">刷新</text>
+  <text x="56" y="470" fill="#ffd43b" font-size="10">E1:错误只阻断该文件对;树中该文件对标 ⚠ 节点 + 错误摘要;不全屏报错</text>
+  <text x="56" y="500" fill="#9d9d9d" font-size="10.5">对比 E16(rules.json 语法错):顶部错误条 + 用上次有效规则继续,同样给出「打开文件」</text>
+
+  <!-- stale -->
+  <rect x="560" y="340" width="500" height="220" fill="#252526" stroke="#6b5a1e"/>
+  <rect x="560" y="340" width="500" height="3" fill="#ffd43b"/>
+  <text x="576" y="372" fill="#ffd97a" font-size="12" font-weight="600">结果已过期 · 文件在比较后有改动</text>
+  <rect x="576" y="384" width="90" height="22" rx="3" fill="#0e639c"/><text x="621" y="399" fill="#fff" font-size="11" text-anchor="middle">刷新</text>
+  <rect x="676" y="384" width="110" height="22" rx="3" fill="none" stroke="#454545"/><text x="731" y="399" fill="#ccc" font-size="11" text-anchor="middle">忽略本次改动</text>
+  <g font-size="11" fill="#cccccc">
+    <text x="576" y="432">树整体 60% 透明(见图纸 04);徽标/计数保留旧值;</text>
+    <text x="576" y="450">diff 视图顶部同黄条;状态栏追加「· 已过期」。</text>
+  </g>
+  <text x="576" y="482" fill="#ffd43b" font-size="10">E12:不自动重算 —— 用户可能正在连续编辑;「忽略本次改动」静默至下次手动刷新</text>
+  <text x="576" y="522" fill="#9d9d9d" font-size="10.5">全部空/错/过期态共用:黄条(#3a2f14 底 / staleBanner 文字)· 左侧图标 · 右侧动作按钮 · 单行说明</text>
+</svg>

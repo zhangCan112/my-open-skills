@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="420" viewBox="0 0 1100 420" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="420" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">18 · 状态栏项解剖(Status Bar Item)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">左区(工作区级);短文本;无自定义底色(官方:warn 色是最后手段,此处不用)。</text>
+
+  <!-- status bar -->
+  <rect x="40" y="80" width="1020" height="23" fill="#007acc"/>
+  <text x="52" y="96" fill="#ffffff" font-size="11.5">⎇ main*</text>
+  <rect x="120" y="80" width="110" height="23" fill="rgba(255,255,255,0.14)"/>
+  <text x="130" y="96" fill="#ffffff" font-size="11.5" font-weight="600">⇄ 14 处差异</text>
+  <text x="600" y="96" fill="#ffffff" font-size="11.5" opacity="0.7">… 其余系统项(行号/编码/语言)…</text>
+  <g font-size="10" fill="#ffd43b">
+    <text x="130" y="120">hover 底 rgba(255,255,255,.14);点击 → reveal 差异视图</text>
+    <text x="240" y="120">文本 = $(diff) + 空格 + N 处差异(T014);N 为活跃差异数(不含 equ/ign)</text>
+  </g>
+
+  <!-- tooltip -->
+  <rect x="120" y="140" width="360" height="110" rx="4" fill="#252526" stroke="#454545"/>
+  <g font-size="11" fill="#cccccc">
+    <text x="134" y="162">⇄ 活跃差异:14(值不同 6 · 类型 2 · 仅A 3 · 仅B 3)</text>
+    <text x="134" y="182"><tspan fill="#b180d7">≈ 规则等价:1</tspan>(不计入差异)</text>
+    <text x="134" y="202"><tspan fill="#9d9d9d">⊘ 已忽略:2</tspan>(规则: logging.file.* 等)</text>
+    <text x="134" y="228" fill="#9d9d9d">order-service ⇄ order-service-template · 比较于 14:32</text>
+  </g>
+  <text x="120" y="272" fill="#ffd43b" font-size="10">tooltip = 三行明细 + 文件对 + 时间;数字与 stats 同源(INV-3)</text>
+
+  <!-- visibility rules -->
+  <rect x="40" y="292" width="1020" height="1" fill="#3c3c3c"/>
+  <g font-size="12" fill="#cccccc">
+    <text x="40" y="318">可见性规则:</text>
+    <text x="40" y="342">· Idle/Picking → 隐藏;Comparing → 显示「$(sync~spin) 比较中…」;Ready → 显示计数;Stale → 追加「· 已过期」。</text>
+    <text x="40" y="366">· 多工作区:统计当前激活工作区的比较;tooltip 注明。</text>
+    <text x="40" y="390" fill="#9d9d9d">对齐:badge(活动栏)、树标题、状态栏三处数字必须一致(同一 stats 源,INV-3)。</text>
+  </g>
+</svg>

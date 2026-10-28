@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="560" fill="#000000"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">11 · 色板 — High Contrast(示意值;实现必须注入真实 HC 主题值,INV-1)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">HC 的核心是"边框承担层级":无阴影、无半透明依赖,所有面板用 1px 青色描边分隔。发布前必须在 HC 下逐屏走查。</text>
+
+  <g font-size="11">
+    <rect x="40" y="80" width="150" height="70" fill="#000000" stroke="#6fc3df"/><text x="50" y="102" fill="#ffffff">editor.background</text><text x="50" y="120" fill="#9d9d9d">#000000</text>
+    <rect x="200" y="80" width="150" height="70" fill="#000000" stroke="#6fc3df"/><text x="210" y="102" fill="#ffffff">side.background</text><text x="210" y="120" fill="#9d9d9d">#000000</text>
+    <rect x="360" y="80" width="150" height="70" fill="#000000" stroke="#6fc3df"/><text x="370" y="102" fill="#ffffff">border #6fc3df</text>
+    <rect x="520" y="80" width="150" height="70" fill="#0e639c" stroke="#6fc3df"/><text x="530" y="102" fill="#ffffff">accent</text>
+    <rect x="680" y="80" width="150" height="70" fill="#000000" stroke="#f38518"/><text x="690" y="102" fill="#f38518">focus #f38518</text><text x="690" y="120" fill="#9d9d9d">focusBorder 橙</text>
+    <rect x="840" y="80" width="150" height="70" fill="#000000" stroke="#6fc3df"/><text x="850" y="102" fill="#ffffff">foreground #fff</text>
+
+    <rect x="40" y="170" width="150" height="70" fill="#ffd700"/><text x="50" y="192" fill="#000000" font-weight="600">status.mod</text><text x="50" y="210" fill="#000000">#ffd700 ≠</text>
+    <rect x="200" y="170" width="150" height="70" fill="#ffb000"/><text x="210" y="192" fill="#000000" font-weight="600">status.type</text><text x="210" y="210" fill="#000000">#ffb000 ⇄</text>
+    <rect x="360" y="170" width="150" height="70" fill="#ff5c5c"/><text x="370" y="192" fill="#000000" font-weight="600">status.onlya</text><text x="370" y="210" fill="#000000">#ff5c5c −</text>
+    <rect x="520" y="170" width="150" height="70" fill="#3dd66f"/><text x="530" y="192" fill="#000000" font-weight="600">status.onlyb</text><text x="530" y="210" fill="#000000">#3dd66f +</text>
+    <rect x="680" y="170" width="150" height="70" fill="#d16ba5"/><text x="690" y="192" fill="#000000" font-weight="600">status.equ</text><text x="690" y="210" fill="#000000">#d16ba5 ≈</text>
+    <rect x="840" y="170" width="150" height="70" fill="#000000" stroke="#ffffff"/><text x="850" y="192" fill="#ffffff" font-weight="600">status.ign</text><text x="850" y="210" fill="#9d9d9d">白 + 描边区分</text>
+
+    <rect x="40" y="260" width="150" height="70" fill="#ff4d4d"/><text x="50" y="282" fill="#000000" font-weight="600">status.err</text><text x="50" y="300" fill="#000000">#ff4d4d ⚠</text>
+    <rect x="200" y="260" width="150" height="70" fill="#000000" stroke="#6fc3df"/><rect x="210" y="286" width="130" height="28" fill="rgba(61,214,111,0.25)" stroke="#3dd66f"/><text x="210" y="332" fill="#9d9d9d">diff.insBg</text>
+    <rect x="360" y="260" width="150" height="70" fill="#000000" stroke="#6fc3df"/><rect x="370" y="286" width="130" height="28" fill="rgba(255,92,92,0.22)" stroke="#ff5c5c"/><text x="370" y="332" fill="#9d9d9d">diff.remBg</text>
+    <rect x="520" y="260" width="150" height="70" fill="#000000" stroke="#6fc3df"/><rect x="530" y="286" width="130" height="28" fill="rgba(209,107,165,0.28)" stroke="#d16ba5"/><text x="530" y="332" fill="#9d9d9d">diff.equBg</text>
+    <rect x="680" y="260" width="150" height="70" fill="#000000" stroke="#6fc3df"/><text x="690" y="292" fill="#ffffff">input.background</text><text x="690" y="310" fill="#9d9d9d">#000 + 青描边</text>
+    <rect x="840" y="260" width="150" height="70" fill="#0e4c68" stroke="#6fc3df"/><text x="850" y="292" fill="#ffffff">list.active</text><text x="850" y="310" fill="#9d9d9d">#0e4c68</text>
+  </g>
+
+  <rect x="40" y="360" width="1020" height="1" fill="#6fc3df"/>
+  <g font-size="11.5" fill="#ffffff">
+    <text x="40" y="386">HC 硬性规则:</text>
+    <text x="40" y="410">· 状态色全部换高亮度变体,且必须保留图标+文字(INV-2 在 HC 下是生死线)。</text>
+    <text x="40" y="434">· 禁用 hover 灰底传达信息(hover 底 #0e2c3c 仅作反馈);选中态 #0e4c68 + 描边。</text>
+    <text x="40" y="458">· 焦点环 2px #f38518,任何自绘控件不可省(INV-8)。</text>
+    <text x="40" y="482">· 发布前走查:差异树 / 报告 / 规则 / 向导 / diff 五屏 + 规则抽屉(截图留档到验收清单 05-A)。</text>
+    <text x="40" y="506" fill="#9d9d9d">透明度在 HC 下不保证可感知 —— 任何"仅靠透明度区分"的设计在 HC 都是坏的,必须叠加深色/描边。</text>
+  </g>
+</svg>

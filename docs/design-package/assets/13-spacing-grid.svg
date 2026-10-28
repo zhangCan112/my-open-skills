@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="560" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">13 · 间距系统(Spacing)— 4px 基准网格</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">所有 padding/margin/gap 取 4 的倍数(4/8/12/16/20/24)。禁止魔法数;组合出来的间距也必须是 4 的倍数。</text>
+
+  <!-- base units -->
+  <g>
+    <rect x="60" y="84" width="4" height="24" fill="#3c3c3c"/><text x="52" y="126" fill="#9d9d9d" font-size="11" text-anchor="middle">4</text>
+    <rect x="84" y="84" width="8" height="24" fill="#5a5a5a"/><text x="88" y="126" fill="#9d9d9d" font-size="11" text-anchor="middle">8</text>
+    <rect x="112" y="84" width="12" height="24" fill="#6e6e6e"/><text x="118" y="126" fill="#9d9d9d" font-size="11" text-anchor="middle">12</text>
+    <rect x="144" y="84" width="16" height="24" fill="#828282"/><text x="152" y="126" fill="#9d9d9d" font-size="11" text-anchor="middle">16</text>
+    <rect x="180" y="84" width="20" height="24" fill="#969696"/><text x="190" y="126" fill="#9d9d9d" font-size="11" text-anchor="middle">20</text>
+    <rect x="220" y="84" width="24" height="24" fill="#aaaaaa"/><text x="232" y="126" fill="#9d9d9d" font-size="11" text-anchor="middle">24</text>
+    <text x="270" y="100" fill="#cccccc" font-size="12">语义:4 = 图标与文字间隙 · 8 = 行内/紧凑 · 12 = 卡片内 · 16 = 区块间 · 20/24 = 页面级留白</text>
+  </g>
+
+  <rect x="40" y="150" width="1020" height="1" fill="#3c3c3c"/>
+  <text x="24" y="176" fill="#ffffff" font-size="14" font-weight="600">组件间距对照(实测值,照抄即可)</text>
+
+  <!-- pill padding -->
+  <rect x="60" y="196" width="96" height="24" rx="12" fill="none" stroke="#81b88b"/>
+  <text x="108" y="212" fill="#81b88b" font-size="11" text-anchor="middle">+ 仅在 B</text>
+  <g stroke="#ffd43b" fill="none"><path d="M76 192 v-6 h64"/><path d="M60 202 h-8 v-30"/><path d="M156 202 h8 v-30"/></g>
+  <g font-size="10" fill="#ffd43b"><text x="86" y="182">内边距 8</text><text x="20" y="190">左右各 8</text><text x="170" y="190">上下 3</text></g>
+
+  <!-- tree row padding -->
+  <rect x="60" y="236" width="300" height="22" fill="#252526"/>
+  <text x="68" y="251" fill="#cccccc" font-size="12">≠ maxSize</text>
+  <g stroke="#ffd43b" fill="none"><path d="M60 232 v-6"/><path d="M60 226 h8"/></g>
+  <text x="74" y="230" fill="#ffd43b" font-size="10">行左 8</text>
+  <text x="380" y="251" fill="#9d9d9d" font-size="11">行高 22;行内上下居中;摘要距右侧 8</text>
+
+  <!-- card padding -->
+  <rect x="60" y="276" width="300" height="88" fill="#252526" stroke="#454545"/>
+  <text x="72" y="298" fill="#e7e7e7" font-size="12" font-weight="600">规则卡片</text>
+  <text x="72" y="320" fill="#9d9d9d" font-size="11">内边距 12;行距 8;块间距 10</text>
+  <g stroke="#ffd43b" fill="none"><path d="M60 288 h-8"/><text x="20" y="292" fill="#ffd43b" font-size="10">12</text></g>
+  <text x="380" y="300" fill="#9d9d9d" font-size="11">卡片间距 10;区块间距 16;页边距 20</text>
+
+  <!-- vertical rhythm -->
+  <g fill="#cccccc" font-size="12">
+    <text x="60" y="404">垂直节奏(报告页):工具条上 12 下 12 · 分隔线 · 元信息行上 6 下 6 · 表头与首行 0(贴线)</text>
+    <text x="60" y="428">侧栏:视图标题上 10 下 8 · 树行 0(行高即节奏)· 视图间隔由 VS Code 托管</text>
+    <text x="60" y="452">Webview:页边距 20 · 区块间 16 · 卡片内 12 · 芯片间隙 6</text>
+  </g>
+
+  <rect x="40" y="476" width="1020" height="1" fill="#3c3c3c"/>
+  <g font-size="12" fill="#cccccc">
+    <text x="60" y="502">红线:相邻元素间距差 &lt;4px 不可感知 → 不允许出现 6/10/14 这类非网格值在**同一组关系**里混用。</text>
+    <text x="60" y="526" fill="#9d9d9d">自检:devtools 量任意两个相邻间距,除以 4 必须为整数(阴影/边框宽度除外)。</text>
+  </g>
+</svg>

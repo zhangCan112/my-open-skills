@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="640" viewBox="0 0 1100 640" font-family="Segoe UI, PingFang SC, sans-serif">
+  <rect width="1100" height="640" fill="#181818"/>
+  <text x="24" y="34" fill="#ffffff" font-size="16" font-weight="600">20 · 边界情况速查(决策表的可视摘要,详见 03 文档 §三 E1–E20)</text>
+  <text x="24" y="54" fill="#9d9d9d" font-size="12">六宫格 = 新手最容易踩的六类;每个格子给「错误示范 → 正确做法」。</text>
+
+  <!-- E1 -->
+  <rect x="40" y="80" width="320" height="160" fill="#252526" stroke="#3c3c3c"/>
+  <text x="56" y="104" fill="#e7e7e7" font-size="12" font-weight="600">E1 · 一侧解析失败</text>
+  <text x="56" y="126" fill="#f14c4c" font-size="11">✖ 全局报错,整个比较不可用</text>
+  <text x="56" y="148" fill="#81b88b" font-size="11">✓ 该文件对标 ⚠ + 错误行号;其余照常</text>
+  <text x="56" y="174" fill="#9d9d9d" font-size="10.5">错误文件对显示 ⚠ 节点:「第 12 行缩进错误」</text>
+  <text x="56" y="192" fill="#9d9d9d" font-size="10.5">动作:打开文件 / 刷新</text>
+  <text x="56" y="222" fill="#6a6a6a" font-size="10">决策依据:部分可用优于全不可用</text>
+
+  <!-- E5 -->
+  <rect x="380" y="80" width="320" height="160" fill="#252526" stroke="#3c3c3c"/>
+  <text x="396" y="104" fill="#e7e7e7" font-size="12" font-weight="600">E5 · 数组与长度差</text>
+  <text x="396" y="126" fill="#f14c4c" font-size="11">✖ 整个数组当一个字符串比</text>
+  <text x="396" y="148" fill="#81b88b" font-size="11">✓ 按索引逐项;长度差记末位 onlya/onlyb</text>
+  <text x="396" y="174" fill="#9d9d9d" font-size="10.5">hosts: [a,b] vs [a,b,c] → hosts[2] = + 仅在 B</text>
+  <text x="396" y="192" fill="#9d9d9d" font-size="10.5">数组 vs 标量 → type</text>
+  <text x="396" y="222" fill="#6a6a6a" font-size="10">决策依据:键路径精确到索引,语义对齐</text>
+
+  <!-- E8 -->
+  <rect x="720" y="80" width="320" height="160" fill="#252526" stroke="#3c3c3c"/>
+  <text x="736" y="104" fill="#e7e7e7" font-size="12" font-weight="600">E8 · 超长值</text>
+  <text x="736" y="126" fill="#f14c4c" font-size="11">✖ 树里塞完整 300 字符的 URL</text>
+  <text x="736" y="148" fill="#81b88b" font-size="11">✓ 摘要 ≤40 截断;表格省略+title;diff 完整</text>
+  <text x="736" y="174" fill="#9d9d9d" font-size="10.5">jdbc:mysql://dev.db:3306/orders?para…</text>
+  <text x="736" y="192" fill="#9d9d9d" font-size="10.5">hover title 显示全值;INV-5</text>
+  <text x="736" y="222" fill="#6a6a6a" font-size="10">决策依据:侧栏导航 / 编辑器详情分工</text>
+
+  <!-- E18 -->
+  <rect x="40" y="260" width="320" height="160" fill="#252526" stroke="#3c3c3c"/>
+  <text x="56" y="284" fill="#e7e7e7" font-size="12" font-weight="600">E18 · 疑似敏感值</text>
+  <text x="56" y="306" fill="#f14c4c" font-size="11">✖ 树里明文展示 sk-live-9f3X…</text>
+  <text x="56" y="328" fill="#81b88b" font-size="11">✓ 树/报告打码 ******(设置可关)</text>
+  <text x="56" y="354" fill="#9d9d9d" font-size="10.5">触发:键名含 password/secret/token/key</text>
+  <text x="56" y="372" fill="#9d9d9d" font-size="10.5">diff 视图不打码(用户已主动点开,本地可见)</text>
+  <text x="56" y="402" fill="#6a6a6a" font-size="10">决策依据:安全默认;截图/共享场景不泄漏</text>
+
+  <!-- E13 -->
+  <rect x="380" y="260" width="320" height="160" fill="#252526" stroke="#3c3c3c"/>
+  <text x="396" y="284" fill="#e7e7e7" font-size="12" font-weight="600">E13/E14 · 规则冲突</text>
+  <text x="396" y="306" fill="#f14c4c" font-size="11">✖ 两条规则都跑,结果随机</text>
+  <text x="396" y="328" fill="#81b88b" font-size="11">✓ 书写顺序首个生效;ignore &gt; equ</text>
+  <text x="396" y="354" fill="#9d9d9d" font-size="10.5">同键命中 ignore + 等价 → 按 ⊘ 忽略</text>
+  <text x="396" y="372" fill="#9d9d9d" font-size="10.5">规则卡片 tooltip 标注「第 N 条生效」</text>
+  <text x="396" y="402" fill="#6a6a6a" font-size="10">决策依据:可预测优先;拖拽排序二期</text>
+
+  <!-- E15 -->
+  <rect x="720" y="260" width="320" height="160" fill="#252526" stroke="#3c3c3c"/>
+  <text x="736" y="284" fill="#e7e7e7" font-size="12" font-weight="600">E15 · 开关规则后全一致</text>
+  <text x="736" y="306" fill="#f14c4c" font-size="11">✖ 树空了,用户以为坏了</text>
+  <text x="736" y="328" fill="#81b88b" font-size="11">✓ 文件对行显示「✓ 完全一致(87 键)」</text>
+  <text x="736" y="354" fill="#9d9d9d" font-size="10.5">badge 归零;状态栏「⇄ 0 处差异」;通知一次</text>
+  <text x="736" y="372" fill="#9d9d9d" font-size="10.5">规则视图保留,方便关回去对比</text>
+  <text x="736" y="402" fill="#6a6a6a" font-size="10">决策依据:INV-3 计数同源;INV-4 可逆</text>
+
+  <!-- bottom summary -->
+  <rect x="40" y="440" width="1000" height="1" fill="#3c3c3c"/>
+  <g font-size="11.5" fill="#cccccc">
+    <text x="40" y="466">其余决策速查:E2 单侧文件不比较(提示可配对)· E4 对象 vs 标量 = type · E6 重复键 = 解析警告(E7)· E10 空文件 = 0 键 ·</text>
+    <text x="40" y="488">E11 .env 大小写默认敏感(设置可关)· E16 rules.json 语法错降级用上次规则 · E17 BOM/编码按检测 · E19 失效历史置灰 · E20 重复触发合并。</text>
+    <text x="40" y="516" fill="#9d9d9d">新手守则:遇到表中没有的情况 → 先判断是否违反十条不变量(01 文档),不违反则自由决策并登记决策日志;违反则上报仲裁。</text>
+  </g>
+</svg>
